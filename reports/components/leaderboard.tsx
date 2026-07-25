@@ -41,23 +41,37 @@ interface LeaderboardRow {
   display: LocalizedText;
   /** 调色板下标；null = 未知条件，走中性色。 */
   color: number | null;
+  /** 测得该指标的 attempt 数。 */
+  samples: number;
+  /** 本行覆盖的 attempt 总数;samples < total 时出覆盖率角标,与官方格子同口径。 */
+  total: number;
 }
 
+// 条的填充用 color-mix 把系列色兑进 --panel(而不是兑成半透明):浅色主题兑出淡色、
+// 深色主题兑出暗色,两边条上的 --text 都读得清 —— 实心饱和度与可读性各让一步。
 const CSS = `
 .mb-lb { border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:var(--panel); }
 .mb-lb__head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
 .mb-lb__title { font-size:18px; font-weight:650; letter-spacing:-.01em; }
-.mb-lb__metric { font-size:12px; color:var(--muted); }
+.mb-lb__metric { font-size:12px; color:var(--muted); white-space:nowrap; }
 .mb-lb__rows { list-style:none; margin:0; padding:0; }
 .mb-lb__row { display:flex; align-items:center; gap:12px; padding:3px 0; }
-.mb-lb__track { position:relative; flex:1 1 auto; min-width:0; height:36px; border-radius:8px; background:var(--panel-2); overflow:hidden; }
+.mb-lb__track { position:relative; flex:1 1 auto; min-width:0; height:38px; border-radius:8px; background:var(--panel-2); overflow:hidden; }
+.mb-lb__row:hover .mb-lb__track { outline:1px solid var(--line-strong); }
 .mb-lb__bar { position:absolute; inset:0 auto 0 0; border-radius:8px; border-left:3px solid var(--nre-series);
-  background:color-mix(in srgb, var(--nre-series) 26%, transparent); }
+  background:color-mix(in srgb, var(--nre-series) 55%, var(--panel)); }
 .mb-lb__label { position:absolute; inset:0; display:flex; align-items:center; gap:8px; padding:0 12px; min-width:0; }
 .mb-lb__name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .mb-lb__tag { font-size:12px; color:var(--muted); white-space:nowrap; }
-.mb-lb__value { flex:0 0 auto; width:4.5em; text-align:right; font-variant-numeric:tabular-nums; font-size:16px; font-weight:600; }
+.mb-lb__value { flex:0 0 auto; min-width:4.5em; text-align:right; font-variant-numeric:tabular-nums; font-size:16px; font-weight:600; }
 .mb-lb__value.mb-lb__missing { color:var(--soft); font-weight:400; }
+.mb-lb__coverage { font-size:11px; font-weight:400; color:var(--muted); margin-left:2px; }
+/* 窄屏:条的高度和字号收一档,记忆条件标签让位给实验名 */
+@media (max-width: 560px) {
+  .mb-lb__track { height:32px; }
+  .mb-lb__tag { display:none; }
+  .mb-lb__value { font-size:14px; }
+}
 `;
 
 /** 纯渲染面：只认算好的 props，零 IO、同步——这条边界让整棵树能被烘成静态页。 */
@@ -86,12 +100,27 @@ const LeaderboardBars = defineComponent<{
                   />
                 )}
                 <div className="mb-lb__label">
-                  <span className="mb-lb__name">{row.label}</span>
+                  <span className="mb-lb__name" title={row.key}>
+                    {row.label}
+                  </span>
                   {row.tag === null ? null : <span className="mb-lb__tag">{row.tag}</span>}
                 </div>
               </div>
-              <div className={`mb-lb__value${row.ratio === null ? " mb-lb__missing" : ""}`}>
+              <div
+                className={`mb-lb__value${row.ratio === null ? " mb-lb__missing" : ""}`}
+                title={
+                  row.ratio === null
+                    ? `no attempt measured this metric (${row.total} total)`
+                    : `measured on ${row.samples} of ${row.total} attempts`
+                }
+              >
                 {row.ratio === null ? "—" : resolveLocalizedText(row.display, ctx.locale)}
+                {/* samples < total:有 attempt 测不了这个指标,角标如实标出,与官方格子同口径 */}
+                {row.ratio !== null && row.samples < row.total && (
+                  <sup className="mb-lb__coverage">
+                    {row.samples}/{row.total}
+                  </sup>
+                )}
               </div>
             </li>
           ))}
@@ -101,8 +130,12 @@ const LeaderboardBars = defineComponent<{
   },
   text({ title, metric, rows }, ctx) {
     const metricLabel = resolveMetricLabel(metric.label, ctx.locale, metric.key);
-    const valueOf = (row: LeaderboardRow) =>
-      row.ratio === null ? "—" : resolveLocalizedText(row.display, ctx.locale);
+    // 两面同口径:覆盖率角标(15 个 attempt 里 12 个测得了这个指标)网页面是 sup,这里是后缀
+    const valueOf = (row: LeaderboardRow) => {
+      if (row.ratio === null) return "—";
+      const value = resolveLocalizedText(row.display, ctx.locale);
+      return row.samples < row.total ? `${value} ${row.samples}/${row.total}` : value;
+    };
     // 列宽随内容和可用列宽算，不硬编码：一个汉字记 2 列(stringWidth)
     const nameWidth = Math.max(0, ...rows.map((row) => stringWidth(row.label)));
     const tagWidth = Math.max(0, ...rows.map((row) => stringWidth(row.tag ?? "")));
@@ -155,6 +188,8 @@ export const Leaderboard = defineComponent(
           ratio: cell.value,
           display: cell.display,
           color: memory === null ? null : (MEMORY_COLOR[memory] ?? null),
+          samples: cell.samples,
+          total: cell.total,
         };
       })
       // better: "higher" → 降序，「好」的一头在上；缺数据恒沉底，不冒充 0
