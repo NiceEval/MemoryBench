@@ -1,6 +1,6 @@
 # [MemoryBench](https://coding-agent-memory-evals.vercel.app)
 
-[中文](README.md)
+[中文](README.md) · [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Powered by [NiceEval](https://github.com/CorrectRoadH/NiceEval)
 
@@ -61,4 +61,19 @@ memorybench/
 ├─ reports/                # custom NiceEval reports
 ├─ docs/benchmarks.md      # SWE benchmark survey and candidate evals
 └─ niceeval.config.ts      # agents, judge, sandbox defaults
+```
+
+## Citation & License
+
+Licensed under the MIT License. See [LICENSE](LICENSE).
+
+If you find MemoryBench helpful, please cite it:
+
+```bibtex
+@misc{memorybench2026,
+    title  = {MemoryBench: Evaluating Coding Agent Memory on Real Development Tasks},
+    author = {CorrectRoadH},
+    year   = {2026},
+    note   = {https://github.com/CorrectRoadH/MemoryBench}
+}
 ```
