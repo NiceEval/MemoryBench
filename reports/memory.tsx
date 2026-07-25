@@ -1,11 +1,40 @@
-import { defineReport } from "niceeval/report";
+import {
+  Col,
+  CopyFixPrompt,
+  ExperimentComparison,
+  Hero,
+  ScopeWarnings,
+  SnapshotDiagnostics,
+  defineReport,
+} from "niceeval/report";
 import { standard } from "niceeval/report/built-in";
 import { GITHUB_ICON } from "./components/icons.ts";
+import { Leaderboard } from "./components/leaderboard.tsx";
 
 // 内建 standard 视图整站(报告 / Attempts / 追踪)+ 品牌外壳:标题与 GitHub 链接。
-// extends 声明「跟随内建」,niceeval 升级带来的页面演进自动生效。
+//
+// 「报告」页在这里重写:排行榜要摆在散点图上面,而 extends 是整页继承、没有插槽——
+// 想往内建页里插一块内容,只能把这一页逐字抄下来自己摆(候选上游 FR:页级 override /
+// 内容插槽)。代价说清楚:只有这一页脱离了「跟随内建演进」,Attempts / 追踪 / attempt
+// 详情三页仍从 standard.pages 原样继承,niceeval 升级照常生效。
 export default defineReport({
-  extends: standard,
+  pages: [
+    {
+      id: "report",
+      title: { en: "Report", "zh-CN": "报告" },
+      content: (
+        <Col>
+          <Hero />
+          <ScopeWarnings />
+          <SnapshotDiagnostics />
+          <CopyFixPrompt />
+          <Leaderboard title={{ en: "MemoryBench", "zh-CN": "MemoryBench" }} />
+          <ExperimentComparison />
+        </Col>
+      ),
+    },
+    ...standard.pages.filter((page) => page.id !== "report"),
+  ],
   title: { en: "MemoryBench", "zh-CN": "MemoryBench" },
   links: [
     { label: "GitHub", href: "https://github.com/CorrectRoadH/memorybench", icon: GITHUB_ICON },
