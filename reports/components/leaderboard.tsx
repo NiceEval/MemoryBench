@@ -26,6 +26,7 @@ import type { LocalizedText } from "niceeval/report";
 const MEMORY_COLOR: Record<string, number> = {
   baseline: 0, // 蓝
   mempal: 1, // 绿
+  mem0: 2, // 青
   nowledge: 5, // 橙
 };
 
