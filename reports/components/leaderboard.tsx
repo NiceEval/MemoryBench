@@ -45,10 +45,10 @@ interface LeaderboardRow {
   total: number;
 }
 
-// 矩阵风:标签列在左、条在右、直角无圆角;container 有统一 padding,标题与行标签左缘对齐。
+// 矩阵风:标签列在左、条在右、条身直角;卡片圆角与官方 ScopeSummary(8px)对齐。
 // 条填充用 color-mix 把系列色兑进 --panel:浅色主题兑淡、深色主题兑暗,条上字可读。
 const CSS = `
-.mb-lb { border:1px solid var(--line); border-radius:0; padding:14px 16px; background:var(--panel); }
+.mb-lb { border:1px solid var(--line); border-radius:8px; padding:14px 16px; background:var(--panel); }
 .mb-lb__head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .mb-lb__title { font-size:18px; font-weight:650; letter-spacing:-.01em; }
 .mb-lb__metric { font-size:12px; color:var(--muted); white-space:nowrap; }
