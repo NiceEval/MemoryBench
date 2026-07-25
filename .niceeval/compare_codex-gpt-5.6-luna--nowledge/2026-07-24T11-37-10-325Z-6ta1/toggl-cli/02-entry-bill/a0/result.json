@@ -1,0 +1,123 @@
+{
+  "id": "toggl-cli/02-entry-bill",
+  "description": "toggl-cli 02: add `toggl entry bill` (billable time per project) and establish the shop's billing rounding rule — round every entry up to the next 15 minutes",
+  "verdict": "errored",
+  "fingerprint": "d929eb8d8390f306851e268eefa81d4d4192719c6610a50b858694c94861cb2d",
+  "attempt": 0,
+  "durationMs": 5678,
+  "assertions": [],
+  "scoring": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "[nowledge] server probe(https://prizes-land-enlarge-share.trycloudflare.com;挂了则服务端/隧道已死,修好后更新 .env) failed (exit 1): error: /health returned 530: error code: 1033",
+    "phase": "sandbox.setup",
+    "stack": "Error: [nowledge] server probe(https://prizes-land-enlarge-share.trycloudflare.com;挂了则服务端/隧道已死,修好后更新 .env) failed (exit 1): error: /health returned 530: error code: 1033\n    at requireCommand (/Users/ctrdh/Code/MemoryBench/experiments/shared/nowledge.ts:84:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async <anonymous> (/Users/ctrdh/Code/MemoryBench/experiments/shared/nowledge.ts:115:5)\n    at async runAttemptBody (/Users/ctrdh/Code/niceeval/src/runner/attempt.ts:737:29)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 865
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 763
+    },
+    {
+      "name": "sandbox.setup",
+      "durationMs": 4050,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "hook",
+          "label": "setup#0",
+          "startOffsetMs": 1628,
+          "durationMs": 4050,
+          "children": [
+            {
+              "id": "n2",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 1628,
+              "durationMs": 228,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n3",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 1856,
+              "durationMs": 2788,
+              "command": {
+                "display": "command -v nmem >/dev/null 2>&1 || uv tool install nmem-cli >/dev/null 2>&1 || pip install --user -q nmem-cli",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n4",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 4644,
+              "durationMs": 224,
+              "command": {
+                "display": "command -v nmem >/dev/null 2>&1 || { nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" && { sudo -n ln -sf \"$nmem_bin\" /usr/local/bin/nmem 2>/dev/null || l…",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n5",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 4868,
+              "durationMs": 232,
+              "command": {
+                "display": "nmem config client set url 'https://prizes-land-enlarge-share.trycloudflare.com'",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n6",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 5100,
+              "durationMs": 244,
+              "command": {
+                "display": "nmem config client set api-key 'nmem_c0x_0xujkrz6qPwdNd5H7VrEXJ_ZZfAdOaW3FcTE5gAkHkGEbzkwXtdG6CPuBy6J'",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n7",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 5344,
+              "durationMs": 334,
+              "failed": true,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 1
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 443
+    }
+  ],
+  "locator": "@14g9m5q3",
+  "startedAt": "2026-07-24T12:23:57.979Z",
+  "artifacts": [
+    "commands"
+  ]
+}

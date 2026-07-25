@@ -1,0 +1,266 @@
+{
+  "id": "react-hook-form/pr-13512",
+  "description": "react-hook-form pr-13512: with shouldUseNativeValidation, the native setCustomValidity()/reportValidity() call for a multi-ref field (radio group) only ever lands on the first ref, leaving the browser's native validation bubble anchored to a single radio button instead of the whole group (real react-hook-form issue)",
+  "verdict": "failed",
+  "fingerprint": "6db306700b79a13e8c94c9371dd77dc4a3bf6ef1188f66299baa9d76409671b6",
+  "attempt": 0,
+  "durationMs": 272126,
+  "assertions": [
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "file": "evals/react-hook-form/pr-13512.eval.ts",
+        "line": 109,
+        "column": 7
+      },
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…l Tests: 2 failed, 20 passed, 22 total Snapshots: 0 total Time: 0.782 s, estimated 1 s Ran all test suites matching src/__tests__/logic/validateField.test.tsx.\"\noutput tail:\nFAIL Web src/__tests__/logic/validateField.test.tsx\n  validateField\n    ✓ should return required true when input not filled with required (8 ms)\n    ✓ should return max error (10 ms)\n    ✓ should return min error (2 ms)\n    ✓ should return min and max error for custom input (1 ms)\n    ✓ should return max length error  (4 ms)\n    ✓ should return min length error  (1 ms)\n    ✓ should return pattern error when not matching (2 ms)\n    ✓ should validate for custom validation (1 ms)\n    ✓ should return error message when it is defined\n    ✓ should return result or empty string when validate has error\n    ✓ if undefined returned from validate, no error is reported\n    ✓ should do nothing when validate is not an object nor function (1 ms)\n    ✓ should return all validation errors (1 ms)\n    ✓ should handle pattern with g flag (1 ms)\n    ✓ should return all validation error messages (1 ms)\n    ✓ should validate field array with required attribute (1 ms)\n    with Browser native validation\n      ✓ should invoke setCustomValidity for invalid input (1 ms)\n      ✓ should invoke setCustomValidity for invalid input with its message (1 ms)\n      ✓ should invoke setCustomValidity with empty string for a valid input (1 ms)\n      ✕ should invoke setCustomValidity on all refs for a required radio group (7 ms)\n      ✕ should clear setCustomValidity on all refs for a valid radio group (1 ms)\n      ✓ should abort validation early when input is disabled (1 ms)\n\n  ● validateField › with Browser native validation › should invoke setCustomValidity on all refs for a required radio group\n\n    TypeError: ref.reportValidity is not a function\n\n      62 |       (refs || [inputRef]).forEach((ref) => {\n      63 |         ref.setCustomValidity(isBoolean(message) ? '' : message || '');\n    > 64 |         ref.reportValidity();\n         |             ^\n      65 |       });\n      66 |     }\n      67 |   };\n\n      at reportValidity (src/logic/validateField.ts:64:13)\n          at Array.forEach (<anonymous>)\n      at forEach (src/logic/validateField.ts:62:28)\n      at setCustomValidity (src/logic/validateField.ts:122:9)\n      at src/__tests__/logic/validateField.test.tsx:2306:26\n\n  ● validateField › with Browser native validation › should clear setCustomValidity on all refs for a valid radio group\n\n    TypeError: ref.reportValidity is not a function\n\n      62 |       (refs || [inputRef]).forEach((ref) => {\n      63 |         ref.setCustomValidity(isBoolean(message) ? '' : message || '');\n    > 64 |         ref.reportValidity();\n         |             ^\n      65 |       });\n      66 |     }\n      67 |   };\n\n      at reportValidity (src/logic/validateField.ts:64:13)\n          at Array.forEach (<anonymous>)\n      at forEach (src/logic/validateField.ts:62:28)\n      at setCustomValidity (src/logic/validateField.ts:286:3)\n      at src/__tests__/logic/validateField.test.tsx:2353:26\n\nTest Suites: 1 failed, 1 total\nTests:       2 failed, 20 passed, 22 total\nSnapshots:   0 total\nTime:        0.782 s, estimated 1 s\nRan all test suites matching src/__tests__/logic/validateField.test.tsx.",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 150390,
+    "outputTokens": 9648,
+    "cacheReadTokens": 44288,
+    "requests": 13
+  },
+  "estimatedCostUSD": 0.2127068,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "idv7ce0fxdtmy70wiswuz"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1798
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1490
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 417,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 3289,
+          "durationMs": 417,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 901,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "printf",
+          "startOffsetMs": 3706,
+          "durationMs": 183,
+          "command": {
+            "display": "printf '%s' $HOME",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 3890,
+          "durationMs": 191,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat '/home/user/.local/share/niceeval/bub-install-hash' 2>/dev/null)\" = '83770925b77a'",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 4249,
+          "durationMs": 189,
+          "command": {
+            "display": "mkdir -p $(dirname /home/user/workspace/AGENTS.md) && cat > /home/user/workspace/AGENTS.md <<'FE_EOF_mryz6kfk_etltza'\nYou are a coding agent working in a Next.…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 266424,
+      "children": [
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 4608,
+          "durationMs": 2749,
+          "command": {
+            "display": "set -euo pipefail\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .rhf-clone\nmv .rhf-clone/.git .git\nrm -rf .rhf-…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "npm",
+          "startOffsetMs": 7358,
+          "durationMs": 8170,
+          "command": {
+            "display": "npm install -g --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 15532,
+          "durationMs": 391,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 15924,
+          "durationMs": 253162,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Your working directory is a checkout of the real react-hook-form repository at the commit where the …",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 269276,
+          "durationMs": 195,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 15533,
+          "durationMs": 253939,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 150390,
+            "outputTokens": 9648,
+            "cacheReadTokens": 44288,
+            "requests": 13
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 269663,
+          "durationMs": 1367,
+          "failed": true,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 411,
+      "children": [
+        {
+          "id": "n12",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 1 file",
+          "startOffsetMs": 271032,
+          "durationMs": 410,
+          "children": [
+            {
+              "id": "n13",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 271031,
+              "durationMs": 219,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 1
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 682
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 369
+    }
+  ],
+  "locator": "@1w53lj5t",
+  "startedAt": "2026-07-24T13:27:51.894Z",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

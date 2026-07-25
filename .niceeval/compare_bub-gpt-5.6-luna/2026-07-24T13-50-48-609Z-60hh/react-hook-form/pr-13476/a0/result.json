@@ -1,0 +1,266 @@
+{
+  "id": "react-hook-form/pr-13476",
+  "description": "react-hook-form pr-13476: trigger() after a field-array remove() can wipe out nested per-index errors when a mixed root+nested error object is present (real react-hook-form issue)",
+  "verdict": "failed",
+  "fingerprint": "c4c50169a2d648f4d234cb1836b7dc3c42f6f62b8d9a31b388f52b74ee5560b3",
+  "attempt": 0,
+  "durationMs": 210644,
+  "assertions": [
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "file": "evals/react-hook-form/pr-13476.eval.ts",
+        "line": 99,
+        "column": 7
+      },
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…led, 1 total Tests: 1 failed, 72 passed, 73 total Snapshots: 3 passed, 3 total Time: 3.286 s Ran all test suites matching src/__tests__/useFieldArray.test.tsx.\"\noutput tail:\n      ✓ should unmount field array and remove its reference with shouldUnregister: true (6 ms)\n      ✓ should not trigger reRender on components that do not subscribe to useFieldArray fieldState (7 ms)\n  useFieldArray with checkbox\n    ✓ should correctly duplicate checkbox items with their values (19 ms)\n    ✓ should maintain correct checkbox states after multiple duplications (19 ms)\n    ✓ should skip validation for field array operations when mode is onBlur (14 ms)\n\n  ● useFieldArray › with resolver › should preserve nested field errors after remove when both root and field errors exist\n\n    expect(received).toBeInTheDocument()\n\n    received value must be an HTMLElement or an SVGElement.\n    Received has value: null\n\n    Ignored nodes: comments, script, style\n    \u001b[36m<html>\u001b[39m\n      \u001b[36m<head />\u001b[39m\n      \u001b[36m<body>\u001b[39m\n        \u001b[36m<div>\u001b[39m\n          \u001b[36m<form>\u001b[39m\n            \u001b[36m<div>\u001b[39m\n              \u001b[36m<input\u001b[39m\n                \u001b[33mname\u001b[39m=\u001b[32m\"test.0.value\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mremove \u001b[0m\n                \u001b[0m0\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div>\u001b[39m\n              \u001b[36m<input\u001b[39m\n                \u001b[33mname\u001b[39m=\u001b[32m\"test.1.value\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mremove \u001b[0m\n                \u001b[0m1\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div>\u001b[39m\n              \u001b[36m<input\u001b[39m\n                \u001b[33mname\u001b[39m=\u001b[32m\"test.2.value\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mremove \u001b[0m\n                \u001b[0m2\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mvalidate\u001b[0m\n            \u001b[36m</button>\u001b[39m\n          \u001b[36m</form>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</body>\u001b[39m\n    \u001b[36m</html>\u001b[39m\n\n      840 |         expect(\n      841 |           screen.queryByText('Array error: Needs at least 4 items'),\n    > 842 |         ).toBeInTheDocument(),\n          |           ^\n      843 |       );\n      844 |       await waitFor(() =>\n      845 |         expect(\n\n      at __EXTERNAL_MATCHER_TRAP__ (node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2240:22)\n      at Object.throwingMatcher [as toBeInTheDocument] (node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2241:6)\n      at toBeInTheDocument (src/__tests__/useFieldArray.test.tsx:842:11)\n      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:47:12)\n      at checkCallback (node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n      at checkRealTimersCallback (node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n      at Timeout.task [as _onTimeout] (node_modules/.pnpm/jsdom@26.1.0/node_modules/jsdom/lib/jsdom/browser/Window.js:579:19)\n\nTest Suites: 1 failed, 1 total\nTests:       1 failed, 72 passed, 73 total\nSnapshots:   3 passed, 3 total\nTime:        3.286 s\nRan all test suites matching src/__tests__/useFieldArray.test.tsx.",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 218813,
+    "outputTokens": 4566,
+    "cacheReadTokens": 131584,
+    "requests": 16
+  },
+  "estimatedCostUSD": 0.25936739999999997,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i1jsvp147u5h9dxiz1ns1"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1054
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 987
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 338,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 2043,
+          "durationMs": 337,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1140,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "printf",
+          "startOffsetMs": 2380,
+          "durationMs": 237,
+          "command": {
+            "display": "printf '%s' $HOME",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 2618,
+          "durationMs": 240,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat '/home/user/.local/share/niceeval/bub-install-hash' 2>/dev/null)\" = '83770925b77a'",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 3084,
+          "durationMs": 242,
+          "command": {
+            "display": "mkdir -p $(dirname /home/user/workspace/AGENTS.md) && cat > /home/user/workspace/AGENTS.md <<'FE_EOF_mryzviwa_59qrub'\nYou are a coding agent working in a Next.…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 205436,
+      "children": [
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 3522,
+          "durationMs": 2763,
+          "command": {
+            "display": "set -euo pipefail\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .rhf-clone\nmv .rhf-clone/.git .git\nrm -rf .rhf-…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "npm",
+          "startOffsetMs": 6285,
+          "durationMs": 8285,
+          "command": {
+            "display": "npm install -g --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 14579,
+          "durationMs": 447,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 15027,
+          "durationMs": 188995,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Your working directory is a checkout of the real react-hook-form repository at the commit where the …",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 204274,
+          "durationMs": 262,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 14579,
+          "durationMs": 189957,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 218813,
+            "outputTokens": 4566,
+            "cacheReadTokens": 131584,
+            "requests": 16
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 204964,
+          "durationMs": 3989,
+          "failed": true,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 464,
+      "children": [
+        {
+          "id": "n12",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 1 file",
+          "startOffsetMs": 208956,
+          "durationMs": 464,
+          "children": [
+            {
+              "id": "n13",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 208957,
+              "durationMs": 269,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 1
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1223
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 486
+    }
+  ],
+  "locator": "@1q8s7l4r",
+  "startedAt": "2026-07-24T13:47:17.470Z",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

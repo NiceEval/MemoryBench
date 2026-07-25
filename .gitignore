@@ -1,0 +1,16 @@
+node_modules/
+# .niceeval/ 提交进仓库:它是线上报告的数据源,Vercel 构建时直接从这里生成整站。
+# 只排除 diff.json —— 单轮可达上百 MB,查看器也不读它。
+.niceeval/**/diff.json
+# site/ 是构建产物,由 Vercel 的 buildCommand(scripts/build-site.mjs)现场生成,不再提交。
+site/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+dist/
+# niceeval 运行缓存 + mempal 记忆态存档(.cache/mempal/state/,勿提交)。
+.cache/
+.vercel
+.env*.local

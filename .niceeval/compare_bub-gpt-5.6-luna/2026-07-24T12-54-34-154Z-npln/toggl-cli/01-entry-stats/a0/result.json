@@ -1,0 +1,515 @@
+{
+  "id": "toggl-cli/01-entry-stats",
+  "description": "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's output/JSON/duration conventions for new commands",
+  "verdict": "passed",
+  "fingerprint": "32f02f20c87097023887247509fb4593357992bdb6f45588109e6f257e0e3e6a",
+  "attempt": 0,
+  "durationMs": 844473,
+  "assertions": [
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "file": "evals/toggl-cli/harness.ts",
+        "line": 200,
+        "column": 3
+      },
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-probe.sh"
+    },
+    {
+      "name": "equals(0)",
+      "severity": "gate",
+      "groupPath": [
+        "the command exists and aggregates per project"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 127,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals({\"groups\":[{\"project\":\"Alpha\",\"seconds\":5400},{\"project\":\"Beta\",\"seconds\":3720},{\"project\":\"No Project\",\"seconds\":2700}],\"total_seconds\":11820})",
+      "severity": "gate",
+      "groupPath": [
+        "the command exists and aggregates per project"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 128,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "isTrue(expected these lines, in this order: [\"1h 30m Alpha\",\"1h 02m Beta\",\"45m No Project\",\"3h 17m Total\"]\nactual stdout lines: [\"1h 30m Alpha\",\"1h 02m Beta\",\"45m No Project\",\"3h 17m Total\"])",
+      "severity": "gate",
+      "groupPath": [
+        "compact duration style (1h 02m / 45m)"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 140,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "groupPath": [
+        "no new dependencies"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 144,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "git diff --quiet -- Cargo.toml Cargo.lock"
+    },
+    {
+      "name": "isTrue(expected these lines, in this order: [\"(no data)\"]\nactual stdout lines: [\"(no data)\"])",
+      "severity": "gate",
+      "groupPath": [
+        "empty window prints (no data) and exits 0"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 149,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals(0)",
+      "severity": "gate",
+      "groupPath": [
+        "empty window prints (no data) and exits 0"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 150,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals({\"groups\":[],\"total_seconds\":0})",
+      "severity": "gate",
+      "groupPath": [
+        "empty window prints (no data) and exits 0"
+      ],
+      "loc": {
+        "file": "evals/toggl-cli/01-entry-stats.eval.ts",
+        "line": 151,
+        "column": 9
+      },
+      "outcome": "passed",
+      "score": 1
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 1987740,
+    "outputTokens": 37931,
+    "cacheReadTokens": 7090432,
+    "requests": 147
+  },
+  "estimatedCostUSD": 2.9243692,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i64u6xxn2hon8it96the5"
+  },
+  "diagnostics": [
+    {
+      "code": "sandbox-space-after-warmup",
+      "level": "warning",
+      "message": "/: 5877376 KB free of 11777928 KB; /: 5877376 KB free of 11777928 KB; build tree 847395 KB",
+      "phase": "eval.run"
+    }
+  ],
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 917
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1298
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 548,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 2216,
+          "durationMs": 548,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.setup",
+      "durationMs": 24691,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 2764,
+          "durationMs": 24691,
+          "command": {
+            "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  apt-get update -qq\n  apt-get install -y -qq --no…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1186,
+      "children": [
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "printf",
+          "startOffsetMs": 27455,
+          "durationMs": 242,
+          "command": {
+            "display": "printf '%s' $HOME",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 27698,
+          "durationMs": 246,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat '/home/user/.local/share/niceeval/bub-install-hash' 2>/dev/null)\" = '83770925b77a'",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 28170,
+          "durationMs": 247,
+          "command": {
+            "display": "mkdir -p $(dirname /home/user/workspace/AGENTS.md) && cat > /home/user/workspace/AGENTS.md <<'FE_EOF_mryy09fy_506chf'\nYou are a coding agent working in a Next.…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 814091,
+      "children": [
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 28642,
+          "durationMs": 902,
+          "command": {
+            "display": "set -euo pipefail\ngit clone -q -o origin https://github.com/CorrectRoadH/toggl-cli.git .toggl-clone\nmv .toggl-clone/.git .git\nrm -rf .toggl-clone\ngit reset -q …",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "export",
+          "startOffsetMs": 29544,
+          "durationMs": 84376,
+          "command": {
+            "display": "export PATH=\"/usr/local/cargo/bin:$PATH\"\ncargo build --tests --quiet",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "df",
+          "startOffsetMs": 113921,
+          "durationMs": 303,
+          "command": {
+            "display": "df -Pk / /opt 2>/dev/null | tail -n +2 | awk '{printf \"%s: %s KB free of %s KB; \", $6, $4, $2}'; du -sk /opt/cargo-target 2>/dev/null | awk '{printf \"build tre…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 114227,
+          "durationMs": 304,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 114536,
+          "durationMs": 584861,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'You'\\''re in a checkout of toggl-cli, our unofficial Rust CLI for Toggl Track. I want a new command:…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 700429,
+          "durationMs": 255,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n12",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 114226,
+          "durationMs": 586458,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 587215,
+            "outputTokens": 10566,
+            "cacheReadTokens": 1464576,
+            "requests": 38
+          }
+        },
+        {
+          "id": "n13",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 700686,
+          "durationMs": 248,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n14",
+          "kind": "command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 700935,
+          "durationMs": 84928,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Good. Now give it `--json`.\n\nShape: `{\"groups\":[{\"project\":\"Alpha\",\"seconds\":5400}, ...],\"total_seco…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n15",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 786307,
+          "durationMs": 207,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n16",
+          "kind": "turn",
+          "label": "s1/t2",
+          "startOffsetMs": 700686,
+          "durationMs": 85828,
+          "sessionIndex": 1,
+          "turnIndex": 2,
+          "usage": {
+            "inputTokens": 669927,
+            "outputTokens": 13074,
+            "cacheReadTokens": 2505472,
+            "requests": 51
+          }
+        },
+        {
+          "id": "n17",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 786515,
+          "durationMs": 198,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n18",
+          "kind": "command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 786713,
+          "durationMs": 52969,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Last piece. When the window contains no entries at all, `toggl entry stats` should print `(no data)`…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n19",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 840335,
+          "durationMs": 212,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n20",
+          "kind": "turn",
+          "label": "s1/t3",
+          "startOffsetMs": 786515,
+          "durationMs": 54032,
+          "sessionIndex": 1,
+          "turnIndex": 3,
+          "usage": {
+            "inputTokens": 730598,
+            "outputTokens": 14291,
+            "cacheReadTokens": 3120384,
+            "requests": 58
+          }
+        },
+        {
+          "id": "n21",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 840798,
+          "durationMs": 1517,
+          "command": {
+            "display": "bash tests/run-probe.sh",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n22",
+          "kind": "command",
+          "label": "rm",
+          "startOffsetMs": 842315,
+          "durationMs": 204,
+          "command": {
+            "display": "rm -rf target",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n23",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 842530,
+          "durationMs": 193,
+          "command": {
+            "display": "git diff --quiet -- Cargo.toml Cargo.lock",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 720,
+      "children": [
+        {
+          "id": "n24",
+          "kind": "operation",
+          "label": "export workspace diff · 3 windows · 7 files",
+          "startOffsetMs": 842732,
+          "durationMs": 719,
+          "children": [
+            {
+              "id": "n25",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 842732,
+              "durationMs": 376,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 1
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1020
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 1
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 446
+    }
+  ],
+  "locator": "@11m32fgq",
+  "startedAt": "2026-07-24T12:54:34.180Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

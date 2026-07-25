@@ -1,0 +1,252 @@
+{
+  "id": "toggl-cli/04-billing-doc",
+  "description": "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the `entry bill` session (round up to 15 minutes, billable only)",
+  "verdict": "failed",
+  "fingerprint": "f3de9cd4d36cdbde29a76364c133349b2ca922bb5416590ad8301c4a95b498b1",
+  "attempt": 0,
+  "durationMs": 23177,
+  "assertions": [
+    {
+      "name": "includes(/15/)",
+      "severity": "gate",
+      "loc": {
+        "file": "evals/toggl-cli/04-billing-doc.eval.ts",
+        "line": 27,
+        "column": 7
+      },
+      "outcome": "failed",
+      "score": 0,
+      "expected": "matches /15/",
+      "received": "I can’t verify that rule from the current workspace: `/home/user/workspace` is empty and contains no implementation or documentation for `toggl entry bill`. Please point me to the repository or paste the relevant command code."
+    },
+    {
+      "name": "judge:autoevals:closedQA",
+      "severity": "soft",
+      "loc": {
+        "file": "evals/toggl-cli/04-billing-doc.eval.ts",
+        "line": 30,
+        "column": 8
+      },
+      "outcome": "failed",
+      "score": 0,
+      "threshold": 0.6,
+      "evidence": "I can’t verify that rule from the current workspace: `/home/user/workspace` is empty and contains no implementation or documentation for `toggl entry bill`. Please point me to the repository or paste the relevant command code."
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 3339,
+    "outputTokens": 390,
+    "cacheReadTokens": 32000,
+    "reasoningTokens": 60,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.008879,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "impjbvjtxczfejn55myxz"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 575
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 723
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 399,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 1299,
+          "durationMs": 397,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 631,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 1697,
+          "durationMs": 203,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 1900,
+          "durationMs": 222,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_mryumxsf_elnf4v'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 232,
+      "children": [
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 2329,
+          "durationMs": 231,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 15320,
+      "children": [
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 2563,
+          "durationMs": 237,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 2801,
+          "durationMs": 14869,
+          "command": {
+            "display": "codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --dangerously-bypass-hook-trust 'Quick one — I'\\''m writing the onboarding d…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 17671,
+          "durationMs": 208,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 2563,
+          "durationMs": 15316,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 3339,
+            "outputTokens": 390,
+            "cacheReadTokens": 32000,
+            "reasoningTokens": 60,
+            "requests": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 442,
+      "children": [
+        {
+          "id": "n9",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 0 files",
+          "startOffsetMs": 17880,
+          "durationMs": 442,
+          "children": [
+            {
+              "id": "n10",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 17880,
+              "durationMs": 229,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 3792
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1063
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 425
+    }
+  ],
+  "locator": "@1j64rmr2",
+  "startedAt": "2026-07-24T11:20:39.971Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-07-24T11-02-07-723Z-usur/toggl-cli/04-billing-doc/a0"
+}

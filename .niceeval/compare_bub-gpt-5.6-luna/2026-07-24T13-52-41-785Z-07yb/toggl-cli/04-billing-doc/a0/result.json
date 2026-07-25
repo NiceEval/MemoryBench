@@ -1,0 +1,243 @@
+{
+  "id": "toggl-cli/04-billing-doc",
+  "description": "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the `entry bill` session (round up to 15 minutes, billable only)",
+  "verdict": "failed",
+  "fingerprint": "f75cfaedbdb224f8d32f506772875b5da8f6b50809bb6f7a946aeb7d8f4cb88f",
+  "attempt": 0,
+  "durationMs": 89961,
+  "assertions": [
+    {
+      "name": "includes(/15/)",
+      "severity": "gate",
+      "loc": {
+        "file": "evals/toggl-cli/04-billing-doc.eval.ts",
+        "line": 27,
+        "column": 7
+      },
+      "outcome": "failed",
+      "score": 0,
+      "expected": "matches /15/",
+      "received": "I can’t verify that rule from this workspace: it contains no `toggl` implementation or Next.js project files, only `AGENTS.md`. Please point me to the repository or the command’s source, and I can state the billing rule exactly.\n"
+    },
+    {
+      "name": "judge:autoevals:closedQA",
+      "severity": "soft",
+      "loc": {
+        "file": "evals/toggl-cli/04-billing-doc.eval.ts",
+        "line": 30,
+        "column": 8
+      },
+      "outcome": "failed",
+      "score": 0,
+      "threshold": 0.6,
+      "evidence": "I can’t verify that rule from this workspace: it contains no `toggl` implementation or Next.js project files, only `AGENTS.md`. Please point me to the repository or the command’s source, and I can state the billing rule exactly.\n"
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 30314,
+    "outputTokens": 3531,
+    "cacheReadTokens": 8704,
+    "requests": 5
+  },
+  "estimatedCostUSD": 0.052370400000000004,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i0ymp61dzmxzr8d6aoe6o"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1243
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1359
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 523,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 2605,
+          "durationMs": 522,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1094,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "printf",
+          "startOffsetMs": 3127,
+          "durationMs": 219,
+          "command": {
+            "display": "printf '%s' $HOME",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 3347,
+          "durationMs": 225,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat '/home/user/.local/share/niceeval/bub-install-hash' 2>/dev/null)\" = '83770925b77a'",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 3782,
+          "durationMs": 229,
+          "command": {
+            "display": "mkdir -p $(dirname /home/user/workspace/AGENTS.md) && cat > /home/user/workspace/AGENTS.md <<'FE_EOF_mrz00jwc_8z4au1'\nYou are a coding agent working in a Next.…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 80870,
+      "children": [
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 4230,
+          "durationMs": 752,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 4983,
+          "durationMs": 79631,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Quick one — I'\\''m writing the onboarding doc for a new teammate and I'\\''m on the billing section. …",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 84845,
+          "durationMs": 243,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 4230,
+          "durationMs": 80858,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 30314,
+            "outputTokens": 3531,
+            "cacheReadTokens": 8704,
+            "requests": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 475,
+      "children": [
+        {
+          "id": "n9",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 0 files",
+          "startOffsetMs": 85091,
+          "durationMs": 475,
+          "children": [
+            {
+              "id": "n10",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 85091,
+              "durationMs": 257,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 3617
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 778
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 1
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 465
+    }
+  ],
+  "locator": "@13e1gyq8",
+  "startedAt": "2026-07-24T13:51:11.350Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

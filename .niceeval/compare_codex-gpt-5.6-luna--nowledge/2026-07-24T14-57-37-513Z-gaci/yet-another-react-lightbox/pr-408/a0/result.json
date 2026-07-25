@@ -1,0 +1,32 @@
+{
+  "id": "yet-another-react-lightbox/pr-408",
+  "description": "yet-another-react-lightbox pr-408: let the Zoom plugin opt custom slide types into zoom via supports/maxZoom props (real yet-another-react-lightbox issue)",
+  "verdict": "errored",
+  "fingerprint": "838448bfdb3cc67d1ee17998c1471400de2362f49ae3bd9a33f5ec3e93c27be2",
+  "attempt": 0,
+  "durationMs": 9227,
+  "assertions": [],
+  "scoring": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "2: [unknown] fetch failed",
+    "phase": "telemetry.configure",
+    "stack": "SandboxError: 2: [unknown] fetch failed\n    at handleRpcError (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:109:12)\n    at handleRpcErrorWithHealthCheck (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:142:10)\n    at Commands.start (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/commands/index.ts:485:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Commands.run (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/commands/index.ts:421:18)\n    at async E2BSandbox.runShell (/Users/ctrdh/Code/niceeval/src/sandbox/e2b.ts:159:19)\n    at async startCollector (/Users/ctrdh/Code/niceeval/src/o11y/otlp/sandbox-receiver.ts:106:25)\n    at async makeInSandboxReceiver (/Users/ctrdh/Code/niceeval/src/o11y/otlp/sandbox-receiver.ts:140:36)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1441
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 7786
+    }
+  ],
+  "locator": "@1unn4xs4",
+  "startedAt": "2026-07-24T14:57:30.146Z"
+}

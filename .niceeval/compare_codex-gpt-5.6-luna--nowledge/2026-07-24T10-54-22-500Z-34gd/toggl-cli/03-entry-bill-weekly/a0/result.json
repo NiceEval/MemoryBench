@@ -1,0 +1,123 @@
+{
+  "id": "toggl-cli/03-entry-bill-weekly",
+  "description": "toggl-cli 03: add `toggl entry bill-weekly` (billable time per week); the amounts are only right if it recalls the 15-minute rounding rule from the billing session",
+  "verdict": "errored",
+  "fingerprint": "c0251428caecfb5840b5b0bcb224c32c63781d5a88f424537941289c5edf2fe2",
+  "attempt": 0,
+  "durationMs": 5284,
+  "assertions": [],
+  "scoring": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "[nowledge] server probe(https://classical-imperial-lloyd-stays.trycloudflare.com;挂了则服务端/隧道已死,修好后更新 .env) failed (exit 1): error: /health returned 530: error code: 1033",
+    "phase": "sandbox.setup",
+    "stack": "Error: [nowledge] server probe(https://classical-imperial-lloyd-stays.trycloudflare.com;挂了则服务端/隧道已死,修好后更新 .env) failed (exit 1): error: /health returned 530: error code: 1033\n    at requireCommand (/Users/ctrdh/Code/MemoryBench/experiments/shared/nowledge.ts:84:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async <anonymous> (/Users/ctrdh/Code/MemoryBench/experiments/shared/nowledge.ts:115:5)\n    at async runAttemptBody (/Users/ctrdh/Code/niceeval/src/runner/attempt.ts:737:29)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 868
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 767
+    },
+    {
+      "name": "sandbox.setup",
+      "durationMs": 3649,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "hook",
+          "label": "setup#0",
+          "startOffsetMs": 1635,
+          "durationMs": 3649,
+          "children": [
+            {
+              "id": "n2",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 1635,
+              "durationMs": 212,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n3",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 1847,
+              "durationMs": 2390,
+              "command": {
+                "display": "command -v nmem >/dev/null 2>&1 || uv tool install nmem-cli >/dev/null 2>&1 || pip install --user -q nmem-cli",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n4",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 4237,
+              "durationMs": 220,
+              "command": {
+                "display": "command -v nmem >/dev/null 2>&1 || { nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" && { sudo -n ln -sf \"$nmem_bin\" /usr/local/bin/nmem 2>/dev/null || l…",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n5",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 4457,
+              "durationMs": 237,
+              "command": {
+                "display": "nmem config client set url 'https://classical-imperial-lloyd-stays.trycloudflare.com'",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n6",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 4694,
+              "durationMs": 228,
+              "command": {
+                "display": "nmem config client set api-key 'nmem_c0x_0xujkrz6qPwdNd5H7VrEXJ_ZZfAdOaW3FcTE5gAkHkGEbzkwXtdG6CPuBy6J'",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n7",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 4922,
+              "durationMs": 362,
+              "failed": true,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 1
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 443
+    }
+  ],
+  "locator": "@1f7sp20c",
+  "startedAt": "2026-07-24T11:04:40.410Z",
+  "artifacts": [
+    "commands"
+  ]
+}

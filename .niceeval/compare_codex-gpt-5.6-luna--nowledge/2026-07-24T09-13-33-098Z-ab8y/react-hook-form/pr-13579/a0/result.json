@@ -1,0 +1,123 @@
+{
+  "id": "react-hook-form/pr-13579",
+  "description": "react-hook-form pr-13579: per-event metadata (the field `name`) leaks across subscribe() notifications — a later, unrelated update reports a stale `name` from an earlier clearErrors() call instead of undefined (real react-hook-form issue #13575)",
+  "verdict": "errored",
+  "fingerprint": "260d6b39823badb9c9d9c606254498b63133fbbb6ac298d4d7f5fd87f9185528",
+  "attempt": 0,
+  "durationMs": 4586,
+  "assertions": [],
+  "scoring": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "[nowledge] server probe(https://inform-pubmed-slots-fingers.trycloudflare.com;挂了则服务端/隧道已死,修好后更新 .env) failed (exit 1): error: connecting to https://inform-pubmed-slots-fingers.trycloudflare.com: error sending request for url (https://inform-pubmed-slots-fingers.trycloudflare.com/health): client error (Connect): dns error: failed to lookup address information: Name or service not known",
+    "phase": "sandbox.setup",
+    "stack": "Error: [nowledge] server probe(https://inform-pubmed-slots-fingers.trycloudflare.com;挂了则服务端/隧道已死,修好后更新 .env) failed (exit 1): error: connecting to https://inform-pubmed-slots-fingers.trycloudflare.com: error sending request for url (https://inform-pubmed-slots-fingers.trycloudflare.com/health): client error (Connect): dns error: failed to lookup address information: Name or service not known\n    at requireCommand (/Users/ctrdh/Code/MemoryBench/experiments/shared/nowledge.ts:84:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async <anonymous> (/Users/ctrdh/Code/MemoryBench/experiments/shared/nowledge.ts:115:5)\n    at async runAttemptBody (/Users/ctrdh/Code/niceeval/src/runner/attempt.ts:737:29)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 489
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 699
+    },
+    {
+      "name": "sandbox.setup",
+      "durationMs": 3397,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "hook",
+          "label": "setup#0",
+          "startOffsetMs": 1188,
+          "durationMs": 3397,
+          "children": [
+            {
+              "id": "n2",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 1188,
+              "durationMs": 194,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n3",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 1382,
+              "durationMs": 2395,
+              "command": {
+                "display": "command -v nmem >/dev/null 2>&1 || uv tool install nmem-cli >/dev/null 2>&1 || pip install --user -q nmem-cli",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n4",
+              "kind": "command",
+              "label": "command",
+              "startOffsetMs": 3778,
+              "durationMs": 196,
+              "command": {
+                "display": "command -v nmem >/dev/null 2>&1 || { nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" && { sudo -n ln -sf \"$nmem_bin\" /usr/local/bin/nmem 2>/dev/null || l…",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n5",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 3974,
+              "durationMs": 204,
+              "command": {
+                "display": "nmem config client set url 'https://inform-pubmed-slots-fingers.trycloudflare.com'",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n6",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 4178,
+              "durationMs": 198,
+              "command": {
+                "display": "nmem config client set api-key 'nmem_c0x_0xujkrz6qPwdNd5H7VrEXJ_ZZfAdOaW3FcTE5gAkHkGEbzkwXtdG6CPuBy6J'",
+                "exitCode": 0
+              }
+            },
+            {
+              "id": "n7",
+              "kind": "command",
+              "label": "nmem",
+              "startOffsetMs": 4376,
+              "durationMs": 209,
+              "failed": true,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 1
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 417
+    }
+  ],
+  "locator": "@1ciqsudj",
+  "startedAt": "2026-07-24T09:15:09.794Z",
+  "artifacts": [
+    "commands"
+  ]
+}

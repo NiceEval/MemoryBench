@@ -1,0 +1,55 @@
+{
+  "format": "niceeval.results",
+  "schemaVersion": 9,
+  "producer": {
+    "name": "niceeval",
+    "version": "0.4.6"
+  },
+  "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+  "experiment": {
+    "description": "codex · gpt-5.6-luna · Nowledge Mem",
+    "flags": {
+      "memory": "nowledge",
+      "nowledgeVersion": "0.10.39",
+      "nowledgeEndpoint": "https://bennett-barnes-loc-pull.trycloudflare.com"
+    },
+    "labels": {
+      "line": "codex"
+    },
+    "runs": 1,
+    "earlyExit": false,
+    "timeoutMs": 1200000,
+    "maxConcurrency": 4,
+    "selectedEvalIds": [
+      "downshift/pr-1414",
+      "react-hook-form/pr-13476",
+      "toggl-cli/03-entry-bill-weekly",
+      "toggl-cli/04-billing-doc",
+      "toggl-cli/06-entry-invoice-monthly"
+    ],
+    "evalFilterFingerprint": "7744b2217aae41f9",
+    "sandbox": {
+      "provider": "e2b",
+      "params": {
+        "template": "correctroads-default-team/niceeval-codex:v0.6.1"
+      },
+      "fingerprint": "a9a1ccbf6199944d"
+    }
+  },
+  "agent": "codex",
+  "model": "gpt-5.6-luna",
+  "startedAt": "2026-07-25T01:43:20.558Z",
+  "completedAt": "2026-07-25T02:09:42.401Z",
+  "diagnostics": [
+    {
+      "code": "gate-lease-taken-over",
+      "level": "warning",
+      "message": "took over an expired concurrency-slot lease for experiment compare/codex-gpt-5.6-luna--nowledge (slot 3, previously held by pid 42869 on macbook-pro; its heartbeat went stale) — that run likely died without releasing it; this run now owns the slot.",
+      "phase": "eval.run",
+      "data": {
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "slot": 3
+      }
+    }
+  ]
+}
