@@ -1,4 +1,4 @@
-// 排行榜(横向排名条):一行一个实验，条长 = 通过率，右侧是数值，条上的小标签是记忆条件。
+// 排行榜(矩阵条):左标签列 + 直角条 + 右数值。行名用人读短名（codex / codex+mempal / bub）。
 // niceeval 没有这个形态的内建组件（MetricBars 的网页面是竖向分组柱，比的是「每组里谁高」，
 // 不是「整体排名」），所以按 docs-site/zh/tutorials/custom-reports.mdx「换形态」一节
 // 写成双面组件：web 面画 HTML 条，text 面用官方文本排版函数排字符，两面吃同一份算好的数据。
@@ -32,10 +32,8 @@ const MEMORY_COLOR: Record<string, number> = {
 interface LeaderboardRow {
   /** 完整 experiment id：身份键，不用于显示。 */
   key: string;
-  /** 显示名：同组 id 去掉公共目录前缀。 */
+  /** 显示名：agent 线 + 记忆条件，如 codex / codex+mempal / bub——不是实验文件名。 */
   label: string;
-  /** 条上的小标签：本仓库的自变量 = 记忆条件。 */
-  tag: string | null;
   /** [0,1];null = 该实验没有可用样本，不画条。 */
   ratio: number | null;
   display: LocalizedText;
@@ -47,30 +45,29 @@ interface LeaderboardRow {
   total: number;
 }
 
-// 条的填充用 color-mix 把系列色兑进 --panel(而不是兑成半透明):浅色主题兑出淡色、
-// 深色主题兑出暗色,两边条上的 --text 都读得清 —— 实心饱和度与可读性各让一步。
+// 矩阵风:标签列在左、条在右、直角无圆角;container 有统一 padding,标题与行标签左缘对齐。
+// 条填充用 color-mix 把系列色兑进 --panel:浅色主题兑淡、深色主题兑暗,条上字可读。
 const CSS = `
-.mb-lb { border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:var(--panel); }
-.mb-lb__head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.mb-lb { border:1px solid var(--line); border-radius:0; padding:14px 16px; background:var(--panel); }
+.mb-lb__head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .mb-lb__title { font-size:18px; font-weight:650; letter-spacing:-.01em; }
 .mb-lb__metric { font-size:12px; color:var(--muted); white-space:nowrap; }
-.mb-lb__rows { list-style:none; margin:0; padding:0; }
-.mb-lb__row { display:flex; align-items:center; gap:12px; padding:3px 0; }
-.mb-lb__track { position:relative; flex:1 1 auto; min-width:0; height:38px; border-radius:8px; background:var(--panel-2); overflow:hidden; }
-.mb-lb__row:hover .mb-lb__track { outline:1px solid var(--line-strong); }
-.mb-lb__bar { position:absolute; inset:0 auto 0 0; border-radius:8px; border-left:3px solid var(--nre-series);
-  background:color-mix(in srgb, var(--nre-series) 55%, var(--panel)); }
-.mb-lb__label { position:absolute; inset:0; display:flex; align-items:center; gap:8px; padding:0 12px; min-width:0; }
-.mb-lb__name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.mb-lb__tag { font-size:12px; color:var(--muted); white-space:nowrap; }
-.mb-lb__value { flex:0 0 auto; min-width:4.5em; text-align:right; font-variant-numeric:tabular-nums; font-size:16px; font-weight:600; }
+/* 行用 display:contents 并入父 grid,标签列宽取全局最长名——所有条的左缘对齐。 */
+.mb-lb__rows { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:max-content 1fr max-content; column-gap:10px; row-gap:6px; align-items:center; }
+.mb-lb__row { display:contents; }
+.mb-lb__name { font-weight:600; white-space:nowrap; }
+.mb-lb__track { position:relative; min-width:0; height:28px; border-radius:0; background:var(--panel-2); overflow:hidden; }
+.mb-lb__name:hover + .mb-lb__track,
+.mb-lb__track:hover { outline:1px solid var(--line-strong); outline-offset:0; }
+.mb-lb__bar { position:absolute; inset:0 auto 0 0; border-radius:0;
+  background:color-mix(in srgb, var(--nre-series) 70%, var(--panel)); }
+.mb-lb__value { text-align:right; font-variant-numeric:tabular-nums; font-size:15px; font-weight:600; }
 .mb-lb__value.mb-lb__missing { color:var(--soft); font-weight:400; }
 .mb-lb__coverage { font-size:11px; font-weight:400; color:var(--muted); margin-left:2px; }
-/* 窄屏:条的高度和字号收一档,记忆条件标签让位给实验名 */
 @media (max-width: 560px) {
-  .mb-lb__track { height:32px; }
-  .mb-lb__tag { display:none; }
-  .mb-lb__value { font-size:14px; }
+  .mb-lb__rows { column-gap:8px; }
+  .mb-lb__track { height:24px; }
+  .mb-lb__value { font-size:13px; }
 }
 `;
 
@@ -92,6 +89,9 @@ const LeaderboardBars = defineComponent<{
         <ol className="mb-lb__rows">
           {rows.map((row) => (
             <li key={row.key} className="mb-lb__row">
+              <span className="mb-lb__name" title={row.key}>
+                {row.label}
+              </span>
               <div className="mb-lb__track">
                 {row.ratio === null ? null : (
                   <div
@@ -99,12 +99,6 @@ const LeaderboardBars = defineComponent<{
                     style={{ width: `${Math.max(2, Math.min(100, row.ratio * 100))}%` }}
                   />
                 )}
-                <div className="mb-lb__label">
-                  <span className="mb-lb__name" title={row.key}>
-                    {row.label}
-                  </span>
-                  {row.tag === null ? null : <span className="mb-lb__tag">{row.tag}</span>}
-                </div>
               </div>
               <div
                 className={`mb-lb__value${row.ratio === null ? " mb-lb__missing" : ""}`}
@@ -138,11 +132,10 @@ const LeaderboardBars = defineComponent<{
     };
     // 列宽随内容和可用列宽算，不硬编码：一个汉字记 2 列(stringWidth)
     const nameWidth = Math.max(0, ...rows.map((row) => stringWidth(row.label)));
-    const tagWidth = Math.max(0, ...rows.map((row) => stringWidth(row.tag ?? "")));
     const valueWidth = Math.max(stringWidth(metricLabel), ...rows.map((row) => stringWidth(valueOf(row))));
-    const gaps = tagWidth > 0 ? 6 : 4;
-    const barWidth = Math.max(8, Math.min(24, ctx.width - nameWidth - tagWidth - valueWidth - gaps));
-    const total = nameWidth + tagWidth + barWidth + valueWidth + gaps;
+    const gaps = 4;
+    const barWidth = Math.max(8, Math.min(24, ctx.width - nameWidth - valueWidth - gaps));
+    const total = nameWidth + barWidth + valueWidth + gaps;
 
     const head = resolveLocalizedText(title, ctx.locale);
     const headPad = Math.max(1, total - stringWidth(head) - stringWidth(metricLabel));
@@ -152,8 +145,7 @@ const LeaderboardBars = defineComponent<{
       ...rows.map((row) => {
         const chart = row.ratio === null ? padEnd("—", barWidth) : bar(row.ratio, barWidth);
         const name = padEnd(row.label, nameWidth);
-        const tag = tagWidth > 0 ? `  ${padEnd(row.tag ?? "", tagWidth)}` : "";
-        return `${name}${tag}  ${chart}  ${padStart(valueOf(row), valueWidth)}`;
+        return `${name}  ${chart}  ${padStart(valueOf(row), valueWidth)}`;
       }),
     ].join("\n");
   },
@@ -161,7 +153,7 @@ const LeaderboardBars = defineComponent<{
 
 /**
  * 取数面：从当前 Scope 算通过率，按实验排名。
- * 显示名 = experiment id 去掉公共目录前缀(`compare/`)——完整 id 仍是身份键。
+ * 显示名 = labels.line + 记忆条件（codex / codex+mempal / bub），完整 experiment id 只做身份键。
  */
 export const Leaderboard = defineComponent(
   async (props: { title?: LocalizedText }, ctx) => {
@@ -170,24 +162,30 @@ export const Leaderboard = defineComponent(
       columns: [endToEndPassRate],
     });
     const metric = board.columns[0]!;
-    // flags 随快照落盘,历史 run 也能按当时声明的记忆条件上色
-    const memoryOf = new Map<string, string | null>(
-      ctx.scope.snapshots.map((s) => [s.experimentId, (s.experiment?.flags?.memory as string | undefined) ?? null]),
+    // flags / labels 随快照落盘,历史 run 也能按当时声明的条件显示与上色
+    const metaOf = new Map(
+      ctx.scope.snapshots.map((s) => {
+        const exp = s.experiment;
+        return [
+          s.experimentId,
+          {
+            line: (exp?.labels?.line as string | undefined) ?? null,
+            memory: (exp?.flags?.memory as string | undefined) ?? null,
+          },
+        ] as const;
+      }),
     );
 
-    const ids = board.rows.map((r) => r.key);
-    const strip = commonPrefix(ids);
     const rows: LeaderboardRow[] = board.rows
       .map((r) => {
         const cell = r.cells[endToEndPassRate.name]!;
-        const memory = memoryOf.get(r.key) ?? null;
+        const meta = metaOf.get(r.key) ?? { line: null, memory: null };
         return {
           key: r.key,
-          label: r.key.slice(strip.length) || r.key,
-          tag: memory,
+          label: displayName(r.key, meta.line, meta.memory),
           ratio: cell.value,
           display: cell.display,
-          color: memory === null ? null : (MEMORY_COLOR[memory] ?? null),
+          color: meta.memory === null ? null : (MEMORY_COLOR[meta.memory] ?? null),
           samples: cell.samples,
           total: cell.total,
         };
@@ -208,12 +206,12 @@ export const Leaderboard = defineComponent(
   },
 );
 
-/** 一组 id 的公共目录前缀(含结尾斜杠);没有公共前缀时返回空串。 */
-function commonPrefix(ids: readonly string[]): string {
-  if (ids.length < 2) return "";
-  const segsOf = (id: string) => id.split("/");
-  const first = segsOf(ids[0]!);
-  let depth = 0;
-  while (depth < first.length - 1 && ids.every((id) => segsOf(id)[depth] === first[depth])) depth++;
-  return depth === 0 ? "" : `${first.slice(0, depth).join("/")}/`;
+/**
+ * 人读短名：agent 线（labels.line）+ 非 baseline 记忆条件。
+ * 例：codex、codex+mempal、codex+nowledge、bub。缺 line 时退回实验 id 末段，不把模型号塞进画面。
+ */
+function displayName(experimentId: string, line: string | null, memory: string | null): string {
+  const base = line?.trim() || experimentId.split("/").pop() || experimentId;
+  if (!memory || memory === "baseline") return base;
+  return `${base}+${memory}`;
 }
