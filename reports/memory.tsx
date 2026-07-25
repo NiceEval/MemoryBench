@@ -60,5 +60,14 @@ export default defineReport({
         gtag("config", "G-Q30H5WX93X");
       `,
     },
+    {
+      tag: "script",
+      attrs: {
+        defer: true,
+        src: "https://vibeloft.ai/telemetry/v1.js",
+        "data-vl-product-id": "b5b155b2-4d7d-426e-89f8-95eaa1f61ba9",
+        "data-vl-auth-key": "vl_web.tNU554AVLZ9teAF7JNdkBIMn7Y38bT0j3Se4mblmnmQ",
+      },
+    },
   ],
 });
