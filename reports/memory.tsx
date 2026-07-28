@@ -1,11 +1,11 @@
 import {
+  Callouts,
   Col,
-  CopyFixPrompt,
-  ExperimentComparison,
+  CopyBlock,
   Hero,
-  ScopeWarnings,
-  SnapshotDiagnostics,
+  SampleOverview,
   defineReport,
+  sources,
 } from "niceeval/report";
 import { standard } from "niceeval/report/built-in";
 import { GITHUB_ICON } from "./components/icons.ts";
@@ -25,11 +25,11 @@ export default defineReport({
       content: (
         <Col>
           <Hero />
-          <ScopeWarnings />
-          <SnapshotDiagnostics />
-          <CopyFixPrompt />
+          <Callouts source={sources.sample.notices} />
+          <Callouts source={sources.run.diagnostics} />
+          <CopyBlock source={sources.sample.fixPrompt} />
           <Leaderboard title={{ en: "MemoryBench", "zh-CN": "MemoryBench" }} />
-          <ExperimentComparison />
+          <SampleOverview />
         </Col>
       ),
     },

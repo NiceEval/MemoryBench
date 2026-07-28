@@ -1,6 +1,16 @@
 import { defineConfig } from "niceeval";
+import { basalt, chalk } from "niceeval/report/built-in";
+import memory from "./reports/memory.tsx";
 
 export default defineConfig({
+  // 项目默认报告:不带 --report 时 show / view 装载它(见 niceeval defineConfig · report)。
+  report: memory,
+
+  // view 的项目默认主题,官方两套切换着看:chalk 浅色圆角,basalt 暗色直角。
+  // basalt 也是不配 theme 时的默认;单次覆盖用 `niceeval view --theme basalt|chalk`。
+  // theme: chalk,
+  theme: basalt,
+
   // LLM-as-judge:用代理上的 gpt-5.4-mini(与被测 agent 分离)。
   //
   // judge 的凭据只从环境来,且**只读一个名字**——不跨家族猜 CODEX_/OPENAI_(见 niceeval
@@ -31,5 +41,5 @@ export default defineConfig({
   //
   // 注意这是**全局**上限;实验自己声明的 maxConcurrency 是独立的实验级闸,只串行化本实验,
   // 不钳全局(mempal 的 maxConcurrency: 1 即属此类,实测有效)。
-  maxConcurrency: 10,
+  maxConcurrency: 19,
 });

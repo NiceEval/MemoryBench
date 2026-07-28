@@ -16,7 +16,6 @@ export default defineExperiment({
   sandbox: e2bSandbox({ template: NICEEVAL_BUB_E2B_TEMPLATE }),
   // 注:workspace(starter repo)上传 + 装依赖不在这儿 —— 那属于「eval 在什么上面干活」,
   // 写在各 eval 的 test(t) 里(t.sandbox.uploadDirectory + runCommand)。experiment 只管怎么跑。
-  runs: 1,
   earlyExit: false, // 要完整通过率分布,以便报 pass^k
   // 与 claude 组对齐(重型题 mvn build / pytest 可能超 10 分钟),消除条件间超时偏置。
   timeoutMs: 1200000,

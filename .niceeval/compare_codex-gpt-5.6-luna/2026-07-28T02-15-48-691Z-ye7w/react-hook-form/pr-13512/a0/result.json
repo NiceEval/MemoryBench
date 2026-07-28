@@ -1,0 +1,318 @@
+{
+  "id": "react-hook-form/pr-13512",
+  "description": "react-hook-form pr-13512: with shouldUseNativeValidation, the native setCustomValidity()/reportValidity() call for a multi-ref field (radio group) only ever lands on the first ref, leaving the browser's native validation bubble anchored to a single radio button instead of the whole group (real react-hook-form issue)",
+  "verdict": "passed",
+  "fingerprint": "7a14e492e70349d63f7e68f50b5a208edb3bf0c6bdb7568dbc98499574101378",
+  "configHash": "c351cdaaf4a0e87314ac6278f827e7bbe6faab0e3b5c587b4d9b8eeca730ea19",
+  "attempt": 0,
+  "durationMs": 478065,
+  "assertions": [
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13512.eval.ts",
+        "line": 119,
+        "column": 7,
+        "callers": []
+      },
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 82891,
+    "outputTokens": 4078,
+    "cacheReadTokens": 326912,
+    "reasoningTokens": 1075,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.1400502,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i5unktfbfatiazbbhtkwj"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 6037
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 886
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 325,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 6923,
+          "durationMs": 325,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 705,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 7249,
+          "durationMs": 239,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 7488,
+          "durationMs": 239,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_ms40unl6_c7bjef'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 225,
+      "children": [
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 7953,
+          "durationMs": 225,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 467819,
+      "children": [
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "mv",
+          "startOffsetMs": 8397,
+          "durationMs": 204,
+          "command": {
+            "display": "mv -f __niceeval__/results.json.tmp __niceeval__/results.json",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 8601,
+          "durationMs": 2768,
+          "command": {
+            "display": "set -euo pipefail\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .rhf-clone\nmv .rhf-clone/.git .git\nrm -rf .rhf-…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "mv",
+          "startOffsetMs": 11608,
+          "durationMs": 210,
+          "command": {
+            "display": "mv -f __niceeval__/results.json.tmp __niceeval__/results.json",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "npm",
+          "startOffsetMs": 11818,
+          "durationMs": 8034,
+          "command": {
+            "display": "npm install -g --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 19855,
+          "durationMs": 410,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 20265,
+          "durationMs": 452972,
+          "command": {
+            "display": "codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --dangerously-bypass-hook-trust 'Your working directory is a checkout of the…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 473240,
+          "durationMs": 220,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n12",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 19855,
+          "durationMs": 453606,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 82891,
+            "outputTokens": 4078,
+            "cacheReadTokens": 326912,
+            "reasoningTokens": 1075,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n13",
+          "kind": "command",
+          "label": "mv",
+          "startOffsetMs": 473717,
+          "durationMs": 206,
+          "command": {
+            "display": "mv -f __niceeval__/results.json.tmp __niceeval__/results.json",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n14",
+          "kind": "command",
+          "label": "mv",
+          "startOffsetMs": 474427,
+          "durationMs": 208,
+          "command": {
+            "display": "mv -f __niceeval__/results.json.tmp __niceeval__/results.json",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n15",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 474635,
+          "durationMs": 1361,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 535,
+      "children": [
+        {
+          "id": "n16",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 475997,
+          "durationMs": 534,
+          "children": [
+            {
+              "id": "n17",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 475998,
+              "durationMs": 249,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1533
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 445
+    }
+  ],
+  "executionMs": 478065,
+  "locator": "@12v9na0j",
+  "startedAt": "2026-07-28T02:13:22.986Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

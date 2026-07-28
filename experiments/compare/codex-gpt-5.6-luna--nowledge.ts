@@ -27,13 +27,11 @@ export default defineExperiment({
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: codexAgent(nowledgeCodexConfig()),
   flags: { ...nowledgeFlags() },
-  provenanceFlags: NOWLEDGE_PROVENANCE_FLAGS,
   model: "gpt-5.6-luna",
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE })
     .setup(nowledgeAttachRemote())
     // 收尾核对 setup 时连的那个隧道还活着;中途换址会让 memory_add 静默全挂,见 shared/nowledge.ts
     .teardown(nowledgeVerifyRemoteAlive()),
-  runs: 1,
   earlyExit: false,
   // 并发:中心化 server 自理并发读写,记忆库不像 mempal 的 checkpoint 文件那样怕并行踩踏,
   // 所以这里不压到 1(见 shared/nowledge.ts 文件头「可并发」)。

@@ -1,11 +1,10 @@
-// 临时自定义报告,只用来冒烟验证 niceeval/report 的 AttemptAssertions 组件能正确显示
-// 计分制的 .points 挣分与 t.score 给分记录(默认 AttemptDetail 在有源码能力时优先选
-// AttemptSource,不便直接观察 AttemptAssertions 的输出)。用完即删,不是长期报告。
-import { AttemptAssertions, AttemptSummary, ExperimentComparison, defineReport } from "niceeval/report";
+// 临时自定义报告,只用来冒烟验证 attempt 断言区能显示计分制 .points 与 t.score。
+// 用完即删,不是长期报告。
+import { AttemptSummary, SampleOverview, Table, defineReport, sources } from "niceeval/report";
 
 export default defineReport({
   pages: [
-    { id: "report", title: "Report", content: <ExperimentComparison /> },
+    { id: "report", title: "Report", content: <SampleOverview /> },
     {
       id: "attempt",
       title: "Scoring smoke",
@@ -14,7 +13,7 @@ export default defineReport({
       content: (
         <>
           <AttemptSummary />
-          <AttemptAssertions />
+          <Table source={sources.attempt.assertions} />
         </>
       ),
     },

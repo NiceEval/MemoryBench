@@ -1,1 +1,0 @@
-[{"timingNodeId":"n7","phase":"sandbox.setup","display":"nmem --json status","exitCode":1,"stdout":"","stderr":"error: /health returned 530: <!DOCTYPE html>\n\n\n\n <html class=\"no-js\" lang=\"en-US\"> \n<head>\n<title>Cloudflare Tunnel error | prizes-land-enlarge-share.trycloudflare.com | Cloudflare</title>\n<meta charset=\"UTF-8\" />\n<meta http-equi\n"}]

@@ -14,7 +14,6 @@ export default defineExperiment({
   model: "gpt-5.6-luna", // → ctx.model → niceeval codex adapter 写进 config.toml 的 model 行
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE }),
   // 代理(base_url + key)走 .env,由 niceeval codex adapter 配成自定义 model_provider(wire_api=responses)
-  runs: 1,
   earlyExit: false,
   // 与 claude 组对齐(重型题 mvn build / pytest 可能超 10 分钟),消除条件间超时偏置。
   timeoutMs: 1200000,

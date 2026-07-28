@@ -18,11 +18,10 @@ export default defineExperiment({
   flags: { ...mempalFlags() },
   model: "gpt-5.6-luna",
   sandbox: e2bSandbox({ template: mempalTemplate("codex") }).setup(mempalSetup("codex")).teardown(mempalTeardown("codex")),
-  runs: 1,
   earlyExit: false,
   // 串行跑(niceeval ≥0.4.5 按实验限流,不影响同批基线):attempt 的
   // [载入记忆态 … 回存] 是临界区,声明式串行取代 helper 手写锁。
-  maxConcurrency: 1,
+  maxConcurrency: 5,
   // 与 claude 组对齐(重型题可能超 10 分钟),消除条件间超时偏置——2026-07-10 重跑里
   // 本实验 repomod/terminal-cancel 正是死于 600s 默认超时(setup 含 ~514MB 模型预热)。
   timeoutMs: 1200000,
