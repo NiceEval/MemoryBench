@@ -1,21 +1,17 @@
 import {
   Col,
+  ExperimentScatter,
+  ExperimentTable,
   RunNotices,
   SampleNotices,
   SampleSummary,
   defineReport,
 } from "niceeval/report";
-import { standard } from "niceeval/report/built-in";
-import { CostPassRateScatter, CostPassRateTable } from "./components/comparison.tsx";
 import { Leaderboard } from "./components/leaderboard.tsx";
 import { MemoryBenchHero } from "./components/memorybench-hero.tsx";
 
-// 内建 standard 视图整站(报告 / Attempts / 追踪)+ 品牌外壳。
-//
-// 「报告」页在这里重写:排行榜要摆在散点图上面,而 extends 是整页继承、没有插槽——
-// 想往内建页里插一块内容,只能把这一页逐字抄下来自己摆(候选上游 FR:页级 override /
-// 内容插槽)。代价说清楚:只有这一页脱离了「跟随内建演进」,Attempts / 追踪 / attempt
-// 详情三页仍从 standard.pages 原样继承,niceeval 升级照常生效。
+// MemoryBench 只发布自己的报告页；ExperimentTable 的 Attempt 下钻由 view
+// 自动接到官方 AttemptDetails，不要求业务报告复制 standard pages。
 export default defineReport({
   pages: [
     {
@@ -28,12 +24,11 @@ export default defineReport({
           <RunNotices />
           <SampleSummary />
           <Leaderboard />
-          <CostPassRateScatter />
-          <CostPassRateTable />
+          <ExperimentScatter />
+          <ExperimentTable />
         </Col>
       ),
     },
-    ...standard.pages.filter((page) => page.id !== "report"),
   ],
   title: { en: "MemoryBench", "zh-CN": "MemoryBench" },
   // GA4:官方 snippet 直译成 head 声明(niceeval ≥0.8 的结构化 head 通道)。
