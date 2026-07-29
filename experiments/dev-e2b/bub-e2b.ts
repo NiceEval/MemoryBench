@@ -15,7 +15,7 @@ export default defineExperiment({
   model: "gpt-5.4-mini",
   sandbox: e2bSandbox({ template: NICEEVAL_BUB_E2B_TEMPLATE }),
   evals: ["memory"],
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   timeoutMs: 1200000,
 });

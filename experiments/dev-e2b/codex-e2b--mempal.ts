@@ -15,7 +15,7 @@ export default defineExperiment({
   model: "gpt-5.4-mini",
   sandbox: e2bSandbox({ template: mempalTemplate("codex") }).setup(mempalSetup("codex")).teardown(mempalTeardown("codex")),
   evals: ["memory"],
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   // 串行跑(niceeval ≥0.4.5 按实验限流):记忆态载入/回存的临界区靠它,不再用锁。
   maxConcurrency: 1,

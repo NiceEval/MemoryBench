@@ -21,7 +21,7 @@ export default defineExperiment({
   model: "deepseek-v4-flash",
   sandbox: e2bSandbox({ template: mempalTemplate("claude") }).setup(mempalSetup("claude")).teardown(mempalTeardown("claude")),
   evals: ["memory"],
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   // 串行跑(niceeval ≥0.4.5 按实验限流):记忆态载入/回存的临界区靠它,不再用锁。
   maxConcurrency: 1,

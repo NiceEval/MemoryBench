@@ -15,7 +15,7 @@ export default defineExperiment({
   model: "deepseek-v4-flash",
   sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE }),
   evals: ["memory"],
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   timeoutMs: 1200000,
 });

@@ -5,7 +5,6 @@ import { NICEEVAL_CODEX_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
 import {
   nowledgeCodexConfig,
   nowledgeFlags,
-  NOWLEDGE_PROVENANCE_FLAGS,
   nowledgeAttachRemote,
   nowledgeVerifyRemoteAlive,
 } from "../shared/nowledge.ts";

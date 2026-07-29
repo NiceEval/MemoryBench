@@ -92,6 +92,8 @@ Additional source assertions are fine when they are part of the task's functiona
 
 顺带一提，跑 GREEN 时如果上游官方修复自己都过不了某条断言（lightbox 那道就是：官方 fix 解决不了「祖先 dir 属性被改」的场景），说明 prompt 描述的症状和测试考的场景根本不是同一件事，要改的是 prompt。
 
+**三向验证的硬前提：改完 fixtures 必须显式 `--rerun all`。** `evals/fixtures/**` 下的隐藏测试与判据脚本目前是用 `fs readFile` 读进来再写进沙箱的，**不进 niceeval 指纹**——改了它们之后重跑同一条命令，上一轮的终态结果照常按六道门携带进来，你看到的 RED / GREEN / ALT 全是按**旧判据**得出的结论，三向等于没做。所以改动 fixtures 之后，对受影响的 eval 跑 `niceeval exp <实验> <eval 前缀> --rerun all`，别只重跑命令。（上游已提供 `loadText` loader，能让判据文件正式进指纹、改一字节就自动只作废引用它的那一条；本仓库尚未迁移，迁移那一次会一次性作废受影响 eval 的全部历史结果，时机由维护者定。背景见 memory 的 `fixtures-not-in-fingerprint`。）
+
 ## 记录问题与 Know-How 的规范
 
 调试基础设施问题（sandbox 报错、agent 安装失败、eval 超时等）时，发现的具体问题和修法**记入 memory**，不写进本文件。

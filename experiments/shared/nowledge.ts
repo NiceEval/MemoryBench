@@ -29,7 +29,7 @@ import type { Sandbox, SandboxHook, SandboxHookContext } from "niceeval/sandbox"
  * 查积累量,不再有「拆实例前必须 probe 否则数据没了」的时间窗。
  */
 
-/** 远程服务端 /health 报的版本(记进 flags 做 provenance);服务端升级时更新。 */
+/** 远程服务端 /health 报的版本(是实验条件,进 flags);服务端升级时更新。 */
 export const NOWLEDGE_VERSION = "0.10.39";
 
 export interface NowledgeEnv {
@@ -65,26 +65,18 @@ export function nowledgeEndpoint(): NowledgeEnv {
   return { url: url.replace(/\/+$/, ""), apiKey };
 }
 
-/** 报告分组用的实验事实。endpoint 记 URL 做 provenance(隧道 URL 会换,报告里能看出这轮连的哪个);
- *  best-effort:.env 缺失时不让实验发现阶段炸掉,留 "unset" 由沙箱接线时硬失败。 */
-export function nowledgeFlags(): Record<string, string> {
-  let endpoint = "unset";
-  try {
-    endpoint = nowledgeEndpoint().url;
-  } catch {
-    // 沙箱 setup 会硬失败并给出 MISSING_ENV_HINT,这里不重复炸
-  }
-  return { memory: "nowledge", nowledgeVersion: NOWLEDGE_VERSION, nowledgeEndpoint: endpoint };
-}
-
 /**
- * `nowledgeEndpoint` 只是这轮连到哪个隧道的出处记录:quick tunnel URL 每次重启就换一个,
- * 但连的是同一个固定实例、同一个库,attempt 里发生的事一模一样。声明成 provenance flag
- * 让它留在报告里(flag() 能看出这轮连的哪个),同时不进指纹——否则每换一次隧道,
- * 全部已跑完的结果都作废重跑(实测:换 URL 后 36 条一条都携带不到)。
- * 每个用 nowledgeFlags() 的实验都要带上这个声明。
+ * 记忆条件的实验条件,整袋进指纹:换任一个值就是换了一批被测条件,历史结果本就不该混读。
+ * `memory` 区分记忆条件与 baseline,`nowledgeVersion` 让服务端升级自然作废旧结果。
+ *
+ * 隧道 URL **不在这里**。它是跑起来才存在的连接坐标:换一个地址连的仍是同一个固定实例、
+ * 同一个库,attempt 里发生的事一模一样,进 flags 只会让每次 cloudflared 重启作废全部已跑完的
+ * 结果(实测:换 URL 后 36 条一条都携带不到)。这轮连的哪个隧道由 `nowledgeAttachRemote()`
+ * 在沙箱接线时报成 `ctx.fact("nowledge.endpoint", url)`,留在 attempt 记录里供报告按 fact() 选轴。
  */
-export const NOWLEDGE_PROVENANCE_FLAGS = ["nowledgeEndpoint"];
+export function nowledgeFlags(): Record<string, string> {
+  return { memory: "nowledge", nowledgeVersion: NOWLEDGE_VERSION };
+}
 
 function hookLog(ctx: SandboxHookContext, message: string): void {
   ctx.progress({ message });
@@ -126,6 +118,10 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
   return async (sb, ctx) => {
     const conn = endpoint();
     attemptEndpoints.set(sb, conn.url);
+    // 这条 attempt 实际连的隧道:sandbox hook 是 attempt 作用域,fact 落进它的 result.json,
+    // 携带时原样跟着结果走。报告要按隧道分组就读 fact("nowledge.endpoint")。
+    // key 只能是 /^[a-z0-9._-]{1,64}$/,所以是点号不是驼峰——写驼峰会在这里直接抛错、整条 errored。
+    ctx.fact("nowledge.endpoint", conn.url);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
     await requireCommand(sb, "python3 probe", "command -v python3", { shared: true });

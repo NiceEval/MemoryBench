@@ -13,7 +13,7 @@ export default defineExperiment({
   flags: { memory: "baseline" },
   model: "gpt-5.4-mini",
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE }),
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   // astropy eval 里 agent 和测试阶段都要从源码构建,别用全局 600s;与 eval 级 timeoutMs 对齐。
   timeoutMs: 2_700_000,

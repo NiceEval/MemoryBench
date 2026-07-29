@@ -15,7 +15,7 @@ export default defineExperiment({
   flags: mempalFlags(),
   model: "gpt-5.4-mini",
   sandbox: e2bSandbox({ template: mempalTemplate("codex") }).setup(mempalSetup("codex")).teardown(mempalTeardown("codex")),
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   maxConcurrency: 1, // 载入记忆态…回存是临界区,与 compare 组同款声明式串行
   timeoutMs: 2_700_000,

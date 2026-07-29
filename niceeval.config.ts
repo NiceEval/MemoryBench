@@ -41,5 +41,5 @@ export default defineConfig({
   //
   // 注意这是**全局**上限;实验自己声明的 maxConcurrency 是独立的实验级闸,只串行化本实验,
   // 不钳全局(mempal 的 maxConcurrency: 1 即属此类,实测有效)。
-  maxConcurrency: 19,
+  maxConcurrency: 10,
 });

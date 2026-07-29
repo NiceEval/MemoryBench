@@ -16,7 +16,7 @@ export default defineExperiment({
   flags: { memory: "baseline" },
   model: "deepseek-v4-flash",
   sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE }),
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   timeoutMs: 1200000,
 });

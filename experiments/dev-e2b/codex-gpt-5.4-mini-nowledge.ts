@@ -2,7 +2,7 @@ import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
 import { e2bSandbox } from "niceeval/sandbox";
 import { NICEEVAL_CODEX_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
-import { nowledgeCodexConfig, nowledgeFlags, NOWLEDGE_PROVENANCE_FLAGS, nowledgeAttachRemote } from "../shared/nowledge.ts";
+import { nowledgeCodexConfig, nowledgeFlags, nowledgeAttachRemote } from "../shared/nowledge.ts";
 
 // dev-e2b 的 Nowledge Mem 记忆条件冒烟:与 baseline(codex-gpt-5.4-mini.ts)同任务同模型,
 // 只叠加 Nowledge Mem 官方 codex 集成(远程 HTTP MCP + 插件 hooks + nmem CLI)。
@@ -15,10 +15,9 @@ export default defineExperiment({
   description: "codex · gpt-5.4-mini + Nowledge Mem(dev-e2b:E2B 上的记忆条件冒烟)",
   agent: codexAgent(nowledgeCodexConfig()),
   flags: nowledgeFlags(),
-  provenanceFlags: NOWLEDGE_PROVENANCE_FLAGS,
   model: "gpt-5.4-mini",
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE }).setup(nowledgeAttachRemote()),
-  runs: 1,
+  attempts: 1,
   earlyExit: true,
   // 与 baseline 对齐:astropy eval 两阶段都要源码构建,别用全局 600s
   timeoutMs: 2_700_000,
