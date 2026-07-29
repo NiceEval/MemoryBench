@@ -6,7 +6,7 @@ import {
   defineReport,
 } from "niceeval/report";
 import { standard } from "niceeval/report/built-in";
-import { Comparison } from "./components/comparison.tsx";
+import { CostPassRateScatter, CostPassRateTable } from "./components/comparison.tsx";
 import { Leaderboard } from "./components/leaderboard.tsx";
 import { MemoryBenchHero } from "./components/memorybench-hero.tsx";
 
@@ -26,9 +26,10 @@ export default defineReport({
           <MemoryBenchHero />
           <SampleNotices />
           <RunNotices />
-          <Leaderboard />
           <SampleSummary />
-          <Comparison />
+          <Leaderboard />
+          <CostPassRateScatter />
+          <CostPassRateTable />
         </Col>
       ),
     },

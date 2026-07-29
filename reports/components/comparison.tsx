@@ -8,19 +8,22 @@ import {
   passRate,
 } from "niceeval/report";
 import type { GroupFunction } from "niceeval/report";
+import type { Sample } from "niceeval/record";
 
 const agentLine: GroupFunction = (subject) =>
   String(subject.run.experiment?.labels?.line ?? subject.run.agent);
 
-export const Comparison = defineComponent(async (_props, ctx) => {
-  const rows = await aggregate(ctx.scope, {
+function comparisonRows(sample: Sample) {
+  return aggregate(sample, {
     by: { experiment, line: agentLine },
     values: { costUSD, passRate },
   });
+}
 
-  return [
+export const CostPassRateScatter = defineComponent(async (_props, ctx) => {
+  const rows = await comparisonRows(ctx.scope);
+  return (
     <Scatter
-      key="scatter"
       points={rows}
       x="costUSD"
       y="passRate"
@@ -28,15 +31,22 @@ export const Comparison = defineComponent(async (_props, ctx) => {
       series="line"
       connect
       legend
-    />,
+    />
+  );
+});
+
+CostPassRateScatter.displayName = "CostPassRateScatter";
+
+export const CostPassRateTable = defineComponent(async (_props, ctx) => {
+  const rows = await comparisonRows(ctx.scope);
+  return (
     <Table
-      key="table"
       rows={rows}
       columns={["experiment", "line", "costUSD", "passRate"]}
       sort="passRate"
       searchable
-    />,
-  ];
+    />
+  );
 });
 
-Comparison.displayName = "Comparison";
+CostPassRateTable.displayName = "CostPassRateTable";
