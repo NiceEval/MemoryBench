@@ -1,7 +1,6 @@
 import {
   Col,
   RunNotices,
-  SampleFixPrompt,
   SampleNotices,
   SampleSummary,
   defineReport,
@@ -27,7 +26,6 @@ export default defineReport({
           <MemoryBenchHero />
           <SampleNotices />
           <RunNotices />
-          <SampleFixPrompt />
           <Leaderboard />
           <SampleSummary />
           <Comparison />
