@@ -1,17 +1,17 @@
 import {
-  Callouts,
   Col,
-  CopyBlock,
-  Hero,
-  SampleOverview,
+  RunNotices,
+  SampleFixPrompt,
+  SampleNotices,
+  SampleSummary,
   defineReport,
-  sources,
 } from "niceeval/report";
 import { standard } from "niceeval/report/built-in";
-import { GITHUB_ICON } from "./components/icons.ts";
+import { Comparison } from "./components/comparison.tsx";
 import { Leaderboard } from "./components/leaderboard.tsx";
+import { MemoryBenchHero } from "./components/memorybench-hero.tsx";
 
-// 内建 standard 视图整站(报告 / Attempts / 追踪)+ 品牌外壳:标题与 GitHub 链接。
+// 内建 standard 视图整站(报告 / Attempts / 追踪)+ 品牌外壳。
 //
 // 「报告」页在这里重写:排行榜要摆在散点图上面,而 extends 是整页继承、没有插槽——
 // 想往内建页里插一块内容,只能把这一页逐字抄下来自己摆(候选上游 FR:页级 override /
@@ -22,26 +22,31 @@ export default defineReport({
     {
       id: "report",
       title: { en: "Report", "zh-CN": "报告" },
-      content: (
+      render: () => (
         <Col>
-          <Hero />
-          <Callouts source={sources.sample.notices} />
-          <Callouts source={sources.run.diagnostics} />
-          <CopyBlock source={sources.sample.fixPrompt} />
-          <Leaderboard title={{ en: "MemoryBench", "zh-CN": "MemoryBench" }} />
-          <SampleOverview />
+          <MemoryBenchHero />
+          <SampleNotices />
+          <RunNotices />
+          <SampleFixPrompt />
+          <Leaderboard />
+          <SampleSummary />
+          <Comparison />
         </Col>
       ),
     },
     ...standard.pages.filter((page) => page.id !== "report"),
   ],
   title: { en: "MemoryBench", "zh-CN": "MemoryBench" },
-  links: [
-    { label: "GitHub", href: "https://github.com/CorrectRoadH/memorybench", icon: GITHUB_ICON },
-  ],
   // GA4:官方 snippet 直译成 head 声明(niceeval ≥0.8 的结构化 head 通道)。
   // react-grab 只在本地 `niceeval view` 时注入,线上构建由 vercel-build.sh 设置 VERCEL=1 挡掉。
   head: [
+    {
+      tag: "meta",
+      attrs: {
+        name: "description",
+        content: "MemoryBench evaluates whether memory helps coding agents complete real development tasks.",
+      },
+    },
     ...(process.env.VERCEL
       ? []
       : [
