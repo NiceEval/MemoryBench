@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 // 挖自 react-datepicker PR #6206(修复 GitHub issue #6193),base commit 是该 PR 的
 // baseRefOid,merge commit 3d53acb06b7374bbf4d4d496a7871b656da7115e 提供隐藏测试的
@@ -11,13 +10,16 @@ const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6206/
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 const BASE_COMMIT = "e1ce24549f030bd159829dbbad077abe1b60cb52";
 
+const testFile = await loadText(fixture("tests/timezone_test.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-datepicker PR #6206: fix DatePicker's day-click / input-display / selectsMultiple all going off-by-one-day when the explicit timeZone prop differs from the local timezone (real GitHub issue #6193)",
   // 纯 Node/TS 仓库,没有编译产物散落进源码树的问题;node_modules/coverage 是测试期间
   // 产生的噪音,不该算进 agent 的归因 diff。
   diff: {
-    ignore: ["coverage", "node_modules", "package.json"],
+    ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -28,9 +30,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rdp-clone`,
-        "mv .rdp-clone/.git .git",
-        "rm -rf .rdp-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -78,8 +82,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const testFile = await readFile(fixture("tests/timezone_test.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/timezone_test.test.tsx": testFile,
       "tests/run-tests.sh": runTests,

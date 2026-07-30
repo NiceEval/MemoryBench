@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1414/${path}`, import.meta.url);
 
@@ -18,6 +17,9 @@ const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1414/${path}
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "78ce9e994e2d7056ce70bab83083bc1c9f805e3e";
 
+const testFile = await loadText(fixture("tests/getItemProps.test.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "downshift pr-1414: clicking an item in an open useCombobox menu must keep the text input focused (no focus " +
@@ -29,7 +31,7 @@ export default defineEval({
   // (babel 7.21 系已知坑),jest 在 transform 阶段就炸——显式补装两个精确版本修掉。补装用
   // --no-save 不碰 package.json,且发生在 t.send() 之前(落在 eval window,不污染 agent 判分 diff)。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -40,9 +42,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .downshift-clone`,
-        "mv .downshift-clone/.git .git",
-        "rm -rf .downshift-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -95,8 +99,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const testFile = await readFile(fixture("tests/getItemProps.test.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/hooks/useCombobox/__tests__/getItemProps.test.js": testFile,
       "tests/run-tests.sh": runTests,

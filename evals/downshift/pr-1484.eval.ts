@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1484/${path}`, import.meta.url);
 
@@ -16,6 +15,9 @@ const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1484/${path}
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "9b3199aa354f143617b148cf82f215f1e4986690";
 
+const getInputPropsTest = await loadText(fixture("tests/getInputProps.test.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "downshift pr-1484: don't auto-select the highlighted combobox item when the input blurs because the browser " +
@@ -28,7 +30,7 @@ export default defineEval({
   // commit 上验证过 fail-to-pass 两个方向都干净通过。scoped jest 跑单文件 < 2s;沿用全局默认
   // timeoutMs。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -39,9 +41,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .downshift-clone`,
-        "mv .downshift-clone/.git .git",
-        "rm -rf .downshift-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -101,8 +105,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const getInputPropsTest = await readFile(fixture("tests/getInputProps.test.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/hooks/useCombobox/__tests__/getInputProps.test.js": getInputPropsTest,
       "tests/run-tests.sh": runTests,

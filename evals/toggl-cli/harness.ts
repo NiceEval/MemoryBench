@@ -4,15 +4,16 @@
 // 所以跨 eval 传递的只有对话里说过的话(命名、输出风格、计费口径、被否掉的选项)。每道题各自
 // 建立与复用了哪些约定,见各 eval 文件头。
 
-import { readFile } from "node:fs/promises";
-
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 import type { TestContext } from "niceeval";
 // Sandbox / SandboxHookContext(eval.setup 收到的两个参数)不从包根导出——包根只导出了更窄的
 // SandboxHandle,所以它们要从 sandbox 子路径拿。候选上游 FR:在 `setup` 声明的地方也导出它们。
 import type { Sandbox, SandboxHookContext } from "niceeval/sandbox";
 
 const REPO_URL = "https://github.com/CorrectRoadH/toggl-cli.git";
+
+const fixture = (path: string) => new URL(`../fixtures/toggl-cli/${path}`, import.meta.url);
 
 /** toggl-cli @ 8646f29 —— 写这些 eval 时的仓库 tip。 */
 export const BASE_COMMIT = "8646f29c87242b06eab974793a999d35b5a85b5e";
@@ -26,6 +27,14 @@ export const today = () => new Date().toISOString().slice(0, 10);
  * `keyring` 需要 libdbus,`reqwest`/`openssl-sys` 需要 libssl + pkg-config(仓库自己的 AGENTS.md
  * 里有记)。工具链装到 /usr/local/{rustup,cargo} 而不是某个用户 home,这样 agent 开的每个 shell、
  * 以及判分用的 shell,看到的都是同一个 cargo,不管它是不是 source 过 ~/.profile 的登录 shell。
+ *
+ * 这段必须幂等重放:sandboxReuse 下同一个沙箱要依次承接多道题,本函数每题都重跑一遍。
+ * 曾经的写法是「探测到 cargo 就整块跳过」,而 RUSTUP_HOME 只在被跳过的那个分支里导出,于是
+ * 第二题起 rustup 去找空的 ~/.rustup,`cargo --version` 报 "could not choose a version of
+ * cargo ... no default is configured",每条泳道除首题外全 errored(2026-07-29 e2b 复用实测)。
+ * 现在按 niceeval docs「幂等是硬要求」重写:探测只护住「下载安装 rustup 本体」这一步(装二进制
+ * 没法声明式表达),工具链状态一律交给无条件的 `rustup default stable` 收敛,环境变量在脚本顶层
+ * 无条件导出、并写进 /etc/profile.d 供后续 shell 用。
  */
 export const installRustToolchain = async (sandbox: Sandbox, ctx: SandboxHookContext) => {
   ctx.progress({ message: "installing build deps + rust toolchain" });
@@ -33,24 +42,38 @@ export const installRustToolchain = async (sandbox: Sandbox, ctx: SandboxHookCon
     "set -euo pipefail",
     "export DEBIAN_FRONTEND=noninteractive",
     "if command -v apt-get >/dev/null 2>&1; then",
-    "  apt-get update -qq",
-    "  apt-get install -y -qq --no-install-recommends pkg-config libssl-dev libdbus-1-dev build-essential curl ca-certificates >/dev/null",
+    // 等锁而不是撞锁:沙箱刚起来时镜像自己的 apt 可能还在跑,直接 update 会秒挂在
+    // `Could not get lock /var/lib/dpkg/lock-frontend`(复用下实测 3 条 attempt 这么死的)。
+    // DPkg::Lock::Timeout 让 apt 排队等而不是立刻失败,是声明式的等价写法。
+    "  APT_WAIT='-o DPkg::Lock::Timeout=300'",
+    "  apt-get $APT_WAIT update -qq",
+    "  apt-get $APT_WAIT install -y -qq --no-install-recommends pkg-config libssl-dev libdbus-1-dev build-essential curl ca-certificates >/dev/null",
     // 回收 apt 包列表:有 attempt 中途死于一句光秃秃的 "terminated",最可能的解读是沙箱空间耗尽,
     // 所以每一百 MB 都值得抠。
     "  apt-get clean && rm -rf /var/lib/apt/lists/*",
     "fi",
-    "if ! command -v cargo >/dev/null 2>&1 && [ ! -x /usr/local/cargo/bin/cargo ]; then",
-    "  export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo",
+    // 无条件导出:rustup 的 proxy 靠 RUSTUP_HOME 找工具链,漏掉它就会退回空的 ~/.rustup。
+    "export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo",
+    // 唯一的探测:rustup 本体在不在。装二进制这件事没法用「目标状态」表达,只能问一次;
+    // 但它只护住下载,不再护住任何工具链状态。镜像自带 rustup 时这一步天然跳过。
+    'if [ ! -x "$CARGO_HOME/bin/rustup" ] && ! command -v rustup >/dev/null 2>&1; then',
     // profile=default 与仓库的 rust-toolchain.toml 一致,这样 `cargo fmt` 和 `cargo clippy`
     // (AGENTS.md 让 agent 跑的)才真的存在。
     "  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile default --default-toolchain stable --no-modify-path >/dev/null",
     "  chmod -R a+rwX /usr/local/rustup /usr/local/cargo",
     "fi",
-    'CARGO_BIN_DIR="$(dirname "$(command -v cargo || echo /usr/local/cargo/bin/cargo)")"',
+    'RUSTUP_BIN="$(command -v rustup || echo "$CARGO_HOME/bin/rustup")"',
+    // 声明目标状态,无条件重放:半截的 rustup(有二进制、没配默认工具链)在这里收敛,
+    // 已经配好的则是一句空转。缺 rustfmt/clippy 的半截 profile 同理补齐。
+    '"$RUSTUP_BIN" default stable >/dev/null',
+    '"$RUSTUP_BIN" component add rustfmt clippy >/dev/null 2>&1 || true',
+    'CARGO_BIN_DIR="$(dirname "$RUSTUP_BIN")"',
     "for tool in cargo rustc rustup rustfmt cargo-fmt cargo-clippy clippy-driver; do",
     '  [ -x "$CARGO_BIN_DIR/$tool" ] && ln -sf "$CARGO_BIN_DIR/$tool" /usr/local/bin/$tool',
     "done",
-    "printf 'export PATH=\"%s:$PATH\"\\n' \"$CARGO_BIN_DIR\" > /etc/profile.d/rust.sh",
+    // agent / 判分用的登录 shell 也要拿到 RUSTUP_HOME,否则 /usr/local/bin/cargo 这个 proxy
+    // 同样会退回空的 ~/.rustup —— 只导 PATH 是不够的。
+    "printf 'export RUSTUP_HOME=%s\\nexport CARGO_HOME=%s\\nexport PATH=\"%s:$PATH\"\\n' \"$RUSTUP_HOME\" \"$CARGO_HOME\" \"$CARGO_BIN_DIR\" > /etc/profile.d/rust.sh",
     "chmod +x /etc/profile.d/rust.sh",
     // 让 cargo 的构建目录留在工作副本之外。这个 crate 的 debug build 约 1GB,留在 workdir 下面会
     // 让收尾抓 diff 的阶段变得不稳(attempt 死于 "capturing diff · fetch failed" 和
@@ -89,9 +112,14 @@ export const prepareRepo = async (t: TestContext) => {
   const cloned = await t.sandbox.runShell(
     [
       "set -euo pipefail",
-      `git clone -q -o origin ${REPO_URL} .toggl-clone`,
-      "mv .toggl-clone/.git .git",
-      "rm -rf .toggl-clone",
+      // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+      // 不删的话第二题 `mv` 会撞上非空的 .git、第三题 `git remote remove origin` 会撞上
+      // 已被上一题删掉的 remote —— 2026-07-29 e2b 复用实测里两种都撞到了。
+      // 临时目录名与其它真实仓库 eval 统一成 .niceeval-clone,并进各 eval 的 diff.ignore。
+      "rm -rf .git .niceeval-clone",
+      `git clone -q -o origin ${REPO_URL} .niceeval-clone`,
+      "mv .niceeval-clone/.git .git",
+      "rm -rf .niceeval-clone",
       `git reset -q --hard ${BASE_COMMIT}`,
       "git remote remove origin",
       "git tag -l | xargs -r git tag -d >/dev/null",
@@ -111,7 +139,13 @@ export const prepareRepo = async (t: TestContext) => {
   // ——那会变成一个与记忆无关的条件间差异。
   t.progress({ message: "warming cargo build cache (cold dependency build)" });
   const built = await t.sandbox.runShell(
-    ['export PATH="/usr/local/cargo/bin:$PATH"', "cargo build --tests --quiet"].join("\n"),
+    [
+      // 与 /etc/profile.d/rust.sh 同款三件套:这是非登录 shell,拿不到 profile.d,
+      // 只导 PATH 会让 rustup proxy 退回空的 ~/.rustup(见 installRustToolchain 文件注)。
+      'export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo',
+      'export PATH="/usr/local/cargo/bin:$PATH"',
+      "cargo build --tests --quiet",
+    ].join("\n"),
   );
   if (built.exitCode !== 0) {
     throw new Error(`baseline cargo build failed: ${(built.stderr || built.stdout).trim().slice(-800)}`);
@@ -177,6 +211,24 @@ export const orderedLines = (probeCase: ProbeCase, expected: string[]) => {
   };
 };
 
+/** 探针的两份判据文件:一次性 HTTP stub 与跑测脚本。 */
+export interface ProbeSupport {
+  probePy: string;
+  runProbeSh: string;
+}
+
+/**
+ * 读入探针判据文件,内容进指纹——改一字节,引用它的那条 eval 自动重跑。
+ *
+ * 必须在**每个 eval 文件自己的模块顶层**调用。loader 的登记按「正在被发现的那条 eval」归属,
+ * 而共享模块只求值一次:读取写在本文件顶层的话,只有第一条被发现的 toggl-cli eval 把它们算进
+ * 指纹,其余五条会静默漏登记。
+ */
+export const loadProbeSupport = async (): Promise<ProbeSupport> => ({
+  probePy: await loadText(fixture("_support/probe.py")),
+  runProbeSh: await loadText(fixture("_support/run-probe.sh")),
+});
+
 /**
  * 构建 agent 留下的代码,把计划里每条 CLI 调用都对着一个一次性 HTTP stub 跑一遍,把每条干了什么
  * 交回来。断言留在 eval 文件里——一条约定一条——这样失败的运行能显示是哪条约定没做到,而不是
@@ -184,11 +236,14 @@ export const orderedLines = (probeCase: ProbeCase, expected: string[]) => {
  *
  * 前置门:crate 编译不过、或探针跑不起来,eval 就在这里停住。
  */
-export const runProbe = async (t: TestContext, plan: ProbePlan): Promise<Record<string, ProbeCase>> => {
-  const fixture = (path: string) => new URL(`../fixtures/toggl-cli/${path}`, import.meta.url);
+export const runProbe = async (
+  t: TestContext,
+  plan: ProbePlan,
+  support: ProbeSupport,
+): Promise<Record<string, ProbeCase>> => {
   await t.sandbox.writeFiles({
-    "tests/probe.py": await readFile(fixture("_support/probe.py"), "utf8"),
-    "tests/run-probe.sh": await readFile(fixture("_support/run-probe.sh"), "utf8"),
+    "tests/probe.py": support.probePy,
+    "tests/run-probe.sh": support.runProbeSh,
     "tests/probe-plan.json": JSON.stringify(plan, null, 2),
   });
 

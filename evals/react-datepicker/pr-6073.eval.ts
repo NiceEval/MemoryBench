@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR Hacker0x01/react-datepicker#6073(不让被测 agent 看到 PR 号/commit)。merge
 // commit 649af62fee622afbda7db7ec3f935efbf6fd9676 提供隐藏测试的权威 post-fix 内容。Bug:范围选择、
@@ -16,6 +15,9 @@ const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6073/
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 const BASE_COMMIT = "4f3d75298c20884f5c5634ff04971260233af7c5";
 
+const testFile = await loadText(fixture("tests/day_test.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-datepicker pr-6073: in range mode across multiple months, the in-selecting-range hover highlight is " +
@@ -23,7 +25,7 @@ export default defineEval({
     "selecting-range highlight when it actually belongs to the month its grid represents (real react-datepicker issue)",
   // yarn (Berry) 装依赖会把 package.json 内联数组重排(install 副作用,非 agent 改动),排掉避免假噪音。
   diff: {
-    ignore: ["coverage", "node_modules", "package.json"],
+    ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -34,9 +36,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rdp-clone`,
-        "mv .rdp-clone/.git .git",
-        "rm -rf .rdp-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -80,8 +84,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const testFile = await readFile(fixture("tests/day_test.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
       "src/test/day_test.test.tsx": testFile,

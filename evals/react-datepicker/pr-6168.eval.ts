@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6168/${path}`, import.meta.url);
 
@@ -14,12 +13,15 @@ const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6168/
 // main advanced past the PR's branch point before merge -- normal, not a discrepancy).
 const BASE_COMMIT = "6667a40d339d8fb5a6c02263b08d366cf2cfc449";
 
+const hiddenTest = await loadText(fixture("tests/calendar_container.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-datepicker pr-6168: calendar dialog must opt out of browser auto-translation so Safari's translate feature doesn't corrupt it (real react-datepicker issue)",
   // 纯 Node 仓库,yarn install + 单文件 jest 本地验证都在数秒到数十秒量级,用默认 timeout 即可。
   diff: {
-    ignore: ["coverage", "node_modules", "package.json"],
+    ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -30,9 +32,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        "git clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .rdp-clone",
-        "mv .rdp-clone/.git .git",
-        "rm -rf .rdp-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        "git clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone",
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -79,8 +83,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const hiddenTest = await readFile(fixture("tests/calendar_container.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/calendar_container.test.tsx": hiddenTest,
       "tests/run-tests.sh": runTests,

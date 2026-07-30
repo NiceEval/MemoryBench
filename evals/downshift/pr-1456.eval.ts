@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1456/${path}`, import.meta.url);
 
@@ -21,6 +20,9 @@ const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1456/${path}
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "99bd9d936b46620d0e8f27dd3a35ca15149ec7b5";
 
+const getToggleButtonPropsTest = await loadText(fixture("tests/getToggleButtonProps.test.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "downshift pr-1456: fix character-key type-ahead search to treat Space as a normal search character and to correctly advance through repeated-key matches (real downshift issue)",
@@ -29,7 +31,7 @@ export default defineEval({
   // devDependency 补丁在同一条 install 命令里几秒内完成;scoped jest 跑单文件 < 2s。
   // 沿用全局默认 timeoutMs。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -40,9 +42,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .downshift-clone`,
-        "mv .downshift-clone/.git .git",
-        "rm -rf .downshift-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -112,8 +116,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const getToggleButtonPropsTest = await readFile(fixture("tests/getToggleButtonProps.test.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/hooks/useSelect/__tests__/getToggleButtonProps.test.js": getToggleButtonPropsTest,
       "tests/run-tests.sh": runTests,

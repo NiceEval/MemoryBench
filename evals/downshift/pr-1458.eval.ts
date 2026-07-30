@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1458/${path}`, import.meta.url);
 
@@ -15,6 +14,10 @@ const fixture = (path: string) => new URL(`../fixtures/downshift/pr-1458/${path}
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "d822530f6b3eebe34c3dc8249353b61dd237d78b";
 
+const getSelectedItemPropsTest = await loadText(fixture("tests/getSelectedItemProps.test.js"));
+const propsTest = await loadText(fixture("tests/props.test.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "downshift pr-1458: only react to Backspace/Delete on a selected item when that item is actually focused (real downshift issue)",
@@ -22,7 +25,7 @@ export default defineEval({
   // 跳过 cypress 二进制下载后 install ~25s;两条 babel devDependency 补丁各几秒;scoped jest
   // 跑两个文件 < 2s。沿用全局默认 timeoutMs。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -33,9 +36,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .downshift-clone`,
-        "mv .downshift-clone/.git .git",
-        "rm -rf .downshift-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -97,9 +102,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const getSelectedItemPropsTest = await readFile(fixture("tests/getSelectedItemProps.test.js"), "utf8");
-    const propsTest = await readFile(fixture("tests/props.test.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/hooks/useMultipleSelection/__tests__/getSelectedItemProps.test.js": getSelectedItemPropsTest,
       "src/hooks/useMultipleSelection/__tests__/props.test.js": propsTest,

@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6167/${path}`, import.meta.url);
 
@@ -11,6 +10,9 @@ const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // BASE_COMMIT — no discrepancy to reconcile here.
 const BASE_COMMIT = "be355b09d8ba18eeed82fa70968b1708687603ab";
 
+const hiddenTest = await loadText(fixture("tests/datepicker_test.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-datepicker pr-6167: stop rendering an extra wrapper div around the portaled calendar when withPortal is set (real react-datepicker issue)",
@@ -19,7 +21,7 @@ export default defineEval({
     // package.json 加入排除:corepack+yarn install 会把 package.json 里内联的数组
     // (files/sideEffects/keywords/lint-staged)重新格式化成多行,是 install 步骤本身的
     // 副作用,不是 agent 的改动;修复只在 src/index.tsx,agent 不需要碰 package.json。
-    ignore: ["coverage", "node_modules", "package.json"],
+    ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -30,9 +32,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        "git clone -q -o origin --single-branch " + REPO_URL + " .rdp-clone",
-        "mv .rdp-clone/.git .git",
-        "rm -rf .rdp-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        "git clone -q -o origin --single-branch " + REPO_URL + " .niceeval-clone",
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -77,8 +81,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const hiddenTest = await readFile(fixture("tests/datepicker_test.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/datepicker_test.test.tsx": hiddenTest,
       "tests/run-tests.sh": runTests,

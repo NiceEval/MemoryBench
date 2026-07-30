@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/yet-another-react-lightbox/pr-408/${path}`, import.meta.url);
 
@@ -33,13 +32,16 @@ const BASE_COMMIT = "c1c704426607e3eaceb1b1d7794df1235e4adf8a";
 const MIN_NODE_MAJOR = 22;
 const MIN_NODE_MINOR = 13;
 
+const zoomTest = await loadText(fixture("tests/Zoom.spec.ts"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "yet-another-react-lightbox pr-408: let the Zoom plugin opt custom slide types into zoom via supports/maxZoom props (real yet-another-react-lightbox issue)",
   // 纯 npm 仓库,无 packageManager 字段(不用 corepack);package-lock.json 提交在根目录。
   // Node 换成 22.13 后本地实测 npm install 数秒,vitest 跑单文件 <2s;沿用全局默认 timeoutMs。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -50,9 +52,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .yarl-clone`,
-        "mv .yarl-clone/.git .git",
-        "rm -rf .yarl-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -143,8 +147,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const zoomTest = await readFile(fixture("tests/Zoom.spec.ts"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "test/unit/plugins/Zoom.spec.ts": zoomTest,
       "tests/run-tests.sh": runTests,

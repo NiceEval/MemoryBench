@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6172/${path}`, import.meta.url);
 
@@ -13,12 +12,15 @@ const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // a real discrepancy.
 const BASE_COMMIT = "d4625d425ae31b15ed13de98446ffb6431f82659";
 
+const hiddenTest = await loadText(fixture("tests/date_utils_test.test.ts"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-datepicker pr-6172: restore native Date() fallback in parseDate when strictParsing is false (real react-datepicker issue)",
   // 纯 Node 仓库,corepack+yarn 装依赖、跑单个 jest 文件都在数十秒内完成,用默认超时足够。
   diff: {
-    ignore: ["coverage", "node_modules", "package.json"],
+    ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -29,9 +31,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        "git clone -q -o origin --single-branch " + REPO_URL + " .rdp-clone",
-        "mv .rdp-clone/.git .git",
-        "rm -rf .rdp-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        "git clone -q -o origin --single-branch " + REPO_URL + " .niceeval-clone",
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -75,8 +79,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const hiddenTest = await readFile(fixture("tests/date_utils_test.test.ts"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/date_utils_test.test.ts": hiddenTest,
       "tests/run-tests.sh": runTests,

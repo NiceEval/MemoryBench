@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13579(修复 issue #13575;不让被测 agent 看到
 // PR 号/commit)。Bug:`form.subscribe({ formState, callback })` 的回调 payload 会带上触发该次
@@ -15,13 +14,16 @@ const fixture = (path: string) => new URL(`../fixtures/react-hook-form/pr-13579/
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "cae5dfe2d60f1f19e2d9e40314ddef858064347f";
 
+const hiddenTest = await loadText(fixture("tests/subscribe.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-hook-form pr-13579: per-event metadata (the field `name`) leaks across subscribe() notifications — a " +
     "later, unrelated update reports a stale `name` from an earlier clearErrors() call instead of undefined " +
     "(real react-hook-form issue #13575)",
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -32,9 +34,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rhf-clone`,
-        "mv .rhf-clone/.git .git",
-        "rm -rf .rhf-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -80,8 +84,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const hiddenTest = await readFile(fixture("tests/subscribe.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
       "src/__tests__/useForm/subscribe.test.tsx": hiddenTest,

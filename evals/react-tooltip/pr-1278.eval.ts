@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR ReactTooltip/react-tooltip#1278(不让被测 agent 看到 PR 号/commit)。merge commit
 // a12511545da3789511a78bdd555bb0061c119acd 提供隐藏测试的权威 post-fix 内容。Bug:tooltip 用文档级
@@ -17,6 +16,9 @@ const fixture = (path: string) => new URL(`../fixtures/react-tooltip/pr-1278/${p
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "af0a01aa326d04cf3330423a41acfe62e725f9bb";
 
+const spec = await loadText(fixture("tests/tooltip-interaction-behavior.spec.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-tooltip pr-1278: the delegated document-level event handler assumes every event target is an " +
@@ -27,7 +29,7 @@ export default defineEval({
   diff: {
     // yarn.lock 在 install 阶段可能被重写(元数据/排序变化,字节级差异,无实际依赖变更)——
     // 这是 install 步骤本身的副作用,不是 agent 的改动。
-    ignore: ["coverage", "node_modules", "yarn.lock"],
+    ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -38,9 +40,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rt-clone`,
-        "mv .rt-clone/.git .git",
-        "rm -rf .rt-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -90,8 +94,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const spec = await readFile(fixture("tests/tooltip-interaction-behavior.spec.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/tooltip-interaction-behavior.spec.js": spec,
       "tests/run-tests.sh": runTests,

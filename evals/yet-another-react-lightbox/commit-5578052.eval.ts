@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/yet-another-react-lightbox/commit-5578052/${path}`, import.meta.url);
 
@@ -29,13 +28,16 @@ const BASE_COMMIT = "3ae28d1fca631f7dc31fc9d56a9c43551f9afd21";
 const MIN_NODE_MAJOR = 22;
 const MIN_NODE_MINOR = 13;
 
+const rtlTest = await loadText(fixture("tests/RTL.spec.ts"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "yet-another-react-lightbox commit-5578052: re-detect RTL direction on every render instead of only at mount (real yet-another-react-lightbox issue)",
   // 纯 npm 仓库,无 packageManager 字段(不用 corepack);package-lock.json 提交在根目录。
   // 本地实测(Node 22.13 后)npm install 数秒,vitest 跑单文件 <1s;沿用全局默认 timeoutMs。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -46,9 +48,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .yarl-clone`,
-        "mv .yarl-clone/.git .git",
-        "rm -rf .yarl-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -125,8 +129,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const rtlTest = await readFile(fixture("tests/RTL.spec.ts"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "test/unit/RTL.spec.ts": rtlTest,
       "tests/run-tests.sh": runTests,

@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/yet-another-react-lightbox/commit-f63f6af/${path}`, import.meta.url);
 
@@ -15,13 +14,16 @@ const fixture = (path: string) => new URL(`../fixtures/yet-another-react-lightbo
 const REPO_URL = "https://github.com/igordanchenko/yet-another-react-lightbox.git";
 const BASE_COMMIT = "c0ec3709403a357b7c9e8a95f2645cf6bd808262";
 
+const thumbnailsTest = await loadText(fixture("tests/Thumbnails.spec.ts"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "yet-another-react-lightbox commit-f63f6af: fix thumbnail strip count/positioning in finite carousel mode (real yet-another-react-lightbox issue)",
   // 纯 npm 仓库,无 packageManager 字段(不用 corepack);package-lock.json 提交在根目录。
   // 本地实测 npm install 数秒,vitest 跑单文件 <2s;沿用全局默认 timeoutMs。
   diff: {
-    ignore: ["coverage", "node_modules"],
+    ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -32,9 +34,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .yarl-clone`,
-        "mv .yarl-clone/.git .git",
-        "rm -rf .yarl-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -83,8 +87,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const thumbnailsTest = await readFile(fixture("tests/Thumbnails.spec.ts"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "test/unit/plugins/Thumbnails.spec.ts": thumbnailsTest,
       "tests/run-tests.sh": runTests,

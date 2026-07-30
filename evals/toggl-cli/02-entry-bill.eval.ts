@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
 
-import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "./harness.ts";
+import { installRustToolchain, orderedLines, prepareRepo, loadProbeSupport, runProbe, type ProbeCase } from "./harness.ts";
 
 // 链的第 2 题。引入这家店的计费口径。
 //
@@ -38,13 +38,15 @@ const asJson = (probeCase: ProbeCase): any => {
 const billSummary = (payload: any) =>
   Array.isArray(payload?.projects) ? payload.projects.map((p: any) => [p?.project, p?.billable_seconds]) : payload;
 
+const probeSupport = await loadProbeSupport();
+
 export default defineEval({
   description:
     "toggl-cli 02: add `toggl entry bill` (billable time per project) and establish the shop's billing " +
     "rounding rule — round every entry up to the next 15 minutes",
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
-  diff: { ignore: ["target"] },
+  diff: { ignore: ["target", ".niceeval-clone"] },
   setup: installRustToolchain,
   async test(t) {
     await prepareRepo(t);
@@ -85,7 +87,7 @@ export default defineEval({
         { name: "json", args: ["entry", "bill", "--since", DAY, "--until", DAY, "--json"] },
         { name: "empty", args: ["entry", "bill", "--since", "2026-01-01", "--until", "2026-01-01"] },
       ],
-    });
+    }, probeSupport);
 
     await t.group("命令存在,且按 15 分钟向上取整后汇总可计费时长", () => {
       t.check(probe.human.exit, equals(0));

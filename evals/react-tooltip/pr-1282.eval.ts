@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/react-tooltip/pr-1282/${path}`, import.meta.url);
 
@@ -16,6 +15,9 @@ const fixture = (path: string) => new URL(`../fixtures/react-tooltip/pr-1282/${p
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "1099ad1a619ef12ca872ab755372af29928e1848";
 
+const anchorSelectionTest = await loadText(fixture("tests/tooltip-anchor-selection.spec.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-tooltip pr-1282: support touch-based tooltip opening and stop a pending show from reopening a " +
@@ -25,7 +27,7 @@ export default defineEval({
   // 直接报错),任何一次 `yarn install`(不管 agent 有没有改代码)都会把它重写成实际解析到
   // 的版本——这是安装期噪音,不是 agent 的改动,故忽略。
   diff: {
-    ignore: ["coverage", "node_modules", "yarn.lock"],
+    ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -36,9 +38,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rt-clone`,
-        "mv .rt-clone/.git .git",
-        "rm -rf .rt-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -93,8 +97,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const anchorSelectionTest = await readFile(fixture("tests/tooltip-anchor-selection.spec.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/tooltip-anchor-selection.spec.js": anchorSelectionTest,
       "tests/run-tests.sh": runTests,

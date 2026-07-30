@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/react-datepicker/pr-6058/${path}`, import.meta.url);
 
@@ -11,12 +10,15 @@ const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // and direct oid equality against `gh pr view --json baseRefOid`).
 const BASE_COMMIT = "bd3ab113a4d5b6f092017e54d29b7678195c9613";
 
+const datepickerTest = await loadText(fixture("tests/datepicker_test.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-datepicker pr-6058: changeMonth from a custom header doesn't reset monthSelectedIn back to the first panel with monthsShown=2 (real react-datepicker issue)",
   // 纯 Node 仓库,不用 Dockerfile/apt;install+单文件 jest 本地实测数十秒,默认 600s 够用。
   diff: {
-    ignore: ["coverage", "node_modules", "package.json"],
+    ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -27,9 +29,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rd-clone`,
-        "mv .rd-clone/.git .git",
-        "rm -rf .rd-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -71,8 +75,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const datepickerTest = await readFile(fixture("tests/datepicker_test.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/datepicker_test.test.tsx": datepickerTest,
       "tests/run-tests.sh": runTests,

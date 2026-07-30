@@ -3,6 +3,10 @@
 # stdout must stay a single JSON document — everything else is routed to stderr.
 set -euo pipefail
 
+# RUSTUP_HOME matters as much as PATH here: /usr/local/cargo/bin/cargo is a rustup proxy and
+# falls back to an empty ~/.rustup without it. This probe may run in a non-login shell that
+# never sources /etc/profile.d/rust.sh.
+export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/rustup}" CARGO_HOME="${CARGO_HOME:-/usr/local/cargo}"
 export PATH="/usr/local/cargo/bin:$HOME/.cargo/bin:$PATH"
 
 cargo build --quiet >&2

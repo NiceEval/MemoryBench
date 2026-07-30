@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded, equals, isTrue } from "niceeval/expect";
 
-import { installRustToolchain, prepareRepo, runProbe, orderedLines, type ProbeCase } from "./harness.ts";
+import { installRustToolchain, prepareRepo, loadProbeSupport, runProbe, orderedLines, type ProbeCase } from "./harness.ts";
 
 // 链的第 1 题。三轮对话用大白话说清一组项目级约定,这些约定从 checkout 里推不出来。
 //
@@ -38,6 +38,8 @@ const asJson = (probeCase: ProbeCase): unknown => {
   }
 };
 
+const probeSupport = await loadProbeSupport();
+
 export default defineEval({
   description:
     "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's " +
@@ -49,7 +51,7 @@ export default defineEval({
   diff: {
     // cargo 的构建目录已经在 gitignore 里,但显式列出来,免得某个游离的 CARGO_TARGET_DIR
     // 或增量产物落进 diff 分类账。
-    ignore: ["target"],
+    ignore: ["target", ".niceeval-clone"],
   },
   setup: installRustToolchain,
   async test(t) {
@@ -119,7 +121,7 @@ export default defineEval({
         { name: "empty", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01"] },
         { name: "empty-json", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01", "--json"] },
       ],
-    });
+    }, probeSupport);
 
     const dependenciesUntouched = await t.sandbox.runShell("git diff --quiet -- Cargo.toml Cargo.lock");
 

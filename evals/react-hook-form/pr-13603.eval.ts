@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13603(不让被测 agent 看到 PR 号/commit/URL):
 // useController 里 field 的写路径(onChange/onBlur)通过 useRef 只捕获一次 control.register()
@@ -14,10 +13,13 @@ const fixture = (path: string) => new URL(`../fixtures/react-hook-form/pr-13603/
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "a4f380249f12856feef787103f84f714ca84c98d";
 
+const hiddenTest = await loadText(fixture("tests/useController.test.tsx"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-hook-form pr-13603: useController keeps writing field updates to the old control after the control prop changes at runtime (real react-hook-form issue)",
-  diff: { ignore: ["coverage", "node_modules"] },
+  diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
     // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
@@ -27,9 +29,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rhf-clone`,
-        "mv .rhf-clone/.git .git",
-        "rm -rf .rhf-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -73,8 +77,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const hiddenTest = await readFile(fixture("tests/useController.test.tsx"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
       "src/__tests__/useController.test.tsx": hiddenTest,

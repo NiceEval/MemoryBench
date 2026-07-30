@@ -1,7 +1,6 @@
-import { readFile } from "node:fs/promises";
-
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { loadText } from "niceeval/loaders";
 
 const fixture = (path: string) => new URL(`../fixtures/react-tooltip/pr-1271/${path}`, import.meta.url);
 
@@ -17,6 +16,9 @@ const fixture = (path: string) => new URL(`../fixtures/react-tooltip/pr-1271/${p
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "f93a090aa10101f6cf7490ae8f4db1e7f39f7b47";
 
+const closeAndDelayTest = await loadText(fixture("tests/tooltip-close-and-delay-behavior.spec.js"));
+const runTests = await loadText(fixture("tests/run-tests.sh"));
+
 export default defineEval({
   description:
     "react-tooltip pr-1271: fix inaccurate anchor detection during hover/focus transitions and stale-state " +
@@ -26,7 +28,7 @@ export default defineEval({
   // 直接报错),任何一次 `yarn install`(不管 agent 有没有改代码)都会把它重写成实际解析到
   // 的版本——这是安装期噪音,不是 agent 的改动,故忽略。
   diff: {
-    ignore: ["coverage", "node_modules", "yarn.lock"],
+    ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
   async test(t) {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
@@ -37,9 +39,11 @@ export default defineEval({
     const cloned = await t.sandbox.runShell(
       [
         "set -euo pipefail",
-        `git clone -q -o origin --single-branch ${REPO_URL} .rt-clone`,
-        "mv .rt-clone/.git .git",
-        "rm -rf .rt-clone",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
         `git reset -q --hard ${BASE_COMMIT}`,
         "git remote remove origin",
         "git tag -l | xargs -r git tag -d >/dev/null",
@@ -109,8 +113,6 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    const closeAndDelayTest = await readFile(fixture("tests/tooltip-close-and-delay-behavior.spec.js"), "utf8");
-    const runTests = await readFile(fixture("tests/run-tests.sh"), "utf8");
     await t.sandbox.writeFiles({
       "src/test/tooltip-close-and-delay-behavior.spec.js": closeAndDelayTest,
       "tests/run-tests.sh": runTests,
