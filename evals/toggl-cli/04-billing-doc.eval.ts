@@ -10,6 +10,20 @@ import { includes } from "niceeval/expect";
 // 本题不 clone 仓库、不写代码,沙箱是空的;判据只看回答文本,完全不碰实现。
 // 注意:这道题判的是「答没答对这条规则」,不是任务完成度——报告里应与做功能的题分开看。
 export default defineEval({
+  // judge 配置写在这条 eval 上,不写全局 config —— 全链只有本题用 judge,而 judge 配置进指纹:
+  // 写在 niceeval.config.ts 里,换一次评审模型就把 6 题(乃至全仓库)的沿用结果一起作废,
+  // 包括 5 道根本不碰 judge 的题。2026-07-30 实测过这个代价:把全局 judge 从 gpt-5.6 换成
+  // gpt-5.6-sol 之后 `exp compare/codex toggl-cli/ --dry` 只剩 1/18 可沿用。写在这里,
+  // 以后换评审模型只作废本题。凭据仍从环境来(见 config 里 judge 那段的说明)。
+  //
+  // 模型选 gpt-5.6-sol:原钉的 gpt-5.6 于 2026-07-30 被代理下架(404 `not supported by any
+  // configured account in this group`),judge 预检硬失败、本题在三个实验里全部 errored。
+  // 不用 gpt-5.6-luna —— 那是被测 agent 本身,同模型等于自评。
+  judge: {
+    model: "gpt-5.6-sol",
+    baseUrl: process.env.CODEX_BASE_URL,
+    apiKeyEnv: "CODEX_API_KEY",
+  },
   description:
     "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the " +
     "`entry bill` session (round up to 15 minutes, billable only)",

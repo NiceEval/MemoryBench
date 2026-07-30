@@ -11,7 +11,16 @@ export default defineConfig({
   // theme: chalk,
   theme: basalt,
 
-  // LLM-as-judge:用代理上的 gpt-5.6(与被测 agent 分离)。
+  // LLM-as-judge:**本文件不配 judge,一律配在用到它的那条 eval 上**(`defineEval({ judge })`,
+  // 目前只有 evals/toggl-cli/04-billing-doc.eval.ts)。
+  //
+  // 理由是指纹作用域:judge 配置进指纹,写在这里就是全仓库共用一个,换一次评审模型把所有
+  // eval 的沿用结果一起作废——包括根本不碰 judge 的那些。2026-07-30 实测过这个代价:全局
+  // judge 从 gpt-5.6 换成 gpt-5.6-sol 后,`exp compare/codex toggl-cli/ --dry` 只剩 1/18 可沿用
+  // (其中 12 条另有原因:sandboxReuse 实验与沿用双向绝缘)。写在 eval 上,换模型只作废那一条。
+  // 想加新的 judge 题就在那条 eval 里写自己的 judge 块,不要图省事挪回这里。
+  //
+  // 下面这几段坑是配 judge 时(不论配在哪)都要知道的,留在这儿当索引 ——
   //
   // 原来钉的 gpt-5.4-mini 从 2026-07-30 起被代理下架(chat/completions 与 responses 都返
   // 404 `not supported by any configured account in this group`),judge 路径同样中招,
@@ -34,11 +43,13 @@ export default defineConfig({
   // 打到了不认识这个模型的端点。baseUrl 按 niceeval 的划分属于「配置」本该写死在代码里,
   // 这里读 env 是因为代理地址跟着 .env(gitignored)走,不进仓库;.env 在 config 之前加载
   // (cli.ts:613 loadDotenv → 614 import config),取值时机没问题。
-  judge: {
-    model: "gpt-5.6",
-    baseUrl: process.env.CODEX_BASE_URL,
-    apiKeyEnv: "CODEX_API_KEY",
-  },
+  // 2026-07-30 晚续:钉的 gpt-5.6 自己也被下架了(judge 路径返同一句 404,`toggl-cli/04-billing-doc`
+  // 在三个 compare 实验里全部 errored)。换 gpt-5.6-sol —— 当晚重测存活情况:
+  // gpt-5.6 已 404;gpt-5.6-sol 2s · gpt-5.6-terra 2s · gpt-5.6-luna 2s · gpt-5.4 3s · gpt-5.5 3s 均正常。
+  // 选 sol 而不是 luna 的理由不变(luna 是被测 agent,同模型等于自评)。
+  // 教训:代理的可用模型清单是会随时变的运行时事实,这里钉的任何名字都可能明天就没了;
+  // 看到 `judge precheck failed` 先分清 404(模型下架,换名字)与 timed out(并发占满,见下面 maxConcurrency 那段),
+  // 两者报错都指向 baseUrl,极易误诊。探活一条 curl 就够,别靠改配置试。
 
   timeoutMs: 600_000,
 

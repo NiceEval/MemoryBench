@@ -2,6 +2,8 @@ node_modules/
 # .niceeval/ 提交进仓库:它是线上报告的数据源,Vercel 构建时直接从这里生成整站。
 # 只排除 diff.json —— 单轮可达上百 MB,查看器也不读它。
 .niceeval/**/diff.json
+# locks/ 是运行时的 per-eval 心跳锁,不是结果数据;被强杀的运行会留下残留锁文件,别提交。
+.niceeval/locks/
 # site/ 是构建产物,由 Vercel 的 buildCommand(scripts/build-site.mjs)现场生成,不再提交。
 site/
 *.log

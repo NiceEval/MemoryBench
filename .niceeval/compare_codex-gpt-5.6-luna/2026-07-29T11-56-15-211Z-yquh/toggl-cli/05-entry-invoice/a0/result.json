@@ -1,0 +1,30 @@
+{
+  "id": "toggl-cli/05-entry-invoice",
+  "description": "toggl-cli 05: add `toggl entry invoice` (per-project invoice) and establish the 30-minute minimum billing increment",
+  "verdict": "errored",
+  "fingerprint": "f683e974a743d61fb5a4001f792b0572e58bb2be28351d7c1d7a58f7b599c795",
+  "configHash": "c351cdaaf4a0e87314ac6278f827e7bbe6faab0e3b5c587b4d9b8eeca730ea19",
+  "attempt": 0,
+  "durationMs": 10872,
+  "assertions": [],
+  "scoring": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Rate limit exceeded, please try again later - you have reached the maximum number of concurrent E2B sandboxes (20). If you need more, please visit 'https://e2b.dev/docs/billing'",
+    "phase": "sandbox.create",
+    "stack": "RateLimitError: Rate limit exceeded, please try again later - you have reached the maximum number of concurrent E2B sandboxes (20). If you need more, please visit 'https://e2b.dev/docs/billing'\n    at handleApiError (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/api/index.ts:55:14)\n    at SandboxApi.createSandbox (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/sandboxApi.ts:1184:17)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Sandbox.create (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/index.ts:306:25)\n    at async E2BSandbox.create (/Users/ctrdh/Code/niceeval/src/sandbox/e2b.ts:135:9)\n    at async withProvisionRetry (/Users/ctrdh/Code/niceeval/src/sandbox/retry.ts:46:14)\n    at async withDeterministicProvisionScope (/Users/ctrdh/Code/niceeval/src/sandbox/resolve.ts:230:12)\n    at async <anonymous> (/Users/ctrdh/Code/niceeval/src/sandbox/resolve.ts:160:40)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 10872
+    }
+  ],
+  "executionMs": 10872,
+  "locator": "@11jmfr2d",
+  "startedAt": "2026-07-29T11:56:25.585Z"
+}

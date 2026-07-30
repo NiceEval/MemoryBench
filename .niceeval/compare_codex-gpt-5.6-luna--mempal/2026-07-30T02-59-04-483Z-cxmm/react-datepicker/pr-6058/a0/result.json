@@ -1,0 +1,299 @@
+{
+  "id": "react-datepicker/pr-6058",
+  "description": "react-datepicker pr-6058: changeMonth from a custom header doesn't reset monthSelectedIn back to the first panel with monthsShown=2 (real react-datepicker issue)",
+  "verdict": "passed",
+  "fingerprint": "17139a9911f317890cbbeee359f31921386a93d3ed0dd1d1c00cd1a092fa4f07",
+  "configHash": "0f471f5923c725ee242d8601faf623115fc8a097feee8fe379e924f32c1b8d30",
+  "attempt": 0,
+  "durationMs": 363543,
+  "assertions": [
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6058.eval.ts",
+        "line": 83,
+        "column": 7,
+        "callers": []
+      },
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 193358,
+    "outputTokens": 6375,
+    "cacheReadTokens": 699392,
+    "reasoningTokens": 2562,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.3015472,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 949
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 298,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 956,
+          "durationMs": 297,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 2108,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 1254,
+          "durationMs": 289,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 1543,
+          "durationMs": 325,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_ms6y4h73_8emord'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 2198,
+          "durationMs": 290,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 2788,
+          "durationMs": 291,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_7wp9kg'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- mempal-memory: .agents/skills/mempal-memory/SKILL.md\n…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 3079,
+          "durationMs": 283,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 297,
+      "children": [
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 3362,
+          "durationMs": 297,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 356149,
+      "children": [
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 3663,
+          "durationMs": 5650,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "corepack",
+          "startOffsetMs": 9314,
+          "durationMs": 25165,
+          "command": {
+            "display": "corepack enable && yarn install --immutable",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 34481,
+          "durationMs": 438,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 34920,
+          "durationMs": 312485,
+          "command": {
+            "display": "codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --dangerously-bypass-hook-trust 'Your working directory is a checkout of the…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n12",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 347408,
+          "durationMs": 374,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n13",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 34481,
+          "durationMs": 313301,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 193358,
+            "outputTokens": 6375,
+            "cacheReadTokens": 699392,
+            "reasoningTokens": 2562,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n14",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 348642,
+          "durationMs": 11165,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 1184,
+      "children": [
+        {
+          "id": "n15",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 359808,
+          "durationMs": 1184,
+          "children": [
+            {
+              "id": "n16",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 359808,
+              "durationMs": 338,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 1
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 2550
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 363543,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "igo01tgbc1ghqr26wlgkr",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 7
+  },
+  "locator": "@15mpdgd1",
+  "startedAt": "2026-07-30T03:20:26.888Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}

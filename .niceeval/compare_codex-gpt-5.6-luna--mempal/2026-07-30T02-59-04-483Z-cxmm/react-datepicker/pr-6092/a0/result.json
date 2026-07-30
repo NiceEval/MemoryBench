@@ -1,0 +1,269 @@
+{
+  "id": "react-datepicker/pr-6092",
+  "description": "react-datepicker PR #6092: add a monthHeaderPosition prop (top/middle/bottom) so the month nav header can render relative to each month's day grid instead of only at the top of the calendar (real react-datepicker feature request)",
+  "verdict": "errored",
+  "fingerprint": "3b22411e89d3d651719e0179c511e3a4f45bf78cc7e469f20cdc63fd73a39cab",
+  "configHash": "0f471f5923c725ee242d8601faf623115fc8a097feee8fe379e924f32c1b8d30",
+  "attempt": 0,
+  "durationMs": 625819,
+  "assertions": [],
+  "scoring": "pass",
+  "usage": {},
+  "error": {
+    "code": "unexpected-error",
+    "message": "[deadline_exceeded] the operation timed out: This error is likely due to exceeding 'timeoutMs' — the total time a long running request (like command execution or directory watch) can be active. It can be modified by passing 'timeoutMs' when making the request. Use '0' to disable the timeout.",
+    "phase": "eval.run",
+    "stack": "TimeoutError: [deadline_exceeded] the operation timed out: This error is likely due to exceeding 'timeoutMs' — the total time a long running request (like command execution or directory watch) can be active. It can be modified by passing 'timeoutMs' when making the request. Use '0' to disable the timeout.\n    at Object.4 (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:81:5)\n    at handleRpcError (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:105:40)\n    at handleRpcErrorWithHealthCheck (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:142:10)\n    at CommandHandle.handleEvents (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/commands/commandHandle.ts:367:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async CommandHandle.wait (/Users/ctrdh/Code/niceeval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/commands/commandHandle.ts:167:5)\n    at async E2BSandbox.runShell (/Users/ctrdh/Code/niceeval/src/sandbox/e2b.ts:216:19)\n    at async wrap (/Users/ctrdh/Code/niceeval/src/runner/attempt.ts:1282:22)\n    at async Object.send (/Users/ctrdh/Code/niceeval/src/agents/codex.ts:281:19)\n    at async sendWithTurnRetry (/Users/ctrdh/Code/niceeval/src/context/send-retry.ts:120:16)"
+  },
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1018
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 499,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 1019,
+          "durationMs": 499,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 2402,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 1518,
+          "durationMs": 285,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 1803,
+          "durationMs": 599,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_ms6ynimh_bytxny'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 2707,
+          "durationMs": 282,
+          "failed": true,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 1
+          }
+        },
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 3293,
+          "durationMs": 286,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_dr1wgk'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- mempal-memory: .agents/skills/mempal-memory/SKILL.md\n…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 3579,
+          "durationMs": 341,
+          "failed": true,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 284,
+      "children": [
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 3920,
+          "durationMs": 284,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 618941,
+      "children": [
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 4206,
+          "durationMs": 5020,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "corepack",
+          "startOffsetMs": 9226,
+          "durationMs": 12996,
+          "command": {
+            "display": "corepack enable && yarn install --immutable",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 22225,
+          "durationMs": 380,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 22606,
+          "durationMs": 599980,
+          "failed": true,
+          "command": {
+            "display": "codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --dangerously-bypass-hook-trust 'Your working directory is a checkout of the…"
+          }
+        },
+        {
+          "id": "n12",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 22226,
+          "durationMs": 600363,
+          "failed": true,
+          "sessionIndex": 1,
+          "turnIndex": 1
+        },
+        {
+          "id": "n13",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 622588,
+          "durationMs": 533,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 996,
+      "children": [
+        {
+          "id": "n14",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 0 files",
+          "startOffsetMs": 623146,
+          "durationMs": 996,
+          "children": [
+            {
+              "id": "n15",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 623145,
+              "durationMs": 393,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1677
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 625819,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "igopqyfg4ozwmmquc8o5e",
+    "reused": true,
+    "reuseSandbox": 2,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1wxlwa3z",
+  "startedAt": "2026-07-30T03:35:14.941Z",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}

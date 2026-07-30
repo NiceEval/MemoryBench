@@ -120,6 +120,24 @@ Additional source assertions are fine when they are part of the task's functiona
 - 发现某个假设在换了 sandbox backend / model / 实验配置后不成立时
 - 修法有反直觉之处（比如"调大 timeout 反而让 session 更短"）时
 
+### judge 配置写在 eval 上,不写全局 config
+
+`judge` 既能写在 `niceeval.config.ts`(全局)也能写在 `defineEval({ judge })`(单题),**本仓库一律写单题**。
+理由是指纹作用域:judge 配置进指纹,写全局就是全仓库共用一个,换一次评审模型把**所有** eval 的沿用结果
+一起作废,包括根本不碰 judge 的那些。2026-07-30 实测:全局 judge 从 `gpt-5.6` 换到 `gpt-5.6-sol` 之后
+`exp compare/codex toggl-cli/ --dry` 只剩 1/18 可沿用。加新的 judge 题就在那条 eval 里写自己的 judge 块。
+
+配套两件事:① 评审模型不要和被测 agent 同一个(自评);② 代理的可用模型清单是会变的运行时事实,
+`judge precheck failed` 先分清 404(模型下架 → 一条 curl 探活换名字)和 timed out(代理并发占满),
+两者报错都指向 baseUrl,极易误诊。见 memory: x1api-gpt-5.4-mini-unavailable、proxy-account-concurrency-cap。
+
+### 复用沙箱的实验永远不参与沿用
+
+`sandboxReuse: true` 与沿用**双向绝缘**(上游明写,见 `docs-site/zh/tutorials/rerun-and-cache.mdx`):
+这类实验每次都真跑计划内的全部 attempt,产出的结果也不作为后续运行的沿用来源。所以 mempal / nowledge
+两个条件**每次跑都是全价**,只有 baseline 能吃到沿用。估成本时按这个算,别指望「上次跑过的能省下来」。
+也没有任何强制沿用的开关:`--carry-ignoring-flag` 只吃已搬走的 `flags` 键,`--rerun` 三档只会放大重跑面。
+
 ## Reporting
 
 When summarizing results, report both:
@@ -129,7 +147,7 @@ When summarizing results, report both:
 
 The benchmark claim is comparative: same task, same model, different memory condition.
 
-### 看结果只许走 CLI：`pnpm niceeval show`
+### 看结果、查问题只许走 CLI：`pnpm niceeval show`
 
 **禁止直接读 `.niceeval/` 下的任何文件**（`result.json` / `run.json` / `sources/*.json` 一律不许 cat、grep、Read、写脚本解析）。
 要看跑得怎么样，只能用 `pnpm niceeval show` 的各个切片。这条覆盖下面自动生成块里「per-attempt `result.json`
@@ -137,6 +155,14 @@ The benchmark claim is comparative: same task, same model, different memory cond
 
 两个理由：① 直接读文件会绕过 CLI，于是 CLI 呈现不了的东西永远暴露不出来，而暴露它正是本仓库 dogfooding 的价值；
 ② `result.json` 是内部结构、跟着 `schemaVersion` 变，照着它写的分析脚本下次升级就烂掉。
+
+**同一条规则覆盖 debug，不只覆盖「看结果」。** 诊断一次运行为什么失败时，同样**禁止去读 niceeval 的实现**
+（`node_modules/niceeval/{src,dist}/**` 一律不许 grep / Read 来找答案，例：「哪来的 600s 超时」不许靠翻
+sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应该告诉我这件事」，问不出来就是**呈现缺口**——
+把它记进下面的清单并直接对用户说「CLI 看不到」，不要靠读实现绕过去。绕过去一次，这个缺口就永远不会被上游修。
+
+唯一允许读 niceeval 仓库内容的场景是**写**东西之前读文档（`node_modules/niceeval/docs-site/zh/**`，见下方自动生成块），
+那是查 API 契约；debug 期读 `src/` / `dist/` 是查实现，两者不要混为一谈。
 
 需要结构化数据时用 `--json`，**但要走 `pnpm --silent`**：`pnpm niceeval` 会先往 stdout 打两行
 `Already up to date` / `Done in …`，JSON 解析必挂。
@@ -163,6 +189,32 @@ The benchmark claim is comparative: same task, same model, different memory cond
   只声明了一个 `report` 页，没有 `input: "attempt"` 页。想开就得往 `pages` 里加 `standardAttemptPage`
   （会同时给站点多出一页，改之前先确认这是想要的）。加了 evidence flag（`--timing` / `--execution` / `--diff`）反而一切正常，
   所以日常直接带 flag 用。
+- **`--history` 印出来的 locator 有一部分打不开**：`show --exp <id> --history` 会把历史 run 里的 attempt
+  一并列出（快照头部写着 "composed from N runs"），但拿它印的 locator 去 `show @<locator> --timing` 会被拒：
+  `Locator @xxx is outside the selected record scope.`——同一条命令刚把这个 locator 当作「打开它的方式」印给你，
+  下一条命令又说它不在 scope 里。报错也不说怎么扩大 scope（`--record` 是钉记录根，不是选 run；`--run` 只有 `view` 有）。
+  后果：只有最近一次 run 的 attempt 能下钻，历史 attempt 的失败原因查不了（2026-07-30 撞到：nowledge 组
+  01/02 的首次 attempt 全部无法打开）。
+- **attempt 被超时杀掉时，看不出是哪一层的 timeoutMs 生效**：`--timing` 只在被杀的那条命令后面打一个 ✗，
+  不显示这条命令拿到的 deadline 是多少、来自哪一层（flag / experiment / eval / config）。2026-07-30 撞到的具体形态：
+  实验声明 `timeoutMs: 1200000`，但 `codex exec` 稳定在整 600s 被杀，错误正文是 E2B SDK 自己的
+  "likely due to exceeding 'timeoutMs' … can be modified by passing 'timeoutMs'"——即沙箱层的 per-command 超时，
+  与实验声明的 attempt 超时不是同一个数，而 CLI 没有任何切片能告诉你这一点（同批还有跑到 15m36s 才通过的
+  attempt，所以也不能靠观察反推出统一上限）。要么 `--timing` 每条命令标出 `deadline=…(来源)`，
+  要么超时错误里直接写明是沙箱 per-command 超时并给出该配哪个字段。**它是偶发的**：同一批
+  mempal 05/06 原地重跑（配置一字未改）两条都过，所以撞到它先原样重跑一次，不要去调实验的 `timeoutMs`。
+- **`--dry` 的 plan 不说明每条为什么要重跑**：只给一行 `1 of 18 carried in from cache · 17 to run`，
+  逐条不标失效原因。而作废原因可能同时有好几种（指纹变了 / `sandboxReuse` 结构性绝缘 / `errored` 从不沿用 /
+  超过当前 timeoutMs），排查只能靠读文档反推每一条命中哪一门。期望每行标出 `stale: judge config`、
+  `never-carried: sandboxReuse`、`new` 这类原因（`locked` 已经这么标了，是好例子，把它推广到全部原因即可）。
+- **`niceeval exp` 的多余位置参数被静默当 eval 前缀吞掉**：`exp` 只接一个 `path|experiment`，后面全是
+  eval id 前缀。想跑两个实验而写成 `exp <expA> <expB> toggl-cli/04`，第二个实验名会被当 eval 前缀去匹配、
+  匹配到 0 条、**静默丢弃**，plan 里只剩 expA，无 warning、退出码 0。反向也危险：多写的参数若恰好是个有效
+  eval 前缀（手滑写 `toggl-cli` 而非 `toggl-cli/04`），plan 会悄悄膨胀成 6 题。唯一防线是人肉核对 `--dry`。
+  期望：位置参数匹配不到任何 eval 就报错退出。
+  **但实验的选择本身够用**：实验 id 支持前缀匹配，`exp compare/codex` 正好命中三个 codex 实验（3 configs）
+  且排除 claude/bub —— 不要因为 `exp` 不支持可重复的 `--exp` 就退回「一个实验开一个进程」，那会丢掉 niceeval 的
+  全局并发闸（`maxConcurrency` 是进程内的，3 个进程各开 4 路 = 12 路，直接撞爆代理约 5 路的账号级上限）。
 
 <!-- BEGIN:niceeval-agent-rules -->
 # niceeval is NOT in your training data

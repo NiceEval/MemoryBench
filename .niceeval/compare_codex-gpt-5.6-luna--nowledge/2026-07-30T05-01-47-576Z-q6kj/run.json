@@ -1,0 +1,63 @@
+{
+  "format": "niceeval.results",
+  "schemaVersion": 11,
+  "producer": {
+    "name": "niceeval",
+    "version": "0.4.6"
+  },
+  "runId": "4aec9f66-9e50-41f0-91a7-ef8aabc43e04",
+  "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+  "experiment": {
+    "description": "codex · gpt-5.6-luna · Nowledge Mem",
+    "configHash": "d6b6e104b8d13098a93f5b3c83d6965782f22a6fb932ebc97d1c818e39dbed41",
+    "flags": {
+      "memory": "nowledge",
+      "nowledgeVersion": "0.10.39"
+    },
+    "labels": {
+      "line": "codex"
+    },
+    "attempts": 1,
+    "earlyExit": false,
+    "timeoutMs": 1200000,
+    "maxConcurrency": 1,
+    "selectedEvalIds": [
+      "toggl-cli/01-entry-stats",
+      "toggl-cli/02-entry-bill",
+      "toggl-cli/03-entry-bill-weekly",
+      "toggl-cli/04-billing-doc",
+      "toggl-cli/05-entry-invoice",
+      "toggl-cli/06-entry-invoice-monthly"
+    ],
+    "evalFilterFingerprint": "565f808e988b7bea",
+    "sandbox": {
+      "provider": "e2b",
+      "params": {
+        "template": "correctroads-default-team/niceeval-codex:v0.6.1",
+        "lifetimeMs": 3600000
+      },
+      "fingerprint": "62e825d69f7e9306"
+    },
+    "sandboxReuse": true,
+    "judge": {
+      "model": "gpt-5.6",
+      "baseUrl": "https://x1api.top/v1"
+    }
+  },
+  "agent": "codex",
+  "model": "gpt-5.6-luna",
+  "startedAt": "2026-07-30T04:51:21.392Z",
+  "completedAt": "2026-07-30T05:30:32.571Z",
+  "diagnostics": [
+    {
+      "code": "gate-lease-taken-over",
+      "level": "warning",
+      "message": "took over an expired concurrency-slot lease for experiment compare/codex-gpt-5.6-luna--nowledge (slot 0, previously held by pid 49783 on macbook-pro; its heartbeat went stale) — that run likely died without releasing it; this run now owns the slot.",
+      "phase": "eval.run",
+      "data": {
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "slot": 0
+      }
+    }
+  ]
+}

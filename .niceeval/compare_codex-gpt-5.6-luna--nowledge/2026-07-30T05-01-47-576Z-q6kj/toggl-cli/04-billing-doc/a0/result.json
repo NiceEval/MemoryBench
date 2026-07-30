@@ -1,0 +1,16 @@
+{
+  "id": "toggl-cli/04-billing-doc",
+  "description": "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the `entry bill` session (round up to 15 minutes, billable only)",
+  "verdict": "errored",
+  "fingerprint": "d871e4067fdcdbc7832cb936b30fe624bf48c912d3e3333a6d3eb2911eea93cd",
+  "attempt": 0,
+  "durationMs": 0,
+  "assertions": [],
+  "error": {
+    "code": "judge-precheck-failed",
+    "message": "judge precheck failed: https://x1api.top/v1 (gpt-5.6) timed out 2 times (20s each) — the endpoint accepts connections but never answers; first check whether other traffic on the same account is saturating the gateway's concurrency, then verify the judge baseUrl (NICEEVAL_JUDGE_BASE)",
+    "phase": "judge.precheck"
+  },
+  "locator": "@19khy2wp",
+  "startedAt": "2026-07-30T05:19:04.848Z"
+}

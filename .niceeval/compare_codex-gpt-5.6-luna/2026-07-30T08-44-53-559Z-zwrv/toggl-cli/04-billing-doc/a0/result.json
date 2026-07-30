@@ -1,0 +1,258 @@
+{
+  "id": "toggl-cli/04-billing-doc",
+  "description": "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the `entry bill` session (round up to 15 minutes, billable only)",
+  "verdict": "failed",
+  "fingerprint": "7108849b8db8e5ceeeb5e3890444be48b807f0625fcc2de09d52a919fd518eb5",
+  "configHash": "0a66a8ac2ef4a7b2a58e4e6c47e16004ea6422b8f0e411c5d89513b7e91c033a",
+  "attempt": 0,
+  "durationMs": 35467,
+  "assertions": [
+    {
+      "name": "includes(/15/)",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/04-billing-doc.eval.ts",
+        "line": 41,
+        "column": 7,
+        "callers": []
+      },
+      "outcome": "failed",
+      "score": 0,
+      "expected": "matches /15/",
+      "received": "I can’t verify that rule from this workspace: it contains no source, docs, or `toggl` command. Please point me to the repository or paste the `toggl entry bill` implementation/help output, and I’ll phrase it exactly."
+    },
+    {
+      "name": "judge:autoevals:closedQA",
+      "severity": "soft",
+      "detail": "closedQA(\"Does the answer state that each entry's time is rounded UP to the next 15-minute…\")",
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/04-billing-doc.eval.ts",
+        "line": 44,
+        "column": 8,
+        "callers": []
+      },
+      "outcome": "failed",
+      "score": 0,
+      "threshold": 0.6,
+      "evidence": "I can’t verify that rule from this workspace: it contains no source, docs, or `toggl` command. Please point me to the repository or paste the `toggl entry bill` implementation/help output, and I’ll phrase it exactly."
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 4672,
+    "outputTokens": 743,
+    "cacheReadTokens": 43008,
+    "reasoningTokens": 149,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.0134308,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1287
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 897
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 325,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 2186,
+          "durationMs": 323,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 472,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 2511,
+          "durationMs": 230,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 2744,
+          "durationMs": 238,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_ms79oyj0_9j5wix'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 226,
+      "children": [
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 2982,
+          "durationMs": 226,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 25125,
+      "children": [
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 3214,
+          "durationMs": 233,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 3449,
+          "durationMs": 24637,
+          "command": {
+            "display": "codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --dangerously-bypass-hook-trust 'Quick one — I'\\''m writing the onboarding d…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 28089,
+          "durationMs": 233,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 3214,
+          "durationMs": 25108,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 4672,
+            "outputTokens": 743,
+            "cacheReadTokens": 43008,
+            "reasoningTokens": 149,
+            "requests": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 527,
+      "children": [
+        {
+          "id": "n9",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 0 files",
+          "startOffsetMs": 28333,
+          "durationMs": 527,
+          "children": [
+            {
+              "id": "n10",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 28334,
+              "durationMs": 293,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 5773
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 834
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 1029
+    }
+  ],
+  "executionMs": 35467,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i0ap3lwj38n2ccmn66td4"
+  },
+  "locator": "@1gy6eu6c",
+  "startedAt": "2026-07-30T08:44:17.044Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "id": "toggl-cli/01-entry-stats",
+  "description": "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's output/JSON/duration conventions for new commands",
+  "verdict": "errored",
+  "fingerprint": "9a98b367973e22da95a82bb25e92c02399f94a2180ad2b55431181fdd9d04421",
+  "configHash": "d6b6e104b8d13098a93f5b3c83d6965782f22a6fb932ebc97d1c818e39dbed41",
+  "attempt": 0,
+  "durationMs": 27989,
+  "assertions": [],
+  "scoring": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Could not connect codex marketplace \"nowledge-community\" (source: nowledge-co/community, ref: (default)):\nError: marketplace 'nowledge-community' is already added from a different source; remove it before adding this source",
+    "phase": "agent.setup",
+    "stack": "Error: Could not connect codex marketplace \"nowledge-community\" (source: nowledge-co/community, ref: (default)):\nError: marketplace 'nowledge-community' is already added from a different source; remove it before adding this source\n    at installPlugins (/Users/ctrdh/Code/niceeval/src/agents/codex.ts:379:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Object.setup (/Users/ctrdh/Code/niceeval/src/agents/codex.ts:217:34)\n    at async runAttemptBody (/Users/ctrdh/Code/niceeval/src/runner/attempt.ts:892:25)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 579
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 232,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 579,
+          "durationMs": 232,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.setup",
+      "durationMs": 24792,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 811,
+          "durationMs": 24792,
+          "command": {
+            "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  apt-get update -qq\n  apt-get install -y -qq --no…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 2386,
+      "failed": true,
+      "children": [
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 25603,
+          "durationMs": 225,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 25829,
+          "durationMs": 218,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_ms6xnpoi_2hd2xu'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "printf",
+          "startOffsetMs": 26241,
+          "durationMs": 218,
+          "command": {
+            "display": "printf '\\n' >> ~/.codex/config.toml && cat /tmp/niceeval-native-config-ms6xnpuk-etojqe >> ~/.codex/config.toml && printf '\\n' >> ~/.codex/config.toml && rm -f …",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 26459,
+          "durationMs": 225,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'NICEEVAL_PROVIDER_EOF'\n\n[model_providers.s2a]\nname = \"s2a\"\nbase_url = \"https://x1api.top/v1\"\nenv_key = \"CODEX_API_KEY\"\nwire_api …",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 26684,
+          "durationMs": 215,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'MCPEOF'\n\n[mcp_servers.nowledge-mem]\nurl = \"https://homeless-cloudy-baghdad-association.trycloudflare.com/mcp/\"\n[mcp_servers.nowl…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 26899,
+          "durationMs": 1090,
+          "failed": true,
+          "command": {
+            "display": "codex plugin marketplace add 'nowledge-co/community' --sparse '.agents' --sparse 'nowledge-mem-codex-plugin'",
+            "exitCode": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 27989,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "icj0ipqywizanemu793f5",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 3
+  },
+  "locator": "@1ynl2tqd",
+  "startedAt": "2026-07-30T03:07:00.445Z",
+  "artifacts": [
+    "commands"
+  ]
+}

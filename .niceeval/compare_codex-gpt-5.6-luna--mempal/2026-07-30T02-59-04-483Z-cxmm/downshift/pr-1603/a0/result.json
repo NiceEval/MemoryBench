@@ -1,0 +1,299 @@
+{
+  "id": "downshift/pr-1603",
+  "description": "downshift pr-1603: return a real boolean (not a stringified boolean) for aria-selected from useCombobox/useSelect (real downshift issue)",
+  "verdict": "passed",
+  "fingerprint": "db276c2368811cc492e7e7a146a7141e04969ea84b5ac40f0293cfa018f661d7",
+  "configHash": "0f471f5923c725ee242d8601faf623115fc8a097feee8fe379e924f32c1b8d30",
+  "attempt": 0,
+  "durationMs": 182188,
+  "assertions": [
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/downshift/pr-1603.eval.ts",
+        "line": 94,
+        "column": 7,
+        "callers": []
+      },
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "scoring": "pass",
+  "usage": {
+    "inputTokens": 53374,
+    "outputTokens": 2641,
+    "cacheReadTokens": 246784,
+    "reasoningTokens": 506,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.09389839999999999,
+  "coverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 700
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 311,
+      "children": [
+        {
+          "id": "n1",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 701,
+          "durationMs": 311,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 2108,
+      "children": [
+        {
+          "id": "n2",
+          "kind": "command",
+          "label": "command",
+          "startOffsetMs": 1012,
+          "durationMs": 292,
+          "command": {
+            "display": "command -v codex >/dev/null 2>&1 || npm install -g @openai/codex@0.144.1",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n3",
+          "kind": "command",
+          "label": "mkdir",
+          "startOffsetMs": 1304,
+          "durationMs": 290,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_ms6y0j2y_dty7nz'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\nmodel_reasoning…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n4",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 1883,
+          "durationMs": 294,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n5",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 2477,
+          "durationMs": 349,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_8bm4fy'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- mempal-memory: .agents/skills/mempal-memory/SKILL.md\n…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n6",
+          "kind": "command",
+          "label": "test",
+          "startOffsetMs": 2826,
+          "durationMs": 294,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 289,
+      "children": [
+        {
+          "id": "n7",
+          "kind": "command",
+          "label": "cat",
+          "startOffsetMs": 3120,
+          "durationMs": 289,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 176341,
+      "children": [
+        {
+          "id": "n8",
+          "kind": "command",
+          "label": "set",
+          "startOffsetMs": 3412,
+          "durationMs": 1319,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/downshift-js/downshift.git .niceeval-clone\nmv .niceeval…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n9",
+          "kind": "command",
+          "label": "npm",
+          "startOffsetMs": 4731,
+          "durationMs": 68429,
+          "command": {
+            "display": "npm install",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n10",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 73174,
+          "durationMs": 322,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n11",
+          "kind": "command",
+          "label": "codex",
+          "startOffsetMs": 73498,
+          "durationMs": 101295,
+          "command": {
+            "display": "codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check --dangerously-bypass-hook-trust 'Your working directory is a checkout of the…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n12",
+          "kind": "command",
+          "label": "git",
+          "startOffsetMs": 174795,
+          "durationMs": 902,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0
+          }
+        },
+        {
+          "id": "n13",
+          "kind": "turn",
+          "label": "s1/t1",
+          "startOffsetMs": 73174,
+          "durationMs": 102523,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 53374,
+            "outputTokens": 2641,
+            "cacheReadTokens": 246784,
+            "reasoningTokens": 506,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n14",
+          "kind": "command",
+          "label": "bash",
+          "startOffsetMs": 176040,
+          "durationMs": 3709,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 664,
+      "children": [
+        {
+          "id": "n15",
+          "kind": "operation",
+          "label": "export workspace diff · 1 window · 4 files",
+          "startOffsetMs": 179750,
+          "durationMs": 664,
+          "children": [
+            {
+              "id": "n16",
+              "kind": "command",
+              "label": "set",
+              "startOffsetMs": 179750,
+              "durationMs": 330,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scoring.evaluate",
+      "durationMs": 1
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1773
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 182188,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "igo01tgbc1ghqr26wlgkr",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 6
+  },
+  "locator": "@1e84knhe",
+  "startedAt": "2026-07-30T03:17:22.946Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}
