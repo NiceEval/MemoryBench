@@ -30,7 +30,8 @@ cd "$REPO"
 echo "niceeval version: $(node_modules/.bin/niceeval --version)"
 
 # 站点只发布 compare 可比组:--exp 收窄对导出生效,页面与 artifact/ 证据树都只含 compare
-# (niceeval ≥ 0.10:出站的就是收窄到的;dev-e2b 等其它实验不出站)。
+# (niceeval ≥ 0.10:出站的就是收窄到的)。注意:2026-07-30 起所有实验都开在 compare/ 下,
+# 这层收窄不再挡任何东西——往 compare/ 里放临时接线位,它会直接进站点。
 node_modules/.bin/niceeval view \
   --results .niceeval \
   --exp compare \

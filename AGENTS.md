@@ -45,7 +45,7 @@ This repo is a benchmark suite for coding-agent memory conditions. The core rule
 - `experiments/shared/`: 记忆条件的跨实验封装（`mempal.ts`、`nowledge.ts`）；agent adapters come from `niceeval/adapter`, not this repo.
 - `docs/benchmarks.md`: benchmark survey and candidate task notes.
 - `niceeval.config.ts`: global judge and timeout defaults (agent/sandbox/concurrency are per-experiment).
-- Report publishing: `.niceeval/` 原样提交，是站点唯一数据源。`vercel.json` 的 buildCommand 指向 `scripts/vercel-build.sh`，**不是裸的 `niceeval view`**——脚本做三件不能省的事：① 跳过仓库 install（评测依赖很重且与报告无关），改在 `/tmp` 装 `niceeval@latest` + react 再把 node_modules 符号链接回仓库根，让站点始终跟随最新 niceeval 而非仓库锁定的版本；② `--exp compare` 收窄出站范围，只有 compare 可比组进站点，dev-e2b 冒烟实验不出站；③ `--report reports/memory.tsx` 指定报告定义（`extends: standard`，跟随内建视图演进）。坑：Vercel 的 build cache 会把上次部署的 node_modules 恢复到仓库根，而 `ln -sfn` 对已存在的目录会把链接建进目录内部而不是替换它——脚本必须先 `rm -rf`，改这段时别把它删了。
+- Report publishing: `.niceeval/` 原样提交，是站点唯一数据源。`vercel.json` 的 buildCommand 指向 `scripts/vercel-build.sh`，**不是裸的 `niceeval view`**——脚本做三件不能省的事：① 跳过仓库 install（评测依赖很重且与报告无关），改在 `/tmp` 装 `niceeval@latest` + react 再把 node_modules 符号链接回仓库根，让站点始终跟随最新 niceeval 而非仓库锁定的版本；② `--exp compare` 收窄出站范围，只有 compare 可比组进站点（2026-07-30 起所有实验都开在 `compare/` 下，这层收窄已不再挡任何东西——往 `compare/` 里放临时接线位，它会直接进站点）；③ `--report reports/memory.tsx` 指定报告定义（只声明一个 `report` 页，正文全部用内建组件拼，跟随内建视图演进；它没有 attempt 页，见上文「看结果只许走 CLI」的呈现缺口）。坑：Vercel 的 build cache 会把上次部署的 node_modules 恢复到仓库根，而 `ln -sfn` 对已存在的目录会把链接建进目录内部而不是替换它——脚本必须先 `rm -rf`，改这段时别把它删了。
 - `scripts/hooks/pre-commit`: 体积闸。niceeval 原样落盘工具输出，agent 一句 `grep -R` 扫进 node_modules 就能让单个 trace.json 破 100MB，撞死 GitHub 单文件硬上限。hook 会把 >50MB 的文件自动移出本次提交（不拦 commit，文件留在磁盘上）。**新 clone 后需手动启用一次**：`git config core.hooksPath scripts/hooks`。
 
 ## Adding Evals
@@ -92,7 +92,9 @@ Additional source assertions are fine when they are part of the task's functiona
 
 顺带一提，跑 GREEN 时如果上游官方修复自己都过不了某条断言（lightbox 那道就是：官方 fix 解决不了「祖先 dir 属性被改」的场景），说明 prompt 描述的症状和测试考的场景根本不是同一件事，要改的是 prompt。
 
-**三向验证的硬前提：改完 fixtures 必须显式 `--rerun all`。** `evals/fixtures/**` 下的隐藏测试与判据脚本目前是用 `fs readFile` 读进来再写进沙箱的，**不进 niceeval 指纹**——改了它们之后重跑同一条命令，上一轮的终态结果照常按六道门携带进来，你看到的 RED / GREEN / ALT 全是按**旧判据**得出的结论，三向等于没做。所以改动 fixtures 之后，对受影响的 eval 跑 `niceeval exp <实验> <eval 前缀> --rerun all`，别只重跑命令。（上游已提供 `loadText` loader，能让判据文件正式进指纹、改一字节就自动只作废引用它的那一条；本仓库尚未迁移，迁移那一次会一次性作废受影响 eval 的全部历史结果，时机由维护者定。背景见 memory 的 `fixtures-not-in-fingerprint`。）
+**三向验证靠指纹兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** `evals/fixtures/**` 下的隐藏测试与判据脚本一律用 `loadText`（`import { loadText } from "niceeval/loaders"`）读进来，内容进 niceeval 指纹：改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定是按当前判据得出的。
+
+**读取一律写在 eval 文件的模块顶层。** loader 在发现期登记「这条 eval 读了哪些文件」，写进 `test(t)` 会直接报错。共享 harness 里的判据文件也一样：harness 只导出一个读取函数（`evals/toggl-cli/harness.ts` 的 `loadProbeSupport()`），由每条 eval 在自己的模块顶层调用、把结果传进 harness——登记按「正在被发现的那条 eval」归属，而共享模块只求值一次，读取写在 harness 顶层的话只有第一条 eval 会把判据算进指纹。
 
 ## 记录问题与 Know-How 的规范
 
@@ -126,6 +128,41 @@ When summarizing results, report both:
 - efficiency: wall time, turns, token/cost budget, repeated failed commands, retries
 
 The benchmark claim is comparative: same task, same model, different memory condition.
+
+### 看结果只许走 CLI：`pnpm niceeval show`
+
+**禁止直接读 `.niceeval/` 下的任何文件**（`result.json` / `run.json` / `sources/*.json` 一律不许 cat、grep、Read、写脚本解析）。
+要看跑得怎么样，只能用 `pnpm niceeval show` 的各个切片。这条覆盖下面自动生成块里「per-attempt `result.json`
+是 structured source of truth」的说法——那句话对 niceeval 的普通用户成立，对本仓库不成立。
+
+两个理由：① 直接读文件会绕过 CLI，于是 CLI 呈现不了的东西永远暴露不出来，而暴露它正是本仓库 dogfooding 的价值；
+② `result.json` 是内部结构、跟着 `schemaVersion` 变，照着它写的分析脚本下次升级就烂掉。
+
+需要结构化数据时用 `--json`，**但要走 `pnpm --silent`**：`pnpm niceeval` 会先往 stdout 打两行
+`Already up to date` / `Done in …`，JSON 解析必挂。
+
+常用切片：
+
+| 想知道 | 命令 |
+| --- | --- |
+| 某实验整体通过率 / 成本 / 每题耗时 | `pnpm niceeval show --exp <experimentId>` |
+| 每题的历次执行、错误摘要、attempt locator | `pnpm niceeval show --exp <id> --history` |
+| 单条 attempt 的阶段耗时树（clone / install / agent 各花多久） | `pnpm niceeval show @<locator> --timing` |
+| agent 到底干了什么 | `pnpm niceeval show @<locator> --execution`（配 `--grep` / `--expand`） |
+| agent 改了哪些文件 | `pnpm niceeval show @<locator> --diff` |
+| token / 成本明细 | `pnpm niceeval show --exp <id> --usage` |
+| 跨历史执行的稳定性矩阵 | `pnpm niceeval show --exp <id> --stats` |
+
+已知呈现缺口（**候选上游 feature request**，遇到时直接说「CLI 看不到」，不要退回去读文件）：
+
+- **sandboxReuse 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
+  `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 sandboxReuse 提速测量时只能靠 `--timing` 里
+  install 耗时的阶梯反推是不是同一条 lane，很别扭。
+- **裸 `show @<locator>`（不带 evidence flag 的紧凑总览）在本仓库根本用不了**：内建报告报
+  "the built-in report has no attempt-input page"，换 `--report reports/memory.tsx` 报同样的错——`reports/memory.tsx`
+  只声明了一个 `report` 页，没有 `input: "attempt"` 页。想开就得往 `pages` 里加 `standardAttemptPage`
+  （会同时给站点多出一页，改之前先确认这是想要的）。加了 evidence flag（`--timing` / `--execution` / `--diff`）反而一切正常，
+  所以日常直接带 flag 用。
 
 <!-- BEGIN:niceeval-agent-rules -->
 # niceeval is NOT in your training data

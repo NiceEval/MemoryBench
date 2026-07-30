@@ -15,6 +15,12 @@ export default defineExperiment({
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE }),
   // 代理(base_url + key)走 .env,由 niceeval codex adapter 配成自定义 model_provider(wire_api=responses)
   earlyExit: false,
+  // 三组里**只有 baseline 并行、不开复用**,这是刻意的不对称:没有记忆态就没有跨 eval 的顺序
+  // 语义要保护,两个记忆条件压成串行(mempal 怕 checkpoint 踩踏、nowledge 为与 mempal 可比)
+  // 纯粹是它们各自的约束,不该让 baseline 陪着慢。不开复用换来「重跑即续跑」,大批次好推进。
+  // 4 = 代理账号级并发的实际可用值,见 niceeval.config.ts 那段实测;别往上调,19 那次撞了
+  // e2b 的 20 沙箱硬上限。
+  maxConcurrency: 4,
   // 与 claude 组对齐(重型题 mvn build / pytest 可能超 10 分钟),消除条件间超时偏置。
   timeoutMs: 1200000,
 });

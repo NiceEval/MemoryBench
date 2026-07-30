@@ -11,20 +11,31 @@ export default defineConfig({
   // theme: chalk,
   theme: basalt,
 
-  // LLM-as-judge:用代理上的 gpt-5.4-mini(与被测 agent 分离)。
+  // LLM-as-judge:用代理上的 gpt-5.6(与被测 agent 分离)。
+  //
+  // 原来钉的 gpt-5.4-mini 从 2026-07-30 起被代理下架(chat/completions 与 responses 都返
+  // 404 `not supported by any configured account in this group`),judge 路径同样中招,
+  // 所以必须换。代理现存 gpt-5.4 / 5.5 / 5.6 / 5.6-luna / 5.6-sol / 5.6-terra,没有 mini 档。
+  // 不跟着 agent 一起换成 gpt-5.6-luna:compare 组的被测 agent 就是 gpt-5.6-luna,judge
+  // 用同一个模型等于自评。目前只有 toggl-cli/04-billing-doc 走 judge。
+  //
+  // 选 gpt-5.6 是实测选出来的,别凭名字挑。同一句「回 yes」的往返(2026-07-30 实测):
+  // gpt-5.6 4.4s · gpt-5.6-sol 4.2s · gpt-5.4 10.6s · gpt-5.6-luna 13.8s · gpt-5.6-terra 20.7s,
+  // gpt-5.5 直接 429 并发超限。judge 预检只给 20s,先钉的 gpt-5.4 正是慢到把它耗光才发现
+  // (`judge precheck timed out after 20s`)——代理并发一上来,10s 基线必然翻车。
   //
   // judge 的凭据只从环境来,且**只读一个名字**——不跨家族猜 CODEX_/OPENAI_(见 niceeval
   // src/scoring/judge.ts 文件头「配置从代码来,凭据从环境来」)。默认名是 NICEEVAL_JUDGE_KEY,
   // 本仓库没有这个变量,所以显式把 apiKeyEnv 指到 .env 里已有的 CODEX_API_KEY;不指的话
-  // precheck 直接硬失败(`judge model gpt-5.4-mini is missing an API key`),一条 attempt 都不跑。
+  // precheck 直接硬失败(`judge model gpt-5.6 is missing an API key`),一条 attempt 都不跑。
   //
-  // baseUrl 不指定会回退到 https://api.openai.com/v1,而 gpt-5.4-mini 只在代理上有——
+  // baseUrl 不指定会回退到 https://api.openai.com/v1,而这些模型只在代理上有——
   // 这正是此前 judge 断言批量报 `400 tool_choice.name missing_required_parameter` 的原因:
   // 打到了不认识这个模型的端点。baseUrl 按 niceeval 的划分属于「配置」本该写死在代码里,
   // 这里读 env 是因为代理地址跟着 .env(gitignored)走,不进仓库;.env 在 config 之前加载
   // (cli.ts:613 loadDotenv → 614 import config),取值时机没问题。
   judge: {
-    model: "gpt-5.4-mini",
+    model: "gpt-5.6",
     baseUrl: process.env.CODEX_BASE_URL,
     apiKeyEnv: "CODEX_API_KEY",
   },
@@ -34,12 +45,27 @@ export default defineConfig({
   // e2b 账号真实并发沙箱上限实测正好是 20(RateLimitError 精确命中),niceeval 对 e2b 的
   // 推荐默认值也是 20——零 headroom:attempt 释放信号量和旧沙箱实际销毁之间有重叠窗口,
   // 新 attempt 起沙箱瞬间会被限流秒拒。所以上限一定要留 headroom,别贴着 20 写。
-  // 当前取 10 而不是 19:约束已经不是 e2b 配额,而是本机——同批常带 nowledge 这类在 host
-  // 侧起 docker server + 隧道的记忆条件,并发再高会把 laptop 压到被 SIGTERM
-  // (见 memory: memory-experiments-run-sequential)。纯 e2b、无 host 侧服务的批次可以调高。
+  // 但 e2b 配额从来不是真正的约束,见下面 2026-07-30 那段实测。次要约束是本机:同批常带
+  // nowledge 这类在 host 侧起 docker server + 隧道的记忆条件,并发再高会把 laptop 压到被
+  // SIGTERM(见 memory: memory-experiments-run-sequential)。
   // 另见 memory: e2b-sandbox-terminated-concurrency、niceeval-budget-probe-starves-global-semaphore。
   //
   // 注意这是**全局**上限;实验自己声明的 maxConcurrency 是独立的实验级闸,只串行化本实验,
   // 不钳全局(mempal 的 maxConcurrency: 1 即属此类,实测有效)。
-  maxConcurrency: 10,
+  //
+  // 2026-07-30 实测:真正咬人的上限根本不是 e2b 沙箱数,而是 **x1api 代理的账号级并发**,
+  // 约 5 路,且超出的请求不会立刻 429——它把连接挂住 30 秒再拒。10 路并发只活 5 路;
+  // 换模型绕不开(gpt-5.6 与 gpt-5.6-sol 各 3 路同时打,总共只活 2 路,说明按账号不按模型算)。
+  // 后果一:judge 预检只等 20 秒,槽位一满它看到的就是「连上了但永远不回」,整次运行在派发前
+  // 硬失败(`judge precheck timed out after 20s`),错误信息指向 baseUrl / gateway,极易误诊。
+  // 后果二:这个额度是**跨仓库共享**的——同一把 CODEX_API_KEY 在别的项目跑 --max-concurrency 8,
+  // 这边就一个槽都抢不到。开跑前先 `ps aux | grep "niceeval exp"` 看看还有谁在跑。
+  // 所以这个数字要按「同时在飞的 agent 数 ≤ 4」来配,给 judge 留一路,而不是按 e2b 配额配。
+  //
+  // 这里长期写着 19、和上面每一句结论都相反,代价是实测出来的:2026-07-28/29 的
+  // compare/codex-gpt-5.6-luna 没声明实验级闸,于是按 19 路派发,5 条 attempt 直接死于
+  // `maximum number of concurrent E2B sandboxes (20)`;nowledge 组另有两条死于代理
+  // `Concurrency limit exceeded for user`。改成 4 之后,实验级声明(nowledge 4 / mempal 1)
+  // 只会把它压得更低,不会再放开。
+  maxConcurrency: 4,
 });

@@ -12,7 +12,7 @@ import {
 // claude-dp-v4 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
 // 官方 claude-code 插件(装上即挂 SessionStart 读 / UserPromptSubmit 指引 / Stop 写 的 lifecycle
 // hooks,无 install 脚本、无 hook-trust、插件根无 .mcp.json 故不叠远程 MCP,读写都走 nmem CLI)。
-// 对照 claude-dp-v4.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。dev-e2b/claude-e2b-nowledge
+// 对照 claude-dp-v4.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。claude-code 侧的接线
 // 已冒烟跑通(probe 实锤 Stop hook 落 thread 到服务端)。
 //
 // mem 服务端是长期运行的固定远程实例(连接坐标在 .env,见 shared/nowledge.ts 文件头):

@@ -11,15 +11,13 @@ import {
 
 // codex-gpt-5.6-luna 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
 // 官方 codex 集成(远程 HTTP MCP 读路径 + 插件 lifecycle hooks 写路径 + nmem CLI),
-// 全链路已在 dev-e2b/codex-gpt-5.4-mini-nowledge 冒烟闭环确认(Stop hook 落 thread、
-// agent 主动 nmem m search/add),此前只差把它搬进 compare 组用真实对比模型 gpt-5.6-luna 跑。
+// 全链路已在 2026-07-30 的 dogfood 接线冒烟里闭环确认(Stop hook 落 thread、
+// agent 主动 nmem m search/add)。
 // 对照 codex-gpt-5.6-luna.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。
 //
 // mem 服务端是长期运行的固定远程实例(连接坐标在 .env,见 shared/nowledge.ts 文件头):
 // niceeval 侧不管服务端生命周期,沙箱钩子负责接线与收尾核对,记忆跨 run / 跨实验持续积累,
 // 与 mempal「状态跨 run 存续」对齐。同批的 claude-dp-v4--nowledge 共用同一个库;正式对比要说清起点库状态。
-// 隔离:中心化 server 自理并发读写,并行 attempt 不会踩坏彼此的写入,故这里不压成串行(见
-// shared/nowledge.ts 文件头「可并发」)。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · Nowledge Mem",
@@ -27,14 +25,28 @@ export default defineExperiment({
   agent: codexAgent(nowledgeCodexConfig()),
   flags: { ...nowledgeFlags() },
   model: "gpt-5.6-luna",
-  sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE })
+  // 复用下 provider 必须能声明实例寿命,不声明会在第一条 attempt 派发前硬失败。1 小时是 e2b
+  // 账号档位硬上限,但它不是泳道总预算:每次派发前 runner 都会 ensureLifetime 续到完整 lifetimeMs,
+  // 所以一条泳道能无限续下去,只要单条 attempt 装得下 1 小时(详见 codex-gpt-5.6-luna--mempal.ts)。
+  sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 })
     .setup(nowledgeAttachRemote())
     // 收尾核对 setup 时连的那个隧道还活着;中途换址会让 memory_add 静默全挂,见 shared/nowledge.ts
     .teardown(nowledgeVerifyRemoteAlive()),
+  // 复用 + 串行,与 mempal 组逐字对齐。插件安装不是阻碍:niceeval 的 codex adapter 在每条 attempt
+  // 开始前把同名 marketplace 注册与插件安装先摘后装、收敛到声明(niceeval docs/feature/adapters/
+  // architecture/coding-agent-extensions.md「安装收敛」),install_hooks.py 改写托管源的残留也被
+  // 吸收(2026-07-30 用 dogfood × attempts:3 验过:第 2、3 条 attempt 踩残留 $HOME 仍全过)。
+  sandboxReuse: true,
   earlyExit: false,
-  // 并发:中心化 server 自理并发读写,记忆库不像 mempal 的 checkpoint 文件那样怕并行踩踏,
-  // 所以这里不压到 1(见 shared/nowledge.ts 文件头「可并发」)。
-  maxConcurrency: 4,
+  // 串行 = 一条泳道。这里不是怕并行踩坏写入(中心化 server 自理并发读写,见 shared/nowledge.ts
+  // 文件头「可并发」),而是为了**跨记忆条件可比**:mempal 因为 checkpoint 文件必须串行,
+  // nowledge 若留在 4 路,跨 eval 的记忆可见顺序就是不确定的(eval N 不保证读得到 N-1 刚写的),
+  // 两个记忆条件配得不一样,pass rate 差异就分不清是记忆实现的差异还是积累顺序的差异。
+  //
+  // 代价与 mempal 同款:① 复用与结果沿用双向绝缘,中断重跑是全量重跑(36 题串行 ≈ 3h),
+  // 没有「重跑即续跑」;② 换来的是沙箱创建 + 公共准备从每题一次降到每泳道一次,
+  // 以及 toggl-cli 那条 rust 工具链 / cargo 缓存跨题存活(实测省约 1 分钟/题)。
+  maxConcurrency: 1,
   // 与 codex baseline/mempal 对齐,astropy eval 两阶段都要源码构建。
   timeoutMs: 1200000,
 });

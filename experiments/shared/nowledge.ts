@@ -21,7 +21,7 @@ import type { Sandbox, SandboxHook, SandboxHookContext } from "niceeval/sandbox"
  *   所以 nowledge 实验不需要 mempal 那种 maxConcurrency: 1。代价是跨 eval 的记忆可见顺序
  *   不确定(eval N 不保证读得到 eval N-1 刚写的)——链式题要的是「上一轮写过」而不是
  *   「紧邻上一条写过」,这个粒度的乱序可以接受。
- * - **所有 nowledge 实验(含 dev-e2b 冒烟)共用这一个库**:run N 依赖此前所有写入。
+ * - **所有 nowledge 实验共用这一个库**:run N 依赖此前所有写入。
  *   正式对比要说清起点库状态;归零 = 在服务端侧清库或换一个实例,然后更新 .env。
  *
  * quick tunnel URL 每次 cloudflared 重启会变:变了只更新 .env,代码与实验文件不动。

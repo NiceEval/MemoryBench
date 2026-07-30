@@ -132,7 +132,7 @@ license_activate() {
     [ -n "$msg" ] || msg="activate 返回体无 message,is_device_activated 仍 false"
     # 激活失败是否致命,取决于本次跑对 pro 的依赖:
     #  · free tier 已开放全部 feature(remote_ai_models / advanced_search / knowledge_graph / thread_import),
-    #    只有 memory 上限 50 —— dev-e2b 冒烟(单 eval 写几条)完全够用,不该被 seat 用尽硬挡。
+    #    只有 memory 上限 50 —— 接线冒烟(单 eval 写几条)完全够用,不该被 seat 用尽硬挡。
     #  · compare/ 正式跑要 >50 条 + 一致的 pro 条件,必须硬失败:设 NOWLEDGE_REQUIRE_PRO=1。
     # 「device limit reached」的根因:每个临时实例是全新 device,seat 无自助释放端点(devices/reset/release 全 404),
     #  只能去 nowledge 账号后台(mem.nowledge.co)释放旧设备,或改用持久 device 复用(见 down 注释)。
