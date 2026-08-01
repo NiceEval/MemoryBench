@@ -38,8 +38,8 @@ This repo is a benchmark suite for coding-agent memory conditions. The core rule
 
 ## Repo Layout
 
-- `evals/`: niceeval task definitions, 每个上游仓库一个目录（`downshift/`、`react-datepicker/`、`react-hook-form/`、`react-tooltip/`、`yet-another-react-lightbox/`），外加自造的链式题 `toggl-cli/` 与冒烟题 `dogfood/`。
-- `evals/fixtures/`: 隐藏测试与探针脚本。**一律在 agent 最后一轮之后才写进沙箱**，agent 全程看不到也改不了判据——加新题时保持这个顺序。
+- `evals/`: niceeval task definitions, 每个上游仓库一个目录（`downshift/`、`react-datepicker/`、`react-hook-form/`、`react-tooltip/`、`yet-another-react-lightbox/`），外加自造的链式题 `toggl-cli/` 与冒烟题 `dogfood/`。有私有素材的题使用文件夹入口 `evals/<family>/<id>/eval.ts`，隐藏测试与跑测脚本共址在该题的 `tests/`；题组共享素材放没有 `eval.ts` 的 `_support/`。隐藏判据**一律在 agent 最后一轮之后才写进沙箱**，agent 全程看不到也改不了判据。
+  中央 fixtures 目录（`evals/fixtures/`）已于 2026-08-01 删除，隐藏素材一律与题共址，不要再造中央目录。
 - `workspaces/`: 拷进沙箱的起始仓库。目前只有 `dogfood/` 还在用；PR 题改成 clone 真实上游仓库并 reset 到 base commit，所以这里多数目录是没接线的历史遗留。
 - `experiments/`: comparable run matrices for agents and models.
 - `experiments/shared/`: 记忆条件的跨实验封装（`mempal.ts`、`nowledge.ts`）；agent adapters come from `niceeval/adapter`, not this repo.
@@ -92,7 +92,7 @@ Additional source assertions are fine when they are part of the task's functiona
 
 顺带一提，跑 GREEN 时如果上游官方修复自己都过不了某条断言（lightbox 那道就是：官方 fix 解决不了「祖先 dir 属性被改」的场景），说明 prompt 描述的症状和测试考的场景根本不是同一件事，要改的是 prompt。
 
-**三向验证靠指纹兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** `evals/fixtures/**` 下的隐藏测试与判据脚本一律用 `loadText`（`import { loadText } from "niceeval/loaders"`）读进来，内容进 niceeval 指纹：改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定是按当前判据得出的。
+**三向验证靠指纹兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** 各题 `tests/`（以及题组 `_support/`）下的隐藏测试与判据脚本一律用 `loadText`（`import { loadText } from "niceeval/loaders"`）读进来，内容进 niceeval 指纹：改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定是按当前判据得出的。
 
 **读取一律写在 eval 文件的模块顶层。** loader 在发现期登记「这条 eval 读了哪些文件」，写进 `test(t)` 会直接报错。共享 harness 里的判据文件也一样：harness 只导出一个读取函数（`evals/toggl-cli/harness.ts` 的 `loadProbeSupport()`），由每条 eval 在自己的模块顶层调用、把结果传进 harness——登记按「正在被发现的那条 eval」归属，而共享模块只求值一次，读取写在 harness 顶层的话只有第一条 eval 会把判据算进指纹。
 
@@ -196,17 +196,17 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
   后果：只有最近一次 run 的 attempt 能下钻，历史 attempt 的失败原因查不了（2026-07-30 撞到：nowledge 组
   01/02 的首次 attempt 全部无法打开）。
 - **attempt 被超时杀掉时，看不出是哪一层的 timeoutMs 生效**：`--timing` 只在被杀的那条命令后面打一个 ✗，
-  不显示这条命令拿到的 deadline 是多少、来自哪一层（flag / experiment / eval / config）。2026-07-30 撞到的具体形态：
-  实验声明 `timeoutMs: 1200000`，但 `codex exec` 稳定在整 600s 被杀，错误正文是 E2B SDK 自己的
-  "likely due to exceeding 'timeoutMs' … can be modified by passing 'timeoutMs'"——即沙箱层的 per-command 超时，
-  与实验声明的 attempt 超时不是同一个数，而 CLI 没有任何切片能告诉你这一点（同批还有跑到 15m36s 才通过的
-  attempt，所以也不能靠观察反推出统一上限）。要么 `--timing` 每条命令标出 `deadline=…(来源)`，
-  要么超时错误里直接写明是沙箱 per-command 超时并给出该配哪个字段。**它是偶发的**：同一批
-  mempal 05/06 原地重跑（配置一字未改）两条都过，所以撞到它先原样重跑一次，不要去调实验的 `timeoutMs`。
-- **`--dry` 的 plan 不说明每条为什么要重跑**：只给一行 `1 of 18 carried in from cache · 17 to run`，
-  逐条不标失效原因。而作废原因可能同时有好几种（指纹变了 / `sandboxReuse` 结构性绝缘 / `errored` 从不沿用 /
-  超过当前 timeoutMs），排查只能靠读文档反推每一条命中哪一门。期望每行标出 `stale: judge config`、
-  `never-carried: sandboxReuse`、`new` 这类原因（`locked` 已经这么标了，是好例子，把它推广到全部原因即可）。
+  不显示这条命令拿到的 deadline 是多少、来自哪一层（flag / experiment / eval / config / provider SDK 默认）。
+  2026-07-30 靠它暴露出一个**真 bug**（已修，见 memory: agent-command-killed-at-600s）：`sandboxReuse` 的建实例
+  路径从不把 attempt deadline 递给沙箱，于是复用泳道上每条命令都吃 e2b SDK 默认的 60 秒，实验声明的
+  `timeoutMs: 1200000` 形同虚设。**当时能确诊全靠人肉发现「✗ 的命令停在整 1m 0s」这个整数关口**——
+  CLI 一个字都没提这条线是谁给的。呈现缺口本身仍在：期望 `--timing` 每条命令标出 `deadline=…(来源层)`，
+  超时错误里写明是沙箱 per-command 超时。教训：看到 `deadline_exceeded` 先看被 ✗ 的命令时长**是不是卡在
+  60s / 600s 这种整数关口**，是就去查 deadline 传导，不要因为「重跑能过」就判成 flaky
+  （60s 只砍超过 60s 的命令，轻量题碰不到，所以它天生长得像偶发）。
+- ~~`--dry` 的 plan 不说明每条为什么要重跑~~ **已具备**（2026-07-30 实测）：逐条标 `carried` / `locked` /
+  `stale: config:agentInstall.revision` / `new`，原因是给全的。注意 `stale: config:agentInstall.revision`
+  这一档很容易撞上——agent 的安装版本一变，此前跑的结果全作废。
 - **`niceeval exp` 的多余位置参数被静默当 eval 前缀吞掉**：`exp` 只接一个 `path|experiment`，后面全是
   eval id 前缀。想跑两个实验而写成 `exp <expA> <expB> toggl-cli/04`，第二个实验名会被当 eval 前缀去匹配、
   匹配到 0 条、**静默丢弃**，plan 里只剩 expA，无 warning、退出码 0。反向也危险：多写的参数若恰好是个有效
