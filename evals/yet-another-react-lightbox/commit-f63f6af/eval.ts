@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: direct commit f63f6af90a2e0d70fe04a126001076151178eb78 to
 // igordanchenko/yet-another-react-lightbox main (no associated PR — confirmed via
@@ -13,9 +10,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // the start/end edges compared to the default infinite/looping mode.
 const REPO_URL = "https://github.com/igordanchenko/yet-another-react-lightbox.git";
 const BASE_COMMIT = "c0ec3709403a357b7c9e8a95f2645cf6bd808262";
-
-const thumbnailsTest = await loadText(fixture("tests/Thumbnails.spec.ts"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -87,10 +81,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "test/unit/plugins/Thumbnails.spec.ts": thumbnailsTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/Thumbnails.spec.ts", import.meta.url),
+
+      "test/unit/plugins/Thumbnails.spec.ts",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

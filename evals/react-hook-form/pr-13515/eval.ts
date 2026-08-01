@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13515(不让被测 agent 看到 PR 号/commit/URL):
 // deepEqual() 的循环引用防护把「已访问过的对象」全塞进一个共享 WeakSet,只要本次比较里任何一侧
@@ -11,14 +10,8 @@ import { loadText } from "niceeval/loaders";
 // 一个「只删掉 visited 防护」的作弊修复能让新增的复用引用断言通过,但会在那个循环引用用例上
 // 爆栈——所以 run-tests.sh 对 deepEqual.test.ts 是整份跑,不按 test name 抠。
 
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "1e00a1b18643d6de6cd9a92bcb05b996ac163455";
-
-const deepEqualTest = await loadText(fixture("tests/deepEqual.test.ts"));
-const useFormTest = await loadText(fixture("tests/useForm.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -97,12 +90,19 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/utils/deepEqual.test.ts": deepEqualTest,
-      "src/__tests__/useForm.test.tsx": useFormTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/deepEqual.test.ts", import.meta.url),
+      "src/__tests__/utils/deepEqual.test.ts",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/useForm.test.tsx", import.meta.url),
+      "src/__tests__/useForm.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

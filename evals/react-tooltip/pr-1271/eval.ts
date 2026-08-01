@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: react-tooltip PR #1271 (merge 013931f2c362d8971e578f41a3b7c739ea74b520),
 // which lands on top of BASE_COMMIT (its first parent, == baseRefOid here). Bug 1: the
@@ -15,9 +12,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // so that check can be stale by the time a deferred delayShow timer actually fires.
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "f93a090aa10101f6cf7490ae8f4db1e7f39f7b47";
-
-const closeAndDelayTest = await loadText(fixture("tests/tooltip-close-and-delay-behavior.spec.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -113,10 +107,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/tooltip-close-and-delay-behavior.spec.js": closeAndDelayTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/tooltip-close-and-delay-behavior.spec.js", import.meta.url),
+
+      "src/test/tooltip-close-and-delay-behavior.spec.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

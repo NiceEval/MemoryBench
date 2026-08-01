@@ -1,7 +1,8 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, orderedLines, prepareRepo, loadProbeSupport, runProbe, type ProbeCase } from "../harness.ts";
+import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
 
 // 链的第 5 题。开票口径:在计费取整之上再加一条最低计费额。
 //
@@ -35,8 +36,6 @@ const asJson = (probeCase: ProbeCase): any => {
 const billSummary = (payload: any) =>
   Array.isArray(payload?.projects) ? payload.projects.map((p: any) => [p?.project, p?.billable_seconds]) : payload;
 
-const probeSupport = await loadProbeSupport();
-
 export default defineEval({
   description:
     "toggl-cli 05: add `toggl entry invoice` (per-project invoice) and establish the 30-minute minimum " +
@@ -44,10 +43,8 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  setup: installRustToolchain,
+  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
   async test(t) {
-    await prepareRepo(t);
-
     await t
       .send(
         "toggl-cli. I need a proper invoice command: `toggl entry invoice`, per project.\n\n" +
@@ -81,7 +78,7 @@ export default defineEval({
         { name: "json", args: ["entry", "invoice", "--since", DAY, "--until", DAY, "--json"] },
         { name: "empty", args: ["entry", "invoice", "--since", "2026-01-01", "--until", "2026-01-01"] },
       ],
-    }, probeSupport);
+    });
 
     await t.group("命令存在,取整 + 30 分钟最低额都应用后按项目汇总", () => {
       t.check(probe.human.exit, equals(0));

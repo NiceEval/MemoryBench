@@ -1,9 +1,6 @@
 import { defineEval } from "niceeval";
-import { defineSandboxRecipe } from "niceeval/sandbox";
+import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: react-tooltip PR #970. This PR was landed as a linear sequence of 4 commits
 // fast-forwarded onto main (no distinct 2-parent merge commit was created), so gh's
@@ -22,9 +19,6 @@ const BASE_COMMIT = "92bed214767a1110d5b6abd43643e73437833261";
 const FIX_COMMIT = "f4d97476635cdc76bd86f22302e73131fa58f55d";
 void FIX_COMMIT; // documents provenance of the hidden test fixture; not used at runtime
 
-const placeClassSpec = await loadText(fixture("tests/tooltip-place-class.spec.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
-
 export default defineEval({
   description:
     "react-tooltip pr-970: expose the tooltip's actual computed placement so consumers can target it with " +
@@ -36,9 +30,9 @@ export default defineEval({
     ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
   // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox recipe beforeEach command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
+  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
   // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: defineSandboxRecipe().beforeEach(async (sandbox, ctx) => {
+  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
     // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
     // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
@@ -111,10 +105,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/tooltip-place-class.spec.js": placeClassSpec,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/tooltip-place-class.spec.js", import.meta.url),
+
+      "src/test/tooltip-place-class.spec.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

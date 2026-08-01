@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: direct commit 557805264799d436f8dae40414faf3318b468954 to
 // igordanchenko/yet-another-react-lightbox main (no associated PR — confirmed via
@@ -27,9 +24,6 @@ const BASE_COMMIT = "3ae28d1fca631f7dc31fc9d56a9c43551f9afd21";
 // to run its own tests.
 const MIN_NODE_MAJOR = 22;
 const MIN_NODE_MINOR = 13;
-
-const rtlTest = await loadText(fixture("tests/RTL.spec.ts"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -129,10 +123,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "test/unit/RTL.spec.ts": rtlTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/RTL.spec.ts", import.meta.url),
+
+      "test/unit/RTL.spec.ts",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

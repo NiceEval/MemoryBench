@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13512(不让被测 agent 看到 PR 号/commit/URL):
 // validateField.ts 里给 shouldUseNativeValidation 用的 setCustomValidity 闭包只对
@@ -34,13 +33,8 @@ import { loadText } from "niceeval/loaders";
 // prepare 钩子也一并跳过,sandbox 里不需要 git hooks。兄弟 react-hook-form eval(pr-13476/
 // 13515/13566/13599/13603)目前仍是朴素 `pnpm install`,建议一并回补这个 flag。
 
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "bb2ce17575bd410cae6859e2878f9108a93bd6bc";
-
-const hiddenTest = await loadText(fixture("tests/validateField.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -112,11 +106,15 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/logic/validateField.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/validateField.test.tsx", import.meta.url),
+      "src/__tests__/logic/validateField.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

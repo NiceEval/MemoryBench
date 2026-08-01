@@ -5,15 +5,10 @@
 // 建立与复用了哪些约定,见各 eval 文件头。
 
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 import type { TestContext } from "niceeval";
-// Sandbox / SandboxHookContext(eval.setup 收到的两个参数)不从包根导出——包根只导出了更窄的
-// SandboxHandle,所以它们要从 sandbox 子路径拿。候选上游 FR:在 `setup` 声明的地方也导出它们。
-import type { Sandbox, SandboxHookContext } from "niceeval/sandbox";
+import type { SandboxCommand } from "niceeval/sandbox";
 
 const REPO_URL = "https://github.com/CorrectRoadH/toggl-cli.git";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 /** toggl-cli @ 8646f29 —— 写这些 eval 时的仓库 tip。 */
 export const BASE_COMMIT = "8646f29c87242b06eab974793a999d35b5a85b5e";
@@ -22,7 +17,7 @@ export const BASE_COMMIT = "8646f29c87242b06eab974793a999d35b5a85b5e";
 export const today = () => new Date().toISOString().slice(0, 10);
 
 /**
- * eval.setup:系统包 + Rust 工具链,以 root 装,好让它们落在工作副本之外、永不进 agent diff。
+ * Eval layer command:系统包 + Rust 工具链,以 root 装,好让它们落在工作副本之外、永不进 agent diff。
  *
  * `keyring` 需要 libdbus,`reqwest`/`openssl-sys` 需要 libssl + pkg-config(仓库自己的 AGENTS.md
  * 里有记)。工具链装到 /usr/local/{rustup,cargo} 而不是某个用户 home,这样 agent 开的每个 shell、
@@ -36,7 +31,7 @@ export const today = () => new Date().toISOString().slice(0, 10);
  * 没法声明式表达),工具链状态一律交给无条件的 `rustup default stable` 收敛,环境变量在脚本顶层
  * 无条件导出、并写进 /etc/profile.d 供后续 shell 用。
  */
-export const installRustToolchain = async (sandbox: Sandbox, ctx: SandboxHookContext) => {
+export const installRustToolchain: SandboxCommand = async (sandbox, ctx) => {
   ctx.progress({ message: "installing build deps + rust toolchain" });
   const script = [
     "set -euo pipefail",
@@ -107,9 +102,9 @@ export const installRustToolchain = async (sandbox: Sandbox, ctx: SandboxHookCon
  * 消失了。base commit 之后的历史(remote/tags/reflog)全抹掉,这样 agent 没法从自己的 checkout 里
  * 读到这个项目的"未来"。
  */
-export const prepareRepo = async (t: TestContext) => {
-  t.progress({ message: "cloning toggl-cli @ base commit" });
-  const cloned = await t.sandbox.runShell(
+export const prepareRepo: SandboxCommand = async (sandbox, ctx) => {
+  ctx.progress({ message: "cloning toggl-cli @ base commit" });
+  const cloned = await sandbox.runShell(
     [
       "set -euo pipefail",
       // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
@@ -137,8 +132,8 @@ export const prepareRepo = async (t: TestContext) => {
 
   // 预先把依赖构建预热一次。不预热的话,agent 要从自己的时间预算里付一次数分钟的冷 `cargo build`
   // ——那会变成一个与记忆无关的条件间差异。
-  t.progress({ message: "warming cargo build cache (cold dependency build)" });
-  const built = await t.sandbox.runShell(
+  ctx.progress({ message: "warming cargo build cache (cold dependency build)" });
+  const built = await sandbox.runShell(
     [
       // 与 /etc/profile.d/rust.sh 同款三件套:这是非登录 shell,拿不到 profile.d,
       // 只导 PATH 会让 rustup proxy 退回空的 ~/.rustup(见 installRustToolchain 文件注)。
@@ -153,11 +148,11 @@ export const prepareRepo = async (t: TestContext) => {
 
   // 有 attempt 中途死于一句光秃秃的 "terminated",没有更多线索。把预热之后沙箱还剩多少空间记下来,
   // 下次再出就能坐实(或排除)是空间问题,而不是接着猜。
-  const disk = await t.sandbox.runShell(
+  const disk = await sandbox.runShell(
     "df -Pk / /opt 2>/dev/null | tail -n +2 | awk '{printf \"%s: %s KB free of %s KB; \", $6, $4, $2}'; " +
       "du -sk /opt/cargo-target 2>/dev/null | awk '{printf \"build tree %s KB\", $1}'",
   );
-  t.diagnostic({
+  ctx.diagnostic({
     code: "sandbox-space-after-warmup",
     level: "warning",
     message: disk.stdout.trim() || "df/du produced no output",
@@ -211,24 +206,6 @@ export const orderedLines = (probeCase: ProbeCase, expected: string[]) => {
   };
 };
 
-/** 探针的两份判据文件:一次性 HTTP stub 与跑测脚本。 */
-export interface ProbeSupport {
-  probePy: string;
-  runProbeSh: string;
-}
-
-/**
- * 读入探针判据文件,内容进指纹——改一字节,引用它的那条 eval 自动重跑。
- *
- * 必须在**每个 eval 文件自己的模块顶层**调用。loader 的登记按「正在被发现的那条 eval」归属,
- * 而共享模块只求值一次:读取写在本文件顶层的话,只有第一条被发现的 toggl-cli eval 把它们算进
- * 指纹,其余五条会静默漏登记。
- */
-export const loadProbeSupport = async (): Promise<ProbeSupport> => ({
-  probePy: await loadText(fixture("_support/probe.py")),
-  runProbeSh: await loadText(fixture("_support/run-probe.sh")),
-});
-
 /**
  * 构建 agent 留下的代码,把计划里每条 CLI 调用都对着一个一次性 HTTP stub 跑一遍,把每条干了什么
  * 交回来。断言留在 eval 文件里——一条约定一条——这样失败的运行能显示是哪条约定没做到,而不是
@@ -239,17 +216,21 @@ export const loadProbeSupport = async (): Promise<ProbeSupport> => ({
 export const runProbe = async (
   t: TestContext,
   plan: ProbePlan,
-  support: ProbeSupport,
 ): Promise<Record<string, ProbeCase>> => {
-  await t.sandbox.writeFiles({
-    "tests/probe.py": support.probePy,
-    "tests/run-probe.sh": support.runProbeSh,
-    "tests/probe-plan.json": JSON.stringify(plan, null, 2),
-  });
+  // agent 最后一轮之后才传输隐藏 probe；本地 source 由 transfer manifest 自动计入身份。
+  await t.sandbox.uploadFile(
+    new URL("_support/probe.py", import.meta.url),
+    "tests/probe.py",
+  );
+  await t.sandbox.uploadFile(
+    new URL("_support/run-probe.sh", import.meta.url),
+    "tests/run-probe.sh",
+  );
+  await t.sandbox.writeText("tests/probe-plan.json", JSON.stringify(plan, null, 2));
 
   t.progress({ message: "building the agent's code and probing the CLI" });
   const probe = await t.sandbox.runShell("bash tests/run-probe.sh");
-  // 与 setup 里那个 cargo target-dir 重定向双保险:万一真有东西落进了 workdir 本地的 target/,
+  // 与 prepare command 里的 cargo target-dir 重定向双保险:万一真有东西落进 workdir 的 target/,
   // 在 niceeval 遍历工作树抓 diff 之前先删掉。
   await t.sandbox.runShell("rm -rf target");
   await t.require(probe, commandSucceeded());

@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: react-hook-form PR #13566 (merge f89388f5f60b8a8222a42b340f49b38e77d9ed26),
 // which lands on top of BASE_COMMIT (its first parent). Bug: flatten() recurses into
@@ -10,9 +7,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // Date as a single leaf value.
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "46381fa8fe690fc16d17afde8a43738a55b2c6e6";
-
-const flattenTest = await loadText(fixture("tests/flatten.test.ts"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -79,10 +73,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/__tests__/utils/flatten.test.ts": flattenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/flatten.test.ts", import.meta.url),
+
+      "src/__tests__/utils/flatten.test.ts",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

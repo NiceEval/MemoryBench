@@ -2,9 +2,10 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { defineExperimentState } from "niceeval";
 import type { SkillSpec } from "niceeval/adapter";
 import { createCheckpoint, restoreCheckpoint } from "niceeval/sandbox";
-import type { Sandbox, SandboxCommand, SandboxCommandContext } from "niceeval/sandbox";
+import type { SandboxCommand, SandboxCommandContext, SandboxCommandTarget } from "niceeval/sandbox";
 import {
   NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE,
   NICEEVAL_CODEX_E2B_TEMPLATE,
@@ -59,7 +60,7 @@ function commandFailure(label: string, result: { exitCode: number; stdout: strin
   return new Error(`[mempal] ${label} failed (exit ${result.exitCode}): ${tail}`);
 }
 
-async function requireCommand(sb: Sandbox, label: string, script: string): Promise<void> {
+async function requireCommand(sb: SandboxCommandTarget, label: string, script: string): Promise<void> {
   const result = await sb.runShell(script);
   if (result.exitCode !== 0) throw commandFailure(label, result);
 }
@@ -68,13 +69,9 @@ function commandLog(ctx: SandboxCommandContext, message: string): void {
   ctx.progress({ message });
 }
 
-/**
- * Experiment Sandbox recipe 的窗口级 setup command：只做廉价探针、checkpoint 恢复和空库初始化。
- * ingest/search 的完整自检属于不可变模板构建，不应在每个业务 attempt 重跑。
- */
-export function mempalSetup(tool: "claude" | "codex"): SandboxCommand {
+/** 每条 Attempt 重放的薄 prepare：只验证不可变模板里的二进制与 embedding cache。 */
+export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
   return async (sb, ctx) => {
-    const statePath = statePathFor(ctx.experimentId);
     const probe = await sb.runShell("command -v mempal");
     if (probe.exitCode !== 0) {
       throw new Error(
@@ -88,44 +85,57 @@ export function mempalSetup(tool: "claude" | "codex"): SandboxCommand {
       'test -n "$(find "$HOME/.cache/huggingface" -name "*.safetensors" -print -quit 2>/dev/null)"',
     );
     commandLog(ctx, "[mempal] template probe passed: binary and embedding cache");
-
-    let state: Buffer | undefined;
-    try {
-      state = readFileSync(statePath);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-    }
-
-    if (state) {
-      await restoreCheckpoint(sb, state);
-      commandLog(ctx, `[mempal] state restored from ${ctx.experimentId}.tgz (${(state.length / 1024).toFixed(0)} KB)`);
-    } else {
-      await requireCommand(sb, "empty state initialization", "mempal init .");
-      commandLog(ctx, `[mempal] no saved state for "${ctx.experimentId}", starting from empty palace`);
-    }
-    await requireCommand(sb, "notes dir", 'mkdir -p "$HOME/.mempal-notes"');
   };
 }
 
-/** 窗口级 teardown command：用 niceeval 的 provider-neutral checkpoint 原语 best-effort 回存状态。 */
-export function mempalTeardown(_tool: "claude" | "codex"): SandboxCommand {
-  return async (sb, ctx) => {
-    const statePath = statePathFor(ctx.experimentId);
-    try {
-      const home = (await sb.runShell('printf "%s" "$HOME"')).stdout.trim();
-      const exists = await sb.runShell(`test -d '${home}/.mempal'`);
-      if (exists.exitCode !== 0) {
-        ctx.diagnostic({
-          code: "mempal-state-missing",
-          level: "warning",
-          message: "[mempal] state save skipped: $HOME/.mempal does not exist; previous checkpoint preserved.",
-          dedupeKey: "mempal-state-missing",
-        });
-        return;
+/**
+ * 跨 Attempt 的 Mempal 状态不是 Sandbox layer lifecycle。
+ * 它在 agent.ensure 之后 load、Agent teardown 之后 save；rolling head 与实验串行形成一条状态序列。
+ */
+export function mempalState() {
+  return defineExperimentState({
+    identity: {
+      store: "memorybench-host-checkpoint",
+      memory: "mempal",
+      cohort: mempalFlags().mempalCohort,
+      version: MEMPAL_VERSION,
+      schema: 1,
+    },
+    consistency: { mode: "rolling" },
+    saveOn: "after-load",
+    async load(ctx) {
+      const statePath = statePathFor(ctx.experimentId);
+      let state: Buffer | undefined;
+      try {
+        state = readFileSync(statePath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
       }
 
+      if (state) {
+        await restoreCheckpoint(ctx.sandbox, state);
+      } else {
+        await ctx.sandbox.runShellOrThrow("mempal init .");
+      }
+      await ctx.sandbox.runShellOrThrow('mkdir -p "$HOME/.mempal-notes"');
+
+      const digest = state ? createHash("sha256").update(state).digest("hex") : undefined;
+      return {
+        identity: { experimentId: ctx.experimentId, cohort: mempalFlags().mempalCohort },
+        digest,
+        facts: {
+          "mempal.state": state ? "restored" : "empty",
+          "mempal.checkpointBytes": state?.length ?? 0,
+        },
+      };
+    },
+    async save(ctx) {
+      const statePath = statePathFor(ctx.experimentId);
+      const home = (await ctx.sandbox.runShellOrThrow('printf "%s" "$HOME"')).stdout.trim();
+      await ctx.sandbox.runShellOrThrow(`test -d '${home}/.mempal'`);
+
       const data = await createCheckpoint(
-        sb,
+        ctx.sandbox,
         STATE_PATHS.map((path) => `${home}/${path}`),
       );
       mkdirSync(dirname(statePath), { recursive: true });
@@ -147,14 +157,12 @@ export function mempalTeardown(_tool: "claude" | "codex"): SandboxCommand {
           2,
         )}\n`,
       );
-      commandLog(ctx, `[mempal] state saved to ${ctx.experimentId}.tgz (${(data.length / 1024).toFixed(0)} KB)`);
-    } catch (error) {
-      ctx.diagnostic({
-        code: "mempal-state-save-failed",
-        level: "warning",
-        message: `[mempal] state save failed: ${error instanceof Error ? error.message : String(error)}`,
-        dedupeKey: "mempal-state-save-failed",
-      });
-    }
-  };
+      const digest = createHash("sha256").update(data).digest("hex");
+      return {
+        identity: { experimentId: ctx.experimentId, cohort: mempalFlags().mempalCohort },
+        digest,
+        facts: { "mempal.checkpointBytes": data.length },
+      };
+    },
+  });
 }

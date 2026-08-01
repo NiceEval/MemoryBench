@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR ReactTooltip/react-tooltip#1278(不让被测 agent 看到 PR 号/commit)。merge commit
 // a12511545da3789511a78bdd555bb0061c119acd 提供隐藏测试的权威 post-fix 内容。Bug:tooltip 用文档级
@@ -11,13 +10,8 @@ import { loadText } from "niceeval/loaders";
 // 用例(断言 dispatch 到 document 的 mouseover 不抛错、且不误挂 tooltip),断言全在可观察行为上、不
 // import 任何新符号,base_sha 下必失败(1 failed / 9 passed),打上真实修复后 10 全绿——本地 Node
 // 20.9.0 双向验证过。
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "af0a01aa326d04cf3330423a41acfe62e725f9bb";
-
-const spec = await loadText(fixture("tests/tooltip-interaction-behavior.spec.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -94,10 +88,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/tooltip-interaction-behavior.spec.js": spec,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/tooltip-interaction-behavior.spec.js", import.meta.url),
+
+      "src/test/tooltip-interaction-behavior.spec.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

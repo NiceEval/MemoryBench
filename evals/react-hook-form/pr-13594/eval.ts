@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13594(修复 issue #13592;不让被测 agent 看到
 // PR 号/commit)。Bug:表单以 `disabled: true` 创建时,`createFormControl.ts` 里更新脏状态的
@@ -9,13 +8,8 @@ import { loadText } from "niceeval/loaders";
 // 「调用方显式请求的 dirty(即便禁用也要兑现)」,只动 createFormControl.ts 一处逻辑。
 // 隐藏测试是 formState.test.tsx 里新增的两个用例(设脏 + 复位清脏两个方向),base_sha 下必失败
 // (2 failed / 35 passed),打上真实修复后 37 全绿——本地 Node 20.9.0 双向验证过。
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "65599cce839bfdf5c90017de2d1e44da98754beb";
-
-const hiddenTest = await loadText(fixture("tests/formState.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -86,11 +80,15 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/useForm/formState.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/formState.test.tsx", import.meta.url),
+      "src/__tests__/useForm/formState.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

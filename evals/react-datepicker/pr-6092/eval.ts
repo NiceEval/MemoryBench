@@ -1,18 +1,12 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自 react-datepicker PR #6092(feat/month-header-placement),base commit 是该 PR 的
 // baseRefOid,与 merge commit 0e13929b428fdeb989a0886279a60f69dab0978e 的第一父提交精确
 // 相等(已用 `gh pr view --json mergeCommit,baseRefOid` 核对,无出入)。merge commit 提供
 // 隐藏测试的权威 post-fix 内容。这两个标识符只出现在代码注释里——被测 agent 永远看不到。
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 const BASE_COMMIT = "11aeae6937191df9cb30f29a93fbdec63b0b61ef";
-
-const hiddenTest = await loadText(fixture("tests/month_header_position.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -99,10 +93,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/month_header_position.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/month_header_position.test.tsx", import.meta.url),
+
+      "src/test/month_header_position.test.tsx",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

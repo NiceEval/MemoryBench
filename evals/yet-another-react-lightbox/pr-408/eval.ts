@@ -1,9 +1,6 @@
 import { defineEval } from "niceeval";
-import { defineSandboxRecipe } from "niceeval/sandbox";
+import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: yet-another-react-lightbox PR #408 (squash-merged as
 // 2861732969a182075ba19d3a001b34c3a38a3081), which lands on top of BASE_COMMIT (its first
@@ -33,9 +30,6 @@ const BASE_COMMIT = "c1c704426607e3eaceb1b1d7794df1235e4adf8a";
 const MIN_NODE_MAJOR = 22;
 const MIN_NODE_MINOR = 13;
 
-const zoomTest = await loadText(fixture("tests/Zoom.spec.ts"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
-
 export default defineEval({
   description:
     "yet-another-react-lightbox pr-408: let the Zoom plugin opt custom slide types into zoom via supports/maxZoom props (real yet-another-react-lightbox issue)",
@@ -45,9 +39,9 @@ export default defineEval({
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、换 Node runtime、装依赖。作为无 template
-  // 的 Eval Sandbox recipe beforeEach command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
+  // 的 Eval Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
   // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: defineSandboxRecipe().beforeEach(async (sandbox, ctx) => {
+  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
     // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
     // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
@@ -153,10 +147,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "test/unit/plugins/Zoom.spec.ts": zoomTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/Zoom.spec.ts", import.meta.url),
+
+      "test/unit/plugins/Zoom.spec.ts",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

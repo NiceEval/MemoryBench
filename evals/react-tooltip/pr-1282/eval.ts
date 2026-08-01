@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: react-tooltip PR #1282 (merge 5bc1fe6ad7a42defa1a5ae05b953641f5b2dc227),
 // which lands on top of BASE_COMMIT (its first parent, == baseRefOid here). Bug: the
@@ -14,9 +11,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // fired could still land afterwards and make the tooltip reappear.
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "1099ad1a619ef12ca872ab755372af29928e1848";
-
-const anchorSelectionTest = await loadText(fixture("tests/tooltip-anchor-selection.spec.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -97,10 +91,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/tooltip-anchor-selection.spec.js": anchorSelectionTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/tooltip-anchor-selection.spec.js", import.meta.url),
+
+      "src/test/tooltip-anchor-selection.spec.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

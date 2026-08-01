@@ -1,7 +1,8 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, orderedLines, prepareRepo, loadProbeSupport, runProbe, type ProbeCase } from "../harness.ts";
+import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
 
 // 链的第 3 题。按周汇总的计费视图。
 //
@@ -37,8 +38,6 @@ const asJson = (probeCase: ProbeCase): any => {
 const weekSummary = (payload: any) =>
   Array.isArray(payload?.weeks) ? payload.weeks.map((w: any) => [w?.week, w?.billable_seconds]) : payload;
 
-const probeSupport = await loadProbeSupport();
-
 export default defineEval({
   description:
     "toggl-cli 03: add `toggl entry bill-weekly` (billable time per week); the amounts are only right " +
@@ -46,10 +45,8 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  setup: installRustToolchain,
+  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
   async test(t) {
-    await prepareRepo(t);
-
     await t
       .send(
         "toggl-cli. Client wants a weekly invoice breakdown, so: `toggl entry bill-weekly`.\n\n" +
@@ -82,7 +79,7 @@ export default defineEval({
         { name: "json", args: ["entry", "bill-weekly", "--since", W1, "--until", "2026-03-15", "--json"] },
         { name: "empty", args: ["entry", "bill-weekly", "--since", "2026-01-01", "--until", "2026-01-02"] },
       ],
-    }, probeSupport);
+    });
 
     // --- 功能形状:分桶、键、排序,都在本题 prompt 里说清 ---
     await t.group("命令存在,按周分桶、周一为键、旧的在前", () => {

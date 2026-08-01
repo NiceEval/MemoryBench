@@ -6,7 +6,6 @@ import {
   nowledgeCodexConfig,
   nowledgeFlags,
   nowledgeAttachRemote,
-  nowledgeVerifyRemoteAlive,
 } from "../shared/nowledge.ts";
 
 // codex-gpt-5.6-luna 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -29,9 +28,8 @@ export default defineExperiment({
   // 账号档位硬上限,但它不是泳道总预算:每次派发前 runner 都会 ensureLifetime 续到完整 lifetimeMs,
   // 所以一条泳道能无限续下去,只要单条 attempt 装得下 1 小时(详见 codex-gpt-5.6-luna--mempal.ts)。
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 })
-    .setup(nowledgeAttachRemote())
-    // 每条 Attempt 收尾都核对窗口 setup 时连接的隧道;中途换址会让 memory_add 静默全挂。
-    .afterEach(nowledgeVerifyRemoteAlive()),
+    .prepare(nowledgeAttachRemote()),
+  // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   // 复用 + 串行,与 mempal 组逐字对齐。插件安装不是阻碍:niceeval 的 codex adapter 在每条 attempt
   // 开始前把同名 marketplace 注册与插件安装先摘后装、收敛到声明(niceeval docs/feature/adapters/
   // architecture/coding-agent-extensions.md「安装收敛」),install_hooks.py 改写托管源的残留也被

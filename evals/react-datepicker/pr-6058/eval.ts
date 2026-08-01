@@ -1,18 +1,12 @@
 import { defineEval } from "niceeval";
-import { defineSandboxRecipe } from "niceeval/sandbox";
+import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // PR #6058 (Hacker0x01/react-datepicker), merged as 928b2cf5b7fb2ed70798dc280568c22de040fbd4;
 // base_sha below == that merge commit's first parent (verified: `git merge-base --is-ancestor`
 // and direct oid equality against `gh pr view --json baseRefOid`).
 const BASE_COMMIT = "bd3ab113a4d5b6f092017e54d29b7678195c9613";
-
-const datepickerTest = await loadText(fixture("tests/datepicker_test.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -22,9 +16,9 @@ export default defineEval({
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
   // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox recipe beforeEach command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
+  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
   // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: defineSandboxRecipe().beforeEach(async (sandbox, ctx) => {
+  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
     // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
     // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
@@ -81,10 +75,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/datepicker_test.test.tsx": datepickerTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/datepicker_test.test.tsx", import.meta.url),
+
+      "src/test/datepicker_test.test.tsx",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

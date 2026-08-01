@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: downshift PR #1603 (squash-merge ee2a828ac70035c1e6156523b72c11abae4c07e4,
 // a single-parent commit whose parent equals BASE_COMMIT below). Bug: getItemProps() in
@@ -12,10 +9,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // even though the documented/typed return value is boolean.
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "4bf894ba355f8c281bf4cea98fc32d01fbc3f8d7";
-
-const comboboxGetItemPropsTest = await loadText(fixture("tests/useCombobox-getItemProps.test.js"));
-const selectGetItemPropsTest = await loadText(fixture("tests/useSelect-getItemProps.test.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -85,11 +78,21 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/hooks/useCombobox/__tests__/getItemProps.test.js": comboboxGetItemPropsTest,
-      "src/hooks/useSelect/__tests__/getItemProps.test.js": selectGetItemPropsTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/useCombobox-getItemProps.test.js", import.meta.url),
+
+      "src/hooks/useCombobox/__tests__/getItemProps.test.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/useSelect-getItemProps.test.js", import.meta.url),
+      "src/hooks/useSelect/__tests__/getItemProps.test.js",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

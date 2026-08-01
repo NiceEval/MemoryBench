@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13599(不让被测 agent 看到 PR 号/commit/URL):
 // 内部 _setValid() 是 fire-and-forget(9 处调用点都不 await),对乱序完成毫无防护——如果一次更早
@@ -10,13 +9,8 @@ import { loadText } from "niceeval/loaders";
 // 最新一次调用,只改了 src/logic/createFormControl.ts 几行。隐藏测试见 fixtures(两个用例:一个测
 // isValid 的整表校验,一个测 resolver 表单下 isValidating 的同款竞态)。
 
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "521adfcbd7e6c99e0253af574006c6e26077887b";
-
-const hiddenTest = await loadText(fixture("tests/formState.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -89,11 +83,15 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/useForm/formState.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/formState.test.tsx", import.meta.url),
+      "src/__tests__/useForm/formState.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

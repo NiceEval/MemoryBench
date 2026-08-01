@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: react-tooltip PR #1269 (merge 42251977e06f81cb1f467b89cb51bf11b1794e6d),
 // which lands on top of BASE_COMMIT (its first parent; matches gh's reported baseRefOid
@@ -19,9 +16,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // inside it.
 const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "c519e9440d1c081141ff74c552f98cb10f5dac54";
-
-const interactionSpec = await loadText(fixture("tests/tooltip-interaction-behavior.spec.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -102,10 +96,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/tooltip-interaction-behavior.spec.js": interactionSpec,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/tooltip-interaction-behavior.spec.js", import.meta.url),
+
+      "src/test/tooltip-interaction-behavior.spec.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

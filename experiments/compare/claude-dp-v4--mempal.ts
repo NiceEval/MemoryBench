@@ -1,11 +1,11 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
 import { e2bSandbox } from "niceeval/sandbox";
-import { mempalFlags, mempalSetup, mempalSkill, mempalTeardown, mempalTemplate } from "../shared/mempal.ts";
+import { mempalFlags, mempalPrepare, mempalSkill, mempalState, mempalTemplate } from "../shared/mempal.ts";
 
 // claude-dp-v4 的 mempal 变体:同模型同沙箱,只多一层 mempal 记忆条件 ——
 // mempal CLI(agent 用自带 shell 跑 `mempal search` / `mempal ingest`,Skill 教它怎么用)+
-// Stop hook(session 收尾提示存决策,由沙箱 setup 钩子装)。不走 MCP:mempal 的 MCP 暴露
+// Stop hook(session 收尾提示存决策,由模板预装)。不走 MCP:mempal 的 MCP 暴露
 // 25 个工具、tools/list 82 KB,每轮重发,成本压过记忆本身(见 shared/mempal.ts 文件头注)。
 // 对照 claude-dp-v4.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。
 //
@@ -26,7 +26,8 @@ export default defineExperiment({
   }),
   flags: { ...mempalFlags() },
   model: "deepseek-v4-flash",
-  sandbox: e2bSandbox({ template: mempalTemplate("claude") }).setup(mempalSetup("claude")).teardown(mempalTeardown("claude")),
+  sandbox: e2bSandbox({ template: mempalTemplate("claude") }).prepare(mempalPrepare("claude")),
+  state: mempalState(),
   attempts: 1,
   earlyExit: true,
   // 串行跑(niceeval ≥0.4.5 按实验限流,不影响同批基线):attempt 的

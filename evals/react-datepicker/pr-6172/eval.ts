@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // PR #6172 (fix/restore-native-date-fallback-6164), merge commit 75a4ed1fd2d45f4af5cbb2c9e533ae7c0a793c34.
@@ -11,9 +8,6 @@ const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // d4625d425ae31b15ed13de98446ffb6431f82659, which matches BASE_COMMIT below exactly, so this is not
 // a real discrepancy.
 const BASE_COMMIT = "d4625d425ae31b15ed13de98446ffb6431f82659";
-
-const hiddenTest = await loadText(fixture("tests/date_utils_test.test.ts"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -79,10 +73,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/date_utils_test.test.ts": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/date_utils_test.test.ts", import.meta.url),
+
+      "src/test/date_utils_test.test.ts",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13603(不让被测 agent 看到 PR 号/commit/URL):
 // useController 里 field 的写路径(onChange/onBlur)通过 useRef 只捕获一次 control.register()
@@ -8,13 +7,8 @@ import { loadText } from "niceeval/loaders";
 // 往旧 control 上写。真实修复只改了 src/useController.ts 一行(把 register 调用的返回值存回
 // _registerProps.current,挪到已经会随 control 变化重跑的 effect 里),隐藏测试见 fixtures。
 
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "a4f380249f12856feef787103f84f714ca84c98d";
-
-const hiddenTest = await loadText(fixture("tests/useController.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -77,11 +71,15 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/useController.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/useController.test.tsx", import.meta.url),
+      "src/__tests__/useController.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

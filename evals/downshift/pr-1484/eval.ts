@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: downshift PR #1484 (squash-merge 4ff13853df24803e9d07b0c90438e28b7c00a778,
 // a single-parent commit whose parent equals BASE_COMMIT below, which also matches gh's
@@ -14,9 +11,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // auto-selecting whatever item happened to be highlighted.
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "9b3199aa354f143617b148cf82f215f1e4986690";
-
-const getInputPropsTest = await loadText(fixture("tests/getInputProps.test.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -105,10 +99,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/hooks/useCombobox/__tests__/getInputProps.test.js": getInputPropsTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/getInputProps.test.js", import.meta.url),
+
+      "src/hooks/useCombobox/__tests__/getInputProps.test.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

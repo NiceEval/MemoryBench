@@ -1,7 +1,6 @@
 import { defineEval } from "niceeval";
-import { defineSandboxRecipe } from "niceeval/sandbox";
+import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13476(不让被测 agent 看到 PR 号/commit/URL):
 // 当 field array 的 resolver 同一轮校验里既报了 root 级错误又报了带数字 index 的嵌套错误时
@@ -18,22 +17,17 @@ import { loadText } from "niceeval/loaders";
 // 是这个具体用例没有覆盖到的另一序列(先出现混合错误、后续 trigger 又只报 root-only 错误);
 // 只是提醒:通过本 eval 不严格证明 agent 复刻了上游两处改动的完整语义。
 
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "889c7523d6c5c68bfc3c78142782cb0a3310729d";
-
-const hiddenTest = await loadText(fixture("tests/useFieldArray.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
     "react-hook-form pr-13476: trigger() after a field-array remove() can wipe out nested per-index errors when a mixed root+nested error object is present (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
   // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox recipe beforeEach command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
+  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
   // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: defineSandboxRecipe().beforeEach(async (sandbox, ctx) => {
+  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
     // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
     // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
@@ -98,11 +92,15 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/useFieldArray.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/useFieldArray.test.tsx", import.meta.url),
+      "src/__tests__/useFieldArray.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

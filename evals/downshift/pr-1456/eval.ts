@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: downshift-js/downshift, commit d822530f6b3eebe34c3dc8249353b61dd237d78b
 // ("feat(useSelect): improve highlight by character keys algorithm (#1456)"), which
@@ -19,9 +16,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // could skip over an item that still matched or restart from the wrong index.
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "99bd9d936b46620d0e8f27dd3a35ca15149ec7b5";
-
-const getToggleButtonPropsTest = await loadText(fixture("tests/getToggleButtonProps.test.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -116,10 +110,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/hooks/useSelect/__tests__/getToggleButtonProps.test.js": getToggleButtonPropsTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/getToggleButtonProps.test.js", import.meta.url),
+
+      "src/hooks/useSelect/__tests__/getToggleButtonProps.test.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

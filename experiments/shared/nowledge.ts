@@ -4,11 +4,9 @@ import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
 import type { ClaudeCodeConfig, ClaudeCodePluginSpec, CodexConfig, CodexPluginSpec, McpServer } from "niceeval/adapter";
 import type {
-  Sandbox,
   SandboxCommand,
   SandboxCommandContext,
-  SandboxHook,
-  SandboxHookContext,
+  SandboxCommandTarget,
 } from "niceeval/sandbox";
 
 /**
@@ -16,10 +14,9 @@ import type {
  *
  * 拓扑:mem 服务端在宿主机外部长期运行(手动管理,如 scripts/nowledge-mem.sh 或任意别处),
  * cloudflared 隧道暴露公网;连接坐标(NMEM_URL / NMEM_API_KEY)固定放仓库 .env(gitignored),
- * niceeval 侧**不管服务端的生命周期**——不 up、不 down、无实验级 setup/teardown。
- * Sandbox command 做两件事:`nowledgeAttachRemote` 在复用窗口 setup 接线(装 nmem CLI、
- * 把 client 指向远程、端到端探活),`nowledgeVerifyRemoteAlive` 在每条 Attempt 的 afterEach
- * 核对同一个 URL 还活着(隧道中途换址会让写路径静默全挂,见该函数注释)。
+ * niceeval 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
+ * Experiment layer 的 `nowledgeAttachRemote` 每条 Attempt 接线(装 nmem CLI、把 client 指向远程、
+ * 端到端探活),Agent `preTeardown` 再用 `nowledgeVerifyRemoteAlive` 核对同一个 URL 仍存活。
  *
  * 这与 mempal 的差异是形态本质:mempal 状态是文件(checkpoint 每 attempt 恢复/回存),
  * nowledge 状态在中心化 server 上跨 attempt / 跨实验 / 跨 run 天然共享持续积累。
@@ -79,17 +76,13 @@ export function nowledgeEndpoint(): NowledgeEnv {
  * 隧道 URL **不在这里**。它是跑起来才存在的连接坐标:换一个地址连的仍是同一个固定实例、
  * 同一个库,attempt 里发生的事一模一样,进 flags 只会让每次 cloudflared 重启作废全部已跑完的
  * 结果(实测:换 URL 后 36 条一条都携带不到)。这轮连的哪个隧道由 `nowledgeAttachRemote()`
- * 在沙箱接线时报成 `ctx.fact("nowledge.endpoint", url)`,留在 attempt 记录里供报告按 fact() 选轴。
+ * 在沙箱接线时报成 `ctx.facts("nowledge.endpoint", url)`,留在 attempt 记录里供报告按 fact() 选轴。
  */
 export function nowledgeFlags(): Record<string, string> {
   return { memory: "nowledge", nowledgeVersion: NOWLEDGE_VERSION };
 }
 
 function commandLog(ctx: SandboxCommandContext, message: string): void {
-  ctx.progress({ message });
-}
-
-function hookLog(ctx: SandboxHookContext, message: string): void {
   ctx.progress({ message });
 }
 
@@ -100,7 +93,7 @@ function hookLog(ctx: SandboxHookContext, message: string): void {
  * 装包一类可能被网络抖动搞挂的步骤不带这个声明——那种失败不可证明为兄弟共享,重跑就好。
  */
 async function requireCommand(
-  sb: Sandbox,
+  sb: SandboxCommandTarget,
   label: string,
   script: string,
   opts: { shared?: boolean } = {},
@@ -114,24 +107,24 @@ async function requireCommand(
 }
 
 /**
- * 复用窗口 setup 当时实际连上的 URL,按 sandbox 键控(并发窗口各有自己的 sandbox,
- * 模块变量会被后来的窗口覆写)。afterEach 探针必须用**这个**值而不是现读 .env:
+ * prepare 当时实际连上的 URL,按 sandbox 键控(并发 Attempt 各有自己的 sandbox)。
+ * preTeardown 探针必须用**这个**值而不是现读 .env:
  * quick tunnel 换 URL 后 .env 会被更新成新地址,现读只会探到新隧道并探活成功,
- * 恰好漏掉「这个复用窗口连的旧隧道中途死了」——那正是要抓的故障形态。
+ * 恰好漏掉「这条 Attempt 连的旧隧道中途死了」——那正是要抓的故障形态。
  */
-const windowEndpoints = new WeakMap<Sandbox, string>();
+const attemptEndpoints = new WeakMap<object, string>();
 
 /**
- * 复用窗口级 Sandbox command 接线(每复用窗口一次):装 nmem CLI 并把 client 指向固定远程实例,跑在 agent.setup 之前,
+ * Experiment layer prepare command(每 Attempt 一次):装 nmem CLI 并把 client 指向固定远程实例,跑在 Agent postSetup 之前,
  * 这样 postSetup 里插件的 install_hooks.py 能从 nmem client 配置读到远程连接。
  */
 export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpoint): SandboxCommand {
   return async (sb, ctx) => {
     const conn = endpoint();
-    windowEndpoints.set(sb, conn.url);
-    // 记录这个复用窗口实际连接的隧道；报告要按隧道分组就读 fact("nowledge.endpoint")。
+    attemptEndpoints.set(sb, conn.url);
+    // 记录这条 Attempt 实际连接的隧道；报告要按隧道分组就读 fact("nowledge.endpoint")。
     // key 只能是 /^[a-z0-9._-]{1,64}$/,所以是点号不是驼峰——写驼峰会在这里直接抛错、整条 errored。
-    ctx.fact("nowledge.endpoint", conn.url);
+    ctx.facts("nowledge.endpoint", conn.url);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
     await requireCommand(sb, "python3 probe", "command -v python3", { shared: true });
@@ -164,36 +157,36 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
 }
 
 /**
- * Attempt 收尾探针:每条 Attempt 的 afterEach 再探一次**窗口 setup 当时连的那个 URL**。
+ * Agent preTeardown 探针:每条 Attempt 在 Agent 收尾前再探一次**prepare 当时连的那个 URL**。
  *
  * 堵的洞(2026-07-24 实测):Nowledge Mem.app 拉的是 cloudflare quick tunnel
- * (`cloudflared tunnel --url`),随机域名、无 SLA、进程一重连就换地址。setup 的探活只证明
+ * (`cloudflared tunnel --url`),随机域名、无 SLA、进程一重连就换地址。prepare 的探活只证明
  * attempt **开头**隧道活着;URL 一旦在 attempt 中途变掉,codex 的 MCP 配置已写死指向旧域名,
  * 此后每次 memory_add 都失败(trace 里是 `error.type: mcp_request`,events.json 里只剩
  * `"output": null, "status": "failed"`,没有任何错误文本),而 attempt 照常判 pass/fail
  * 进通过率——那一轮 36 条里 memory_add 挂了 11/29,记忆条件名存实亡,数字却看不出异常。
  *
- * 抛普通 Error 而非 ExperimentFatalError:URL 换掉后,后续复用窗口的 setup 现读 .env
- * 会拿到新地址并正常工作,中毒的只有正在跑的这一条。按 niceeval 的失败语义,afterEach 抛错
+ * 抛普通 Error 而非 ExperimentFatalError:URL 换掉后,后续 Attempt 的 prepare 现读 .env
+ * 会拿到新地址并正常工作,中毒的只有正在跑的这一条。按 niceeval 的失败语义,preTeardown 抛错
  * 由 runner 记为致命错误,这条 attempt 不会被静默算进通过率——记忆写路径完好是记忆条件
  * 实验「结果成立的必要条件」,不是可选的收尾动作。
  */
 export function nowledgeVerifyRemoteAlive(): SandboxCommand {
   return async (sb, ctx) => {
-    const url = windowEndpoints.get(sb);
-    // setup 没走到(sandbox 建好但接线前就炸了):没有可核对的基准,不额外报错
+    const url = attemptEndpoints.get(sb);
+    // prepare 没走到:没有可核对的基准,不额外报错
     if (!url) return;
 
     const result = await sb.runShell(`nmem --api-url '${url}' --json status`);
     if (result.exitCode !== 0) {
       const tail = (result.stderr || result.stdout).trim().slice(-300) || "no output";
       throw new Error(
-        `[nowledge] 收尾探针失败:这条 attempt 在 setup 时连的 ${url} 已不可达(exit ${result.exitCode}: ${tail})。` +
+        `[nowledge] 收尾探针失败:这条 attempt 在 prepare 时连的 ${url} 已不可达(exit ${result.exitCode}: ${tail})。` +
           `隧道在 attempt 期间换了地址或断了,期间的 memory_add / memory_search 全部落空,` +
           `本条的记忆条件不成立。修隧道并更新 .env 后重跑本条。`,
       );
     }
-    commandLog(ctx, `[nowledge] endpoint still reachable at afterEach → ${url}`);
+    commandLog(ctx, `[nowledge] endpoint still reachable at preTeardown → ${url}`);
   };
 }
 
@@ -229,7 +222,7 @@ export const nowledgePlugin: CodexPluginSpec = {
  * 确保 [features] hooks 与 hook state 信任块。它检测到 factory 已写的非托管
  * [mcp_servers.nowledge-mem] 段会跳过自己的 managed MCP 块,不会撞出重复 table。
  */
-export function nowledgePostSetup(): SandboxHook {
+export function nowledgePostSetup(): SandboxCommand {
   return async (sb, ctx) => {
     const locate = await sb.runShell(
       'find "${CODEX_HOME:-$HOME/.codex}" -type f -name install_hooks.py -path "*nowledge-mem*" 2>/dev/null | head -1',
@@ -259,20 +252,21 @@ export function nowledgePostSetup(): SandboxHook {
       "mcp_servers.nowledge-mem in config.toml",
       'grep -q "mcp_servers.nowledge-mem" "${CODEX_HOME:-$HOME/.codex}/config.toml"',
     );
-    hookLog(ctx, "[nowledge] plugin hooks installed and config verified");
+    commandLog(ctx, "[nowledge] plugin hooks installed and config verified");
   };
 }
 
 /** codexAgent(...) 的 Nowledge Mem 配置增量;连接默认取固定远程实例(nowledgeEndpoint)。 */
 export function nowledgeCodexConfig(
   endpoint: () => NowledgeEnv = nowledgeEndpoint,
-): Pick<CodexConfig, "mcpServers" | "plugins" | "configFile" | "postSetup"> {
+): Pick<CodexConfig, "mcpServers" | "plugins" | "configFile" | "postSetup" | "preTeardown"> {
   return {
     mcpServers: [nowledgeMcpServer(endpoint)],
     plugins: [nowledgePlugin],
     // [features] plugins = true 必须在 codex plugin add 之前落盘(adapter 先写 configFile 再装 plugin)
     configFile: "configs/codex/nowledge.toml",
     postSetup: [nowledgePostSetup()],
+    preTeardown: [nowledgeVerifyRemoteAlive()],
   };
 }
 
@@ -315,7 +309,7 @@ mechanism changes from an MCP tool call to an \`nmem\` shell command.
  * install_hooks.py 总会写这个块——不能靠"不给 endpoint"跳过,只能装完之后再删。
  * 删除后验证 config.toml 里确实没有残留,再把 override 追加进 AGENTS.md。
  */
-export function nowledgeCliOnlyPostSetup(): SandboxHook {
+export function nowledgeCliOnlyPostSetup(): SandboxCommand {
   return async (sb, ctx) => {
     const configFile = '"${CODEX_HOME:-$HOME/.codex}/config.toml"';
     await requireCommand(
@@ -325,16 +319,20 @@ export function nowledgeCliOnlyPostSetup(): SandboxHook {
     );
     await requireCommand(sb, "MCP block gone from config.toml", `! grep -q "mcp_servers.nowledge-mem" ${configFile}`);
     await shared.appendProjectInstruction(sb, CLI_ONLY_OVERRIDE);
-    hookLog(ctx, "[nowledge] MCP block stripped — CLI-only mode, AGENTS.md override appended");
+    commandLog(ctx, "[nowledge] MCP block stripped — CLI-only mode, AGENTS.md override appended");
   };
 }
 
 /** codexAgent(...) 的 CLI-only 变体:装插件 + hooks,但不注册 MCP,读写全走 `nmem` CLI。 */
-export function nowledgeCodexCliOnlyConfig(): Pick<CodexConfig, "plugins" | "configFile" | "postSetup"> {
+export function nowledgeCodexCliOnlyConfig(): Pick<
+  CodexConfig,
+  "plugins" | "configFile" | "postSetup" | "preTeardown"
+> {
   return {
     plugins: [nowledgePlugin],
     configFile: "configs/codex/nowledge.toml",
     postSetup: [nowledgePostSetup(), nowledgeCliOnlyPostSetup()],
+    preTeardown: [nowledgeVerifyRemoteAlive()],
   };
 }
 
@@ -362,6 +360,9 @@ export const nowledgeClaudePlugin: ClaudeCodePluginSpec = {
 };
 
 /** claudeCodeAgent(...) 的 Nowledge Mem 配置增量;apiKey/baseUrl 等由实验文件自带,这里只叠插件。 */
-export function nowledgeClaudeConfig(): Pick<ClaudeCodeConfig, "plugins"> {
-  return { plugins: [nowledgeClaudePlugin] };
+export function nowledgeClaudeConfig(): Pick<ClaudeCodeConfig, "plugins" | "preTeardown"> {
+  return {
+    plugins: [nowledgeClaudePlugin],
+    preTeardown: [nowledgeVerifyRemoteAlive()],
+  };
 }

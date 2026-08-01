@@ -1,7 +1,8 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, orderedLines, prepareRepo, loadProbeSupport, runProbe, type ProbeCase } from "../harness.ts";
+import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
 
 // 链的第 6 题。按月汇总的开票视图。
 //
@@ -35,8 +36,6 @@ const asJson = (probeCase: ProbeCase): any => {
 const monthSummary = (payload: any) =>
   Array.isArray(payload?.months) ? payload.months.map((m: any) => [m?.month, m?.billable_seconds]) : payload;
 
-const probeSupport = await loadProbeSupport();
-
 export default defineEval({
   description:
     "toggl-cli 06: add `toggl entry invoice-monthly`; the amounts are right only if it recalls BOTH the " +
@@ -44,10 +43,8 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  setup: installRustToolchain,
+  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
   async test(t) {
-    await prepareRepo(t);
-
     await t
       .send(
         "toggl-cli. Add `toggl entry invoice-monthly` — the invoice broken down by calendar month.\n\n" +
@@ -79,7 +76,7 @@ export default defineEval({
         { name: "json", args: ["entry", "invoice-monthly", "--since", M1, "--until", "2026-03-01", "--json"] },
         { name: "empty", args: ["entry", "invoice-monthly", "--since", "2026-06-01", "--until", "2026-06-02"] },
       ],
-    }, probeSupport);
+    });
 
     await t.group("命令存在,按月分桶、旧的在前", () => {
       t.check(probe.human.exit, equals(0));

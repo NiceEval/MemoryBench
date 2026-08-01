@@ -1,17 +1,11 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // PR #6167, merge commit 6667a40d339d8fb5a6c02263b08d366cf2cfc449. gh's reported
 // baseRefOid matches BASE_COMMIT exactly, and the merge commit's first parent is also
 // BASE_COMMIT — no discrepancy to reconcile here.
 const BASE_COMMIT = "be355b09d8ba18eeed82fa70968b1708687603ab";
-
-const hiddenTest = await loadText(fixture("tests/datepicker_test.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -81,10 +75,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/datepicker_test.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/datepicker_test.test.tsx", import.meta.url),
+
+      "src/test/datepicker_test.test.tsx",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

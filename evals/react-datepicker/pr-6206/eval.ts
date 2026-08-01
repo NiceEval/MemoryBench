@@ -1,17 +1,11 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自 react-datepicker PR #6206(修复 GitHub issue #6193),base commit 是该 PR 的
 // baseRefOid,merge commit 3d53acb06b7374bbf4d4d496a7871b656da7115e 提供隐藏测试的
 // 权威 post-fix 内容。这两个标识符只出现在代码注释里——被测 agent 永远看不到。
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 const BASE_COMMIT = "e1ce24549f030bd159829dbbad077abe1b60cb52";
-
-const testFile = await loadText(fixture("tests/timezone_test.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -82,10 +76,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/timezone_test.test.tsx": testFile,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/timezone_test.test.tsx", import.meta.url),
+
+      "src/test/timezone_test.test.tsx",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

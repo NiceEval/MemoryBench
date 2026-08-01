@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // react-datepicker#6168 (https://github.com/Hacker0x01/react-datepicker/pull/6168):
 // Safari's page auto-translate feature mutates the DOM of the open calendar popup,
@@ -12,9 +9,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // parent (more precise than the PR's baseRefOid, which is an older ancestor since
 // main advanced past the PR's branch point before merge -- normal, not a discrepancy).
 const BASE_COMMIT = "6667a40d339d8fb5a6c02263b08d366cf2cfc449";
-
-const hiddenTest = await loadText(fixture("tests/calendar_container.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -83,10 +77,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/test/calendar_container.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/calendar_container.test.tsx", import.meta.url),
+
+      "src/test/calendar_container.test.tsx",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

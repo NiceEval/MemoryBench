@@ -1,9 +1,6 @@
 import { defineEval } from "niceeval";
-import { defineSandboxRecipe } from "niceeval/sandbox";
+import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: downshift PR #1414 (squash-merge 6bd18eb8e4a2f3003bd49a14eb0791b2370ba36c, a
 // single-parent commit whose parent equals BASE_COMMIT below). Bug: in useCombobox, clicking
@@ -17,9 +14,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // 本地 Node 20.9.0 双向验证过。
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "78ce9e994e2d7056ce70bab83083bc1c9f805e3e";
-
-const testFile = await loadText(fixture("tests/getItemProps.test.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -35,9 +29,9 @@ export default defineEval({
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
   // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox recipe beforeEach command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
+  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
   // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: defineSandboxRecipe().beforeEach(async (sandbox, ctx) => {
+  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
     // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
     // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
     // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
@@ -105,10 +99,17 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/hooks/useCombobox/__tests__/getItemProps.test.js": testFile,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/getItemProps.test.js", import.meta.url),
+
+      "src/hooks/useCombobox/__tests__/getItemProps.test.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

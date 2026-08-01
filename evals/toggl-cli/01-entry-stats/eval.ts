@@ -1,7 +1,8 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded, equals, isTrue } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, prepareRepo, loadProbeSupport, runProbe, orderedLines, type ProbeCase } from "../harness.ts";
+import { installRustToolchain, prepareRepo, runProbe, orderedLines, type ProbeCase } from "../harness.ts";
 
 // 链的第 1 题。三轮对话用大白话说清一组项目级约定,这些约定从 checkout 里推不出来。
 //
@@ -38,8 +39,6 @@ const asJson = (probeCase: ProbeCase): unknown => {
   }
 };
 
-const probeSupport = await loadProbeSupport();
-
 export default defineEval({
   description:
     "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's " +
@@ -53,10 +52,8 @@ export default defineEval({
     // 或增量产物落进 diff 分类账。
     ignore: ["target", ".niceeval-clone"],
   },
-  setup: installRustToolchain,
+  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
   async test(t) {
-    await prepareRepo(t);
-
     await t
       .send(
         "You're in a checkout of toggl-cli, our unofficial Rust CLI for Toggl Track. I want a new " +
@@ -121,7 +118,7 @@ export default defineEval({
         { name: "empty", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01"] },
         { name: "empty-json", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01", "--json"] },
       ],
-    }, probeSupport);
+    });
 
     const dependenciesUntouched = await t.sandbox.runShell("git diff --quiet -- Cargo.toml Cargo.lock");
 

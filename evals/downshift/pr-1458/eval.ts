@@ -1,8 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
-
-const fixture = (path: string) => new URL(path, import.meta.url);
 
 // real fix: downshift-js/downshift, commit d1a7f67977e207a1f489af964c707a73e0763dc1
 // ("fix(useMultipleSelection): prevent adding items on Backspace/Delete without
@@ -13,10 +10,6 @@ const fixture = (path: string) => new URL(path, import.meta.url);
 // Delete on a non-focused selected item could still remove/duplicate items.
 const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "d822530f6b3eebe34c3dc8249353b61dd237d78b";
-
-const getSelectedItemPropsTest = await loadText(fixture("tests/getSelectedItemProps.test.js"));
-const propsTest = await loadText(fixture("tests/props.test.js"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -102,11 +95,21 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      "src/hooks/useMultipleSelection/__tests__/getSelectedItemProps.test.js": getSelectedItemPropsTest,
-      "src/hooks/useMultipleSelection/__tests__/props.test.js": propsTest,
-      "tests/run-tests.sh": runTests,
-    });
+    await t.sandbox.uploadFile(
+
+      new URL("tests/getSelectedItemProps.test.js", import.meta.url),
+
+      "src/hooks/useMultipleSelection/__tests__/getSelectedItemProps.test.js",
+
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/props.test.js", import.meta.url),
+      "src/hooks/useMultipleSelection/__tests__/props.test.js",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },

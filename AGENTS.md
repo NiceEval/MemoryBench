@@ -92,9 +92,9 @@ Additional source assertions are fine when they are part of the task's functiona
 
 顺带一提，跑 GREEN 时如果上游官方修复自己都过不了某条断言（lightbox 那道就是：官方 fix 解决不了「祖先 dir 属性被改」的场景），说明 prompt 描述的症状和测试考的场景根本不是同一件事，要改的是 prompt。
 
-**三向验证靠指纹兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** 各题 `tests/`（以及题组 `_support/`）下的隐藏测试与判据脚本一律用 `loadText`（`import { loadText } from "niceeval/loaders"`）读进来，内容进 niceeval 指纹：改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定是按当前判据得出的。
+**三向验证靠 transfer manifest 兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** 各题 `tests/`（以及题组 `_support/`）下的隐藏测试与判据脚本，在 agent 最后一轮之后用 `t.sandbox.uploadFile(new URL(...), target)` / `uploadDirectory(...)` 直接上传。Runner 在真实读取 source 时记录内容摘要：改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定按当前判据得出。
 
-**读取一律写在 eval 文件的模块顶层。** loader 在发现期登记「这条 eval 读了哪些文件」，写进 `test(t)` 会直接报错。共享 harness 里的判据文件也一样：harness 只导出一个读取函数（`evals/toggl-cli/harness.ts` 的 `loadProbeSupport()`），由每条 eval 在自己的模块顶层调用、把结果传进 harness——登记按「正在被发现的那条 eval」归属，而共享模块只求值一次，读取写在 harness 顶层的话只有第一条 eval 会把判据算进指纹。
+**不要在模块顶层登记 loader，也不要先读成字符串再走 `writeFiles`。** 每条 Eval 在需要判据的位置直接传本地 `URL`；共享 harness 也直接上传自己的 `_support/` URL。这样同一 helper 被多条 Eval 调用时，每次真实传输都归当前 Attempt，既不依赖模块求值顺序，也没有第二套 fixture 声明面。动态 plan 这类内存内容用 `writeText` / `writeBytes`。
 
 ## 记录问题与 Know-How 的规范
 

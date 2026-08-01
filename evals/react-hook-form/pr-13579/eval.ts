@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { loadText } from "niceeval/loaders";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13579(修复 issue #13575;不让被测 agent 看到
 // PR 号/commit)。Bug:`form.subscribe({ formState, callback })` 的回调 payload 会带上触发该次
@@ -9,13 +8,8 @@ import { loadText } from "niceeval/loaders";
 // 上次遗留的 `name: 'firstName'` 而不是 `undefined`——事件元数据跨通知泄漏。真实修复让 per-event
 // 元数据不再被写进持久 state。隐藏测试是 subscribe.test.tsx 里新增的一个用例,base_sha 下必失败
 // (1 failed / 13 passed),打上真实修复后 14 全绿——本地 Node 20.9.0 双向验证过。
-const fixture = (path: string) => new URL(path, import.meta.url);
-
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "cae5dfe2d60f1f19e2d9e40314ddef858064347f";
-
-const hiddenTest = await loadText(fixture("tests/subscribe.test.tsx"));
-const runTests = await loadText(fixture("tests/run-tests.sh"));
 
 export default defineEval({
   description:
@@ -84,11 +78,15 @@ export default defineEval({
       )
       .then((turn) => turn.expectOk());
 
-    await t.sandbox.writeFiles({
-      // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
-      "src/__tests__/useForm/subscribe.test.tsx": hiddenTest,
-      "tests/run-tests.sh": runTests,
-    });
+    // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
+    await t.sandbox.uploadFile(
+      new URL("tests/subscribe.test.tsx", import.meta.url),
+      "src/__tests__/useForm/subscribe.test.tsx",
+    );
+    await t.sandbox.uploadFile(
+      new URL("tests/run-tests.sh", import.meta.url),
+      "tests/run-tests.sh",
+    );
 
     t.check(await t.sandbox.runCommand("bash", ["tests/run-tests.sh"]), commandSucceeded());
   },
