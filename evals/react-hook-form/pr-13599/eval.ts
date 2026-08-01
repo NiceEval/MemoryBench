@@ -81,7 +81,7 @@ export default defineEval({
           "./scripts/jest/jest.config.js src/__tests__/useForm/formState.test.tsx`. Fix the library source; do not " +
           "just edit tests.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
     await t.sandbox.uploadFile(

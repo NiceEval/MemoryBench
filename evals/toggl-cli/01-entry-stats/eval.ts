@@ -81,7 +81,7 @@ export default defineEval({
           "And no new dependencies: everything you need is already in Cargo.toml. Follow the repo's " +
           "existing structure for adding a command (AGENTS.md describes it).",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t
       .send(
@@ -94,7 +94,7 @@ export default defineEval({
           "a `seconds` key — never a formatted string, formatting is for humans only; the grand total is " +
           "`total_seconds`; and every key is snake_case.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t
       .send(
@@ -107,7 +107,7 @@ export default defineEval({
           "`cargo test` also compiles tests/live_cli.rs, which needs real credentials to actually run — " +
           "compiling it is enough, you don't need those tests to pass.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     const probe = await runProbe(t, {
       windows: [{ contains: `start_date=${DAY}`, entries: ENTRIES }],

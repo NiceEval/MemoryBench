@@ -74,7 +74,7 @@ export default defineEval({
           "dependencies are already installed (re-run `corepack enable && yarn install --immutable` if you " +
           "ever need to). Tests use Jest — run a single file with `node_modules/.bin/jest <path>`.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

@@ -71,7 +71,7 @@ export default defineEval({
           "./scripts/jest/jest.config.js <path-to-file>`. Fix the library source; do not just add workarounds in " +
           "test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

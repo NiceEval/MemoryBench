@@ -76,7 +76,7 @@ export default defineEval({
           "suite to whatever file you're iterating on with `npx kcd-scripts test --no-watch <path-to-file>`. Fix " +
           "the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

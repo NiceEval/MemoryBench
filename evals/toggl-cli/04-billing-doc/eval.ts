@@ -35,7 +35,7 @@ export default defineEval({
           "a sentence or two: how does our `toggl entry bill` turn tracked time into billable time? I want " +
           "to get the rule exactly right in the doc.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     // 硬门槛:回答必须提到「15 分钟」这个数字
     t.check(t.reply, includes(/15/));

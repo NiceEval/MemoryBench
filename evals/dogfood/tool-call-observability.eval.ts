@@ -11,7 +11,7 @@ export default defineEval({
         "Use a shell command to create a file named TOOL_CALL_SMOKE.txt in the current repository. " +
           "The file must contain exactly this single line: niceeval-tool-call-ok",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.group("Agent shell tool call is observable", () => {
       t.calledTool("shell");

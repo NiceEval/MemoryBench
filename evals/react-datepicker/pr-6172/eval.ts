@@ -71,7 +71,7 @@ export default defineEval({
           "`node_modules/.bin/jest src/test/date_utils_test.test.ts` to scope to the date-parsing tests. " +
           "Fix the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

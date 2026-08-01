@@ -73,7 +73,7 @@ export default defineEval({
           "test file with `node_modules/.bin/jest <path-to-file>` (or `yarn test <path-to-file>`). Fix the " +
           "library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

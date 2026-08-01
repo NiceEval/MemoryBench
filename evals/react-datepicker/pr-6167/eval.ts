@@ -73,7 +73,7 @@ export default defineEval({
           "tests. Fix the library source (likely in `src/index.tsx`, wherever the portal render branch builds " +
           "its returned JSX); do not just add workarounds in test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

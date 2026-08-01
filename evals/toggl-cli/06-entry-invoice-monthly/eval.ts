@@ -56,7 +56,7 @@ export default defineEval({
           "- Human: `<YYYY-MM>  <seconds>s` per month, two spaces, then `Total  <seconds>s`. Empty window " +
           "prints `(no data)` and exits 0. No new dependencies.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t
       .send(
@@ -66,7 +66,7 @@ export default defineEval({
           "Then build and run the existing test suite. (`cargo test` also compiles tests/live_cli.rs, which " +
           "needs real credentials to actually run — compiling is enough.)",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     const probe = await runProbe(t, {
       windows: [{ contains: `start_date=${M1}`, entries: ENTRIES }],

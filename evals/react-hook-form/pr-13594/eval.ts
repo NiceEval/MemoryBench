@@ -78,7 +78,7 @@ export default defineEval({
           "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts`). Run tests with " +
           "`node_modules/.bin/jest --config ./scripts/jest/jest.config.js src/__tests__/useForm/formState.test.tsx`.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
     await t.sandbox.uploadFile(

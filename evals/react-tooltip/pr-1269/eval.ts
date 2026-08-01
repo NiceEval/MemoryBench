@@ -94,7 +94,7 @@ export default defineEval({
           "Fix the library source (likely in the tooltip component and/or its event-handling hook under " +
           "`src/components/Tooltip/`); do not just add workarounds in test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

@@ -91,7 +91,7 @@ export default defineEval({
           "ever need to). Tests use Jest — run a single file with `node_modules/.bin/jest <path>`. Fix the " +
           "library source under `src/`; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

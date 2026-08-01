@@ -75,7 +75,7 @@ export default defineEval({
           "`NODE_ENV=test yarn test` (or `NODE_ENV=test node_modules/.bin/jest` to run the whole suite directly). " +
           "This is a TypeScript + React codebase; the calendar dialog markup lives under `src/`.",
       )
-      .then((turn) => turn.expectOk());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 
