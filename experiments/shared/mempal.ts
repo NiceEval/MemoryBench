@@ -119,7 +119,9 @@ export function mempalState() {
       }
       await ctx.sandbox.runShellOrThrow('mkdir -p "$HOME/.mempal-notes"');
 
-      const digest = state ? createHash("sha256").update(state).digest("hex") : undefined;
+      const digest = state
+        ? { _tag: "Sha256" as const, value: createHash("sha256").update(state).digest("hex") }
+        : { _tag: "Unavailable" as const };
       return {
         identity: { experimentId: ctx.experimentId, cohort: mempalFlags().mempalCohort },
         digest,
@@ -157,7 +159,10 @@ export function mempalState() {
           2,
         )}\n`,
       );
-      const digest = createHash("sha256").update(data).digest("hex");
+      const digest = {
+        _tag: "Sha256" as const,
+        value: createHash("sha256").update(data).digest("hex"),
+      };
       return {
         identity: { experimentId: ctx.experimentId, cohort: mempalFlags().mempalCohort },
         digest,
