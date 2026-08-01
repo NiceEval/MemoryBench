@@ -8,6 +8,7 @@ import {
   toAttemptAssertions,
   toAttemptSummary,
 } from "niceeval/report";
+import { standardAttemptPage } from "niceeval/report/built-in";
 
 export default defineReport({
   pages: [
@@ -17,10 +18,8 @@ export default defineReport({
       render: (sample) => <SampleOverview input={sample} />,
     },
     {
-      id: "attempt",
+      ...standardAttemptPage,
       title: "Scoring smoke",
-      input: "attempt",
-      navigation: false,
       render: async (attempt) => {
         const [summary, assertions] = await Promise.all([
           toAttemptSummary(attempt),
