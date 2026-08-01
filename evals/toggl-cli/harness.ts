@@ -13,7 +13,7 @@ import type { Sandbox, SandboxHookContext } from "niceeval/sandbox";
 
 const REPO_URL = "https://github.com/CorrectRoadH/toggl-cli.git";
 
-const fixture = (path: string) => new URL(`../fixtures/toggl-cli/${path}`, import.meta.url);
+const fixture = (path: string) => new URL(path, import.meta.url);
 
 /** toggl-cli @ 8646f29 —— 写这些 eval 时的仓库 tip。 */
 export const BASE_COMMIT = "8646f29c87242b06eab974793a999d35b5a85b5e";

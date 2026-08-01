@@ -20,8 +20,6 @@ export default defineReport({
       render: () => (
         <Col>
           <MemoryBenchHero />
-          <SampleNotices />
-          <RunNotices />
           <SampleSummary />
           <Leaderboard />
           <ExperimentScatter />
