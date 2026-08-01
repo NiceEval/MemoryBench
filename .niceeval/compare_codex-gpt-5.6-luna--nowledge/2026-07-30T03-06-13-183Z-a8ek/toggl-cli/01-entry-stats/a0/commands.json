@@ -1,1 +1,0 @@
-[{"timingNodeId":"n8","phase":"agent.setup","display":"codex plugin marketplace add 'nowledge-co/community' --sparse '.agents' --sparse 'nowledge-mem-codex-plugin'","exitCode":1,"stdout":"","stderr":"Error: marketplace 'nowledge-community' is already added from a different source; remove it before adding this source\n"}]
