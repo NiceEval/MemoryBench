@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SkillSpec } from "niceeval/adapter";
 import { createCheckpoint, restoreCheckpoint } from "niceeval/sandbox";
-import type { Sandbox, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
+import type { Sandbox, SandboxCommand, SandboxCommandContext } from "niceeval/sandbox";
 import {
   NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE,
   NICEEVAL_CODEX_E2B_TEMPLATE,
@@ -64,15 +64,15 @@ async function requireCommand(sb: Sandbox, label: string, script: string): Promi
   if (result.exitCode !== 0) throw commandFailure(label, result);
 }
 
-function hookLog(ctx: SandboxHookContext, message: string): void {
+function commandLog(ctx: SandboxCommandContext, message: string): void {
   ctx.progress({ message });
 }
 
 /**
- * 专用模板的 attempt 级环境层：只做廉价探针、checkpoint 恢复和空库初始化。
+ * Experiment Sandbox recipe 的窗口级 setup command：只做廉价探针、checkpoint 恢复和空库初始化。
  * ingest/search 的完整自检属于不可变模板构建，不应在每个业务 attempt 重跑。
  */
-export function mempalSetup(tool: "claude" | "codex"): SandboxHook {
+export function mempalSetup(tool: "claude" | "codex"): SandboxCommand {
   return async (sb, ctx) => {
     const statePath = statePathFor(ctx.experimentId);
     const probe = await sb.runShell("command -v mempal");
@@ -87,7 +87,7 @@ export function mempalSetup(tool: "claude" | "codex"): SandboxHook {
       "embedding cache probe",
       'test -n "$(find "$HOME/.cache/huggingface" -name "*.safetensors" -print -quit 2>/dev/null)"',
     );
-    hookLog(ctx, "[mempal] template probe passed: binary and embedding cache");
+    commandLog(ctx, "[mempal] template probe passed: binary and embedding cache");
 
     let state: Buffer | undefined;
     try {
@@ -98,17 +98,17 @@ export function mempalSetup(tool: "claude" | "codex"): SandboxHook {
 
     if (state) {
       await restoreCheckpoint(sb, state);
-      hookLog(ctx, `[mempal] state restored from ${ctx.experimentId}.tgz (${(state.length / 1024).toFixed(0)} KB)`);
+      commandLog(ctx, `[mempal] state restored from ${ctx.experimentId}.tgz (${(state.length / 1024).toFixed(0)} KB)`);
     } else {
       await requireCommand(sb, "empty state initialization", "mempal init .");
-      hookLog(ctx, `[mempal] no saved state for "${ctx.experimentId}", starting from empty palace`);
+      commandLog(ctx, `[mempal] no saved state for "${ctx.experimentId}", starting from empty palace`);
     }
     await requireCommand(sb, "notes dir", 'mkdir -p "$HOME/.mempal-notes"');
   };
 }
 
-/** 用 niceeval 的 provider-neutral checkpoint 原语 best-effort 回存状态。 */
-export function mempalTeardown(_tool: "claude" | "codex"): SandboxHook {
+/** 窗口级 teardown command：用 niceeval 的 provider-neutral checkpoint 原语 best-effort 回存状态。 */
+export function mempalTeardown(_tool: "claude" | "codex"): SandboxCommand {
   return async (sb, ctx) => {
     const statePath = statePathFor(ctx.experimentId);
     try {
@@ -147,7 +147,7 @@ export function mempalTeardown(_tool: "claude" | "codex"): SandboxHook {
           2,
         )}\n`,
       );
-      hookLog(ctx, `[mempal] state saved to ${ctx.experimentId}.tgz (${(data.length / 1024).toFixed(0)} KB)`);
+      commandLog(ctx, `[mempal] state saved to ${ctx.experimentId}.tgz (${(data.length / 1024).toFixed(0)} KB)`);
     } catch (error) {
       ctx.diagnostic({
         code: "mempal-state-save-failed",

@@ -31,7 +31,8 @@ export default defineExperiment({
   // 5 个并发沙箱的 mempalSetup/Teardown 各自 restore 同一个 <experimentId>.tgz 又各自写回去,
   // 后写覆盖先写,跨 eval 的记忆累积大半丢失(claude 那条同名注释配的就是 1)。
   //
-  // 复用把串行的代价补了回来:mempalSetup/Teardown 是【沙箱级】钩子,复用下每条泳道只跑一次,
+  // 复用把串行的代价补了回来:mempalSetup/Teardown 是【复用窗口级】Sandbox command,
+  // 每条泳道只跑一次,
   // 记忆态直接留在沙箱 $HOME/.mempal 里跨题存活,不再每题 restore/回存一遍 tgz;
   // 沙箱创建 + 依赖安装也从每题一次降到每泳道一次。
   //

@@ -35,8 +35,8 @@ export default defineExperiment({
   model: "deepseek-v4-flash",
   sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE })
     .setup(nowledgeAttachRemote())
-    // 收尾核对 setup 时连的那个隧道还活着;中途换址会让 memory_add 静默全挂,见 shared/nowledge.ts
-    .teardown(nowledgeVerifyRemoteAlive()),
+    // 每条 Attempt 收尾都核对窗口 setup 时连接的隧道;中途换址会让 memory_add 静默全挂。
+    .afterEach(nowledgeVerifyRemoteAlive()),
   attempts: 1,
   earlyExit: true,
   // 串行:中心化记忆库跨 attempt 共享,串行让累积顺序确定(对齐 claude-dp-v4--mempal 语义)。

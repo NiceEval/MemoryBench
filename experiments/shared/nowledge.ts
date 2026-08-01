@@ -3,7 +3,13 @@ import { fileURLToPath } from "node:url";
 import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
 import type { ClaudeCodeConfig, ClaudeCodePluginSpec, CodexConfig, CodexPluginSpec, McpServer } from "niceeval/adapter";
-import type { Sandbox, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
+import type {
+  Sandbox,
+  SandboxCommand,
+  SandboxCommandContext,
+  SandboxHook,
+  SandboxHookContext,
+} from "niceeval/sandbox";
 
 /**
  * Nowledge Mem 记忆条件:固定远程实例。
@@ -11,8 +17,9 @@ import type { Sandbox, SandboxHook, SandboxHookContext } from "niceeval/sandbox"
  * 拓扑:mem 服务端在宿主机外部长期运行(手动管理,如 scripts/nowledge-mem.sh 或任意别处),
  * cloudflared 隧道暴露公网;连接坐标(NMEM_URL / NMEM_API_KEY)固定放仓库 .env(gitignored),
  * niceeval 侧**不管服务端的生命周期**——不 up、不 down、无实验级 setup/teardown。
- * 沙箱钩子做两件事:`nowledgeAttachRemote` 接线(装 nmem CLI、把 client 指向远程、端到端探活),
- * `nowledgeVerifyRemoteAlive` 收尾核对同一个 URL 还活着(隧道中途换址会让写路径静默全挂,见该函数注释)。
+ * Sandbox command 做两件事:`nowledgeAttachRemote` 在复用窗口 setup 接线(装 nmem CLI、
+ * 把 client 指向远程、端到端探活),`nowledgeVerifyRemoteAlive` 在每条 Attempt 的 afterEach
+ * 核对同一个 URL 还活着(隧道中途换址会让写路径静默全挂,见该函数注释)。
  *
  * 这与 mempal 的差异是形态本质:mempal 状态是文件(checkpoint 每 attempt 恢复/回存),
  * nowledge 状态在中心化 server 上跨 attempt / 跨实验 / 跨 run 天然共享持续积累。
@@ -78,6 +85,10 @@ export function nowledgeFlags(): Record<string, string> {
   return { memory: "nowledge", nowledgeVersion: NOWLEDGE_VERSION };
 }
 
+function commandLog(ctx: SandboxCommandContext, message: string): void {
+  ctx.progress({ message });
+}
+
 function hookLog(ctx: SandboxHookContext, message: string): void {
   ctx.progress({ message });
 }
@@ -103,23 +114,22 @@ async function requireCommand(
 }
 
 /**
- * setup 当时这条 attempt 实际连上的 URL,按 sandbox 键控(并发 attempt 各有自己的 sandbox,
- * 模块变量会被后来的 attempt 覆写)。teardown 探针必须用**这个**值而不是现读 .env:
+ * 复用窗口 setup 当时实际连上的 URL,按 sandbox 键控(并发窗口各有自己的 sandbox,
+ * 模块变量会被后来的窗口覆写)。afterEach 探针必须用**这个**值而不是现读 .env:
  * quick tunnel 换 URL 后 .env 会被更新成新地址,现读只会探到新隧道并探活成功,
- * 恰好漏掉「这条 attempt 连的那个旧隧道中途死了」——那正是要抓的故障形态。
+ * 恰好漏掉「这个复用窗口连的旧隧道中途死了」——那正是要抓的故障形态。
  */
-const attemptEndpoints = new WeakMap<Sandbox, string>();
+const windowEndpoints = new WeakMap<Sandbox, string>();
 
 /**
- * 沙箱级接线(每沙箱一次):装 nmem CLI 并把 client 指向固定远程实例,跑在 agent.setup 之前,
+ * 复用窗口级 Sandbox command 接线(每复用窗口一次):装 nmem CLI 并把 client 指向固定远程实例,跑在 agent.setup 之前,
  * 这样 postSetup 里插件的 install_hooks.py 能从 nmem client 配置读到远程连接。
  */
-export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpoint): SandboxHook {
+export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpoint): SandboxCommand {
   return async (sb, ctx) => {
     const conn = endpoint();
-    attemptEndpoints.set(sb, conn.url);
-    // 这条 attempt 实际连的隧道:sandbox hook 是 attempt 作用域,fact 落进它的 result.json,
-    // 携带时原样跟着结果走。报告要按隧道分组就读 fact("nowledge.endpoint")。
+    windowEndpoints.set(sb, conn.url);
+    // 记录这个复用窗口实际连接的隧道；报告要按隧道分组就读 fact("nowledge.endpoint")。
     // key 只能是 /^[a-z0-9._-]{1,64}$/,所以是点号不是驼峰——写驼峰会在这里直接抛错、整条 errored。
     ctx.fact("nowledge.endpoint", conn.url);
 
@@ -149,12 +159,12 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
       "nmem --json status",
       { shared: true },
     );
-    hookLog(ctx, `[nowledge] nmem client ready → ${conn.url}`);
+    commandLog(ctx, `[nowledge] nmem client ready → ${conn.url}`);
   };
 }
 
 /**
- * 收尾探针:attempt 跑完、沙箱销毁前,再探一次**setup 当时连的那个 URL**。
+ * Attempt 收尾探针:每条 Attempt 的 afterEach 再探一次**窗口 setup 当时连的那个 URL**。
  *
  * 堵的洞(2026-07-24 实测):Nowledge Mem.app 拉的是 cloudflare quick tunnel
  * (`cloudflared tunnel --url`),随机域名、无 SLA、进程一重连就换地址。setup 的探活只证明
@@ -163,14 +173,14 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
  * `"output": null, "status": "failed"`,没有任何错误文本),而 attempt 照常判 pass/fail
  * 进通过率——那一轮 36 条里 memory_add 挂了 11/29,记忆条件名存实亡,数字却看不出异常。
  *
- * 抛普通 Error 而非 ExperimentFatalError:URL 换掉后,后续 attempt 的 setup 现读 .env
- * 会拿到新地址并正常工作,中毒的只有正在跑的这一条。按 niceeval 的失败语义,teardown 抛错
+ * 抛普通 Error 而非 ExperimentFatalError:URL 换掉后,后续复用窗口的 setup 现读 .env
+ * 会拿到新地址并正常工作,中毒的只有正在跑的这一条。按 niceeval 的失败语义,afterEach 抛错
  * 由 runner 记为致命错误,这条 attempt 不会被静默算进通过率——记忆写路径完好是记忆条件
  * 实验「结果成立的必要条件」,不是可选的收尾动作。
  */
-export function nowledgeVerifyRemoteAlive(): SandboxHook {
+export function nowledgeVerifyRemoteAlive(): SandboxCommand {
   return async (sb, ctx) => {
-    const url = attemptEndpoints.get(sb);
+    const url = windowEndpoints.get(sb);
     // setup 没走到(sandbox 建好但接线前就炸了):没有可核对的基准,不额外报错
     if (!url) return;
 
@@ -183,7 +193,7 @@ export function nowledgeVerifyRemoteAlive(): SandboxHook {
           `本条的记忆条件不成立。修隧道并更新 .env 后重跑本条。`,
       );
     }
-    hookLog(ctx, `[nowledge] endpoint still reachable at teardown → ${url}`);
+    commandLog(ctx, `[nowledge] endpoint still reachable at afterEach → ${url}`);
   };
 }
 
