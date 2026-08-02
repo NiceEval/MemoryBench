@@ -2,7 +2,7 @@ import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 
 export default defineEval({
-  description: "tool-call observability smoke: agent shell calls are recorded as action events",
+  description: "tool-call observability smoke: agent shell calls are recorded as operation events",
   async test(t) {
     await t.sandbox.uploadDirectory("../../workspaces/tool-call-observability");
 
