@@ -16,9 +16,14 @@ export default defineEval({
     await t.group("Agent shell tool call is observable", () => {
       t.calledTool("shell");
       t.eventsSatisfy(
-        "emitted a canonical shell action.called event",
+        "emitted a canonical shell operation.started event",
         (events) =>
-          events.some((event) => event.type === "action.called" && event.tool === "shell"),
+          events.some(
+            (event) =>
+              event.type === "operation.started" &&
+              event.operation.kind === "tool" &&
+              event.operation.tool === "shell",
+          ),
       );
     });
 
