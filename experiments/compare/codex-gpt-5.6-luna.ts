@@ -22,5 +22,7 @@ export default defineExperiment({
   // e2b 的 20 沙箱硬上限。
   maxConcurrency: 4,
   // 与 claude 组对齐(重型题 mvn build / pytest 可能超 10 分钟),消除条件间超时偏置。
-  timeoutMs: 1200000,
+  // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the
+  // experiment ceiling aligned so it does not truncate their per-eval timeout.
+  timeoutMs: 1_800_000,
 });

@@ -47,5 +47,7 @@ export default defineExperiment({
   // 以及 toggl-cli 那条 rust 工具链 / cargo 缓存跨题存活(实测省约 1 分钟/题)。
   maxConcurrency: 1,
   // 与 codex baseline/mempal 对齐,astropy eval 两阶段都要源码构建。
-  timeoutMs: 1200000,
+  // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the
+  // experiment ceiling aligned so it does not truncate their per-eval timeout.
+  timeoutMs: 1_800_000,
 });
