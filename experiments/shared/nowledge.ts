@@ -12,9 +12,9 @@ import type {
 /**
  * Nowledge Mem 记忆条件:固定远程实例。
  *
- * 拓扑:mem 服务端在宿主机外部长期运行(手动管理,如 scripts/nowledge-mem.sh 或任意别处),
- * cloudflared 隧道暴露公网;连接坐标(NMEM_URL / NMEM_API_KEY)只放在 gitignored 的私有 env
- * 文件或当前进程环境中，niceeval 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
+ * 拓扑:mem 服务端在外部长期运行，并以可从 E2B 访问的 URL 暴露；连接坐标
+ * (NMEM_URL / NMEM_API_KEY)只放在 gitignored 的仓库 `.env` 或当前进程环境中，niceeval
+ * 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
  * Experiment layer 的 `nowledgeAttachRemote` 每条 Attempt 接线(装 nmem CLI、把 client 指向远程、
  * 端到端探活),Agent `preTeardown` 再用 `nowledgeVerifyRemoteAlive` 核对同一个 URL 仍存活。
  *
@@ -28,9 +28,8 @@ import type {
  * - **每个逻辑评测流有一个 cohort 标签**:用非秘密 `NOWLEDGE_COHORT` 区分结果批次；它进入
  *   flags / fingerprint，但不参与服务端连接。未显式设置时使用本轮直连标签。
  *
- * quick tunnel URL 每次 cloudflared 重启会变:它不是实验身份，也绝不进入 flags、facts 或
- * 进度文本。写路径观测通过 `scripts/nowledge-mem.sh probe <cohort>` 完成，避免把连接坐标
- * 复制到终端记录。
+ * URL 是连接坐标而不是实验身份，也绝不进入 flags、facts 或进度文本。写路径是否可用由
+ * 每条 Attempt 的 prepare 与 preTeardown 探针验证，避免把连接坐标复制到终端记录。
  */
 
 export interface NowledgeEnv {
@@ -41,7 +40,6 @@ export interface NowledgeEnv {
 const ENV_FILE = fileURLToPath(new URL("../../.env", import.meta.url));
 const COHORT_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.]+)?$/;
-const UNBOUND_SPACE = "unbound";
 
 const MISSING_ENV_HINT =
   "[nowledge] 缺 NMEM_URL / NMEM_API_KEY:请在仓库 .env（或进程 env）中给出已配置 mem 服务的连接坐标。" +
@@ -59,31 +57,6 @@ export function nowledgeCohort(): string {
     );
   }
   return cohort;
-}
-
-/**
- * Space 是远端读写的隔离边界，和进入 flags 的公开 cohort 标签分开。import/discovery 阶段允许
- * 暂时未绑定；真正启动 Attempt 时由 `requireNowledgeSpaceId` 拒绝回落到服务端 default。
- */
-export function nowledgeSpaceId(): string {
-  const space = process.env.NMEM_SPACE?.trim();
-  if (!space) return UNBOUND_SPACE;
-  if (!COHORT_PATTERN.test(space)) {
-    throw new Error(
-      "NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).",
-    );
-  }
-  return space;
-}
-
-function requireNowledgeSpaceId(): string {
-  const space = nowledgeSpaceId();
-  if (space === UNBOUND_SPACE) {
-    throw new Error(
-      "[nowledge] 缺 NMEM_SPACE：请 source 由 scripts/nowledge-mem.sh adopt 写入的私有 env，禁止回退使用服务端 default Space。",
-    );
-  }
-  return space;
 }
 
 /**
@@ -142,8 +115,6 @@ export function nowledgeFlags(): Record<string, string> {
     memory: "nowledge",
     nowledgeVersion: nowledgeServerVersion(),
     nowledgeCohort: nowledgeCohort(),
-    // Space 改变就是远端记忆起点改变，必须作废旧缓存；它是公开 ID，不是连接秘密。
-    nowledgeSpace: nowledgeSpaceId(),
   };
 }
 
@@ -186,7 +157,7 @@ async function requireCommand(
  */
 const attemptConditions = new WeakMap<
   object,
-  { cohort: string; space: string; serverVersion: string }
+  { cohort: string; serverVersion: string }
 >();
 
 /**
@@ -196,12 +167,10 @@ const attemptConditions = new WeakMap<
 export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpoint): SandboxCommand {
   return async (sb, ctx) => {
     const cohort = nowledgeCohort();
-    const space = requireNowledgeSpaceId();
     const serverVersion = requireNowledgeServerVersion();
     const conn = endpoint();
-    attemptConditions.set(sb, { cohort, space, serverVersion });
+    attemptConditions.set(sb, { cohort, serverVersion });
     ctx.facts("nowledge.cohort", cohort);
-    ctx.facts("nowledge.space", space);
     ctx.facts("nowledge.server-version", serverVersion);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
@@ -236,7 +205,7 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
     await requireCommand(
       sb,
       "nowledge server probe",
-      `NMEM_SPACE=${space} nmem --json status`,
+      "nmem --json status",
       { shared: true },
     );
     commandLog(ctx, `[nowledge] nmem ${serverVersion} client ready for cohort ${cohort}`);
@@ -264,7 +233,7 @@ export function nowledgeVerifyRemoteAlive(): SandboxCommand {
     // prepare 没走到:没有可核对的基准,不额外报错
     if (!condition) return;
 
-    const result = await sb.runShell(`NMEM_SPACE=${condition.space} nmem --json status`);
+    const result = await sb.runShell("nmem --json status");
     if (result.exitCode !== 0) {
       const tail = redactNowledgeConnection((result.stderr || result.stdout).trim().slice(-300)) || "no output";
       throw new Error(
@@ -330,20 +299,15 @@ export function nowledgePostSetup(): SandboxCommand {
 }
 
 /**
- * `NMEM_SPACE` 随每次 `codex exec` / resume 进入进程环境，使插件 MCP header、Session hooks 与
- * agent 内 nmem CLI 落到同一 Space。连接仍由 prepare 写入的 nmem client config 提供。
+ * 连接由 prepare 写入的 nmem client config 提供；插件、Session hooks 与 agent 内 nmem CLI
+ * 都使用服务端 default Space。
  */
-export function nowledgeCodexConfig(
-  space: string,
-): Pick<
+export function nowledgeCodexConfig(): Pick<
   CodexConfig,
   "env" | "plugins" | "configFile" | "postSetup" | "preTeardown"
 > {
-  if (!COHORT_PATTERN.test(space)) {
-    throw new Error("NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).");
-  }
   return {
-    env: { NMEM_SPACE: space },
+    env: {},
     plugins: [nowledgePlugin],
     // [features] plugins = true 必须在 codex plugin add 之前落盘(adapter 先写 configFile 再装 plugin)
     configFile: "configs/codex/nowledge.toml",
@@ -406,17 +370,12 @@ export function nowledgeCliOnlyPostSetup(): SandboxCommand {
 }
 
 /** codexAgent(...) 的 CLI-only 变体:装插件 + hooks,但不注册 MCP,读写全走 `nmem` CLI。 */
-export function nowledgeCodexCliOnlyConfig(
-  space: string,
-): Pick<
+export function nowledgeCodexCliOnlyConfig(): Pick<
   CodexConfig,
   "env" | "plugins" | "configFile" | "postSetup" | "preTeardown"
 > {
-  if (!COHORT_PATTERN.test(space)) {
-    throw new Error("NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).");
-  }
   return {
-    env: { NMEM_SPACE: space },
+    env: {},
     plugins: [nowledgePlugin],
     configFile: "configs/codex/nowledge.toml",
     postSetup: [nowledgePostSetup(), nowledgeCliOnlyPostSetup()],

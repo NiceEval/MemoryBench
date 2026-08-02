@@ -6,7 +6,6 @@ import {
   nowledgeCodexConfig,
   nowledgeFlags,
   nowledgeAttachRemote,
-  nowledgeSpaceId,
 } from "../shared/nowledge.ts";
 
 // codex-gpt-5.6-luna 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -16,13 +15,13 @@ import {
 // 对照 codex-gpt-5.6-luna.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。
 //
 // mem 服务端是长期运行的固定远程实例(连接坐标在 .env,见 shared/nowledge.ts 文件头):
-// niceeval 侧不管服务端生命周期,沙箱钩子负责接线与收尾核对；正式运行必须绑定独立 Space，
-// cohort 与 Space 都进入指纹，防止换远端记忆起点却错误沿用缓存。本实验内记忆按串行顺序持续积累。
+// niceeval 侧不管服务端生命周期,沙箱钩子负责接线与收尾核对，并始终使用服务端 default Space。
+// 本实验内记忆按串行顺序持续积累。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · Nowledge Mem",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  agent: codexAgent(nowledgeCodexConfig(nowledgeSpaceId())),
+  agent: codexAgent(nowledgeCodexConfig()),
   flags: { ...nowledgeFlags() },
   model: "gpt-5.6-luna",
   // 复用下 provider 必须能声明实例寿命,不声明会在第一条 attempt 派发前硬失败。1 小时是 e2b
