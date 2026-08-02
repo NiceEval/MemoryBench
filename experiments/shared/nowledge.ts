@@ -41,7 +41,6 @@ export interface NowledgeEnv {
 const ENV_FILE = fileURLToPath(new URL("../../.env", import.meta.url));
 const COHORT_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.]+)?$/;
-const UNBOUND_SPACE = "unbound";
 
 const MISSING_ENV_HINT =
   "[nowledge] 缺 NMEM_URL / NMEM_API_KEY:请在仓库 .env（或进程 env）中给出已配置 mem 服务的连接坐标。" +
@@ -62,42 +61,14 @@ export function nowledgeCohort(): string {
 }
 
 /**
- * 实际 Nowledge Space ID 与报告 cohort 是两回事：前者只决定远端读写落点，后者才是
- * flags/fingerprint 中稳定、可读的实验批次名。未绑定时保持 import/discovery 可用；真正
- * 启动 Attempt 会由 `requireNowledgeSpaceId` 拒绝回退到服务端 default Space。
- */
-export function nowledgeSpaceId(): string {
-  const space = process.env.NMEM_SPACE?.trim();
-  if (!space) return UNBOUND_SPACE;
-  if (!COHORT_PATTERN.test(space)) {
-    throw new Error(
-      "NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).",
-    );
-  }
-  return space;
-}
-
-function requireNowledgeSpaceId(): string {
-  const space = nowledgeSpaceId();
-  if (space === UNBOUND_SPACE) {
-    throw new Error(
-      "[nowledge] 缺 NMEM_SPACE：请 source 由 scripts/nowledge-mem.sh adopt 写入的私有 env，禁止回退使用服务端 default Space。",
-    );
-  }
-  return space;
-}
-
-/**
- * 服务端版本是运行条件；正式运行必须由私有 env 的 `/health` 实测值绑定。未绑定时保留
- * discovery 可用，但 `requireNowledgeServerVersion` 会在 Attempt 开始前拒绝运行。
+ * 服务端版本是运行条件。当前直连实例的已验证版本作为默认值；运维侧显式提供
+ * NOWLEDGE_SERVER_VERSION 时优先采用它。
  */
 export function nowledgeServerVersion(): string {
-  return process.env.NOWLEDGE_SERVER_VERSION?.trim() || "unbound";
+  return process.env.NOWLEDGE_SERVER_VERSION?.trim() || "0.10.39";
 }
 
-/**
- * 真正的 Nowledge Attempt 在 prepare 验证版本格式；不接受未绑定版本。
- */
+/** 真正的 Nowledge Attempt 在 prepare 验证版本格式。 */
 function requireNowledgeServerVersion(): string {
   const version = nowledgeServerVersion();
   if (!SERVER_VERSION_PATTERN.test(version)) {
@@ -194,12 +165,10 @@ const attemptConditions = new WeakMap<object, { cohort: string; serverVersion: s
 export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpoint): SandboxCommand {
   return async (sb, ctx) => {
     const cohort = nowledgeCohort();
-    const space = requireNowledgeSpaceId();
     const serverVersion = requireNowledgeServerVersion();
     const conn = endpoint();
     attemptConditions.set(sb, { cohort, serverVersion });
     ctx.facts("nowledge.cohort", cohort);
-    ctx.facts("nowledge.space", space);
     ctx.facts("nowledge.server-version", serverVersion);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
@@ -327,19 +296,12 @@ export function nowledgePostSetup(): SandboxCommand {
   };
 }
 
-/**
- * codexAgent(...) 的 Nowledge Mem 配置增量。`NMEM_SPACE` 必须随每次 `codex exec` 及 resume
- * 进入进程环境，官方插件的 MCP header、SessionStart/Stop hooks 与 agent 的 nmem CLI fallback
- * 才会落到同一隔离 Space；adapter 负责把这个值登记为 sensitive value，避免出现在报告中。
- */
-export function nowledgeCodexConfig(
-  space: string,
-): Pick<CodexConfig, "env" | "plugins" | "configFile" | "postSetup" | "preTeardown"> {
-  if (!COHORT_PATTERN.test(space)) {
-    throw new Error("NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).");
-  }
+/** codexAgent(...) 的 Nowledge Mem 配置增量；连接由 prepare 写入的 nmem client config 供插件消费。 */
+export function nowledgeCodexConfig(): Pick<
+  CodexConfig,
+  "plugins" | "configFile" | "postSetup" | "preTeardown"
+> {
   return {
-    env: { NMEM_SPACE: space },
     plugins: [nowledgePlugin],
     // [features] plugins = true 必须在 codex plugin add 之前落盘(adapter 先写 configFile 再装 plugin)
     configFile: "configs/codex/nowledge.toml",

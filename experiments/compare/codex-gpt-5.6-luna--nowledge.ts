@@ -6,7 +6,6 @@ import {
   nowledgeCodexConfig,
   nowledgeFlags,
   nowledgeAttachRemote,
-  nowledgeSpaceId,
 } from "../shared/nowledge.ts";
 
 // codex-gpt-5.6-luna 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -22,7 +21,7 @@ export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · Nowledge Mem",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  agent: codexAgent(nowledgeCodexConfig(nowledgeSpaceId())),
+  agent: codexAgent(nowledgeCodexConfig()),
   flags: { ...nowledgeFlags() },
   model: "gpt-5.6-luna",
   // 复用下 provider 必须能声明实例寿命,不声明会在第一条 attempt 派发前硬失败。1 小时是 e2b
