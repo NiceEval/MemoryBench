@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
-import type { ClaudeCodeConfig, ClaudeCodePluginSpec, CodexConfig, CodexPluginSpec, McpServer } from "niceeval/adapter";
+import type { ClaudeCodeConfig, ClaudeCodePluginSpec, CodexConfig, CodexPluginSpec } from "niceeval/adapter";
 import type {
   SandboxCommand,
   SandboxCommandContext,
@@ -13,8 +13,8 @@ import type {
  * Nowledge Mem 记忆条件:固定远程实例。
  *
  * 拓扑:mem 服务端在宿主机外部长期运行(手动管理,如 scripts/nowledge-mem.sh 或任意别处),
- * cloudflared 隧道暴露公网;连接坐标(NMEM_URL / NMEM_API_KEY)固定放仓库 .env(gitignored),
- * niceeval 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
+ * cloudflared 隧道暴露公网;连接坐标(NMEM_URL / NMEM_API_KEY)只放在 gitignored 的私有 env
+ * 文件或当前进程环境中，niceeval 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
  * Experiment layer 的 `nowledgeAttachRemote` 每条 Attempt 接线(装 nmem CLI、把 client 指向远程、
  * 端到端探活),Agent `preTeardown` 再用 `nowledgeVerifyRemoteAlive` 核对同一个 URL 仍存活。
  *
@@ -25,16 +25,13 @@ import type {
  *   所以 nowledge 实验不需要 mempal 那种 maxConcurrency: 1。代价是跨 eval 的记忆可见顺序
  *   不确定(eval N 不保证读得到 eval N-1 刚写的)——链式题要的是「上一轮写过」而不是
  *   「紧邻上一条写过」,这个粒度的乱序可以接受。
- * - **所有 nowledge 实验共用这一个库**:run N 依赖此前所有写入。
- *   正式对比要说清起点库状态;归零 = 在服务端侧清库或换一个实例,然后更新 .env。
+ * - **每个逻辑评测流有一个 cohort 标签**:用非秘密 `NOWLEDGE_COHORT` 区分结果批次；它进入
+ *   flags / fingerprint，但不参与服务端连接。未显式设置时使用本轮直连标签。
  *
- * quick tunnel URL 每次 cloudflared 重启会变:变了只更新 .env,代码与实验文件不动。
- * 写路径观测:随时可在宿主机上 `NMEM_API_KEY=… uvx --from nmem-cli nmem --api-url <url> --json threads list`
- * 查积累量,不再有「拆实例前必须 probe 否则数据没了」的时间窗。
+ * quick tunnel URL 每次 cloudflared 重启会变:它不是实验身份，也绝不进入 flags、facts 或
+ * 进度文本。写路径观测通过 `scripts/nowledge-mem.sh probe <cohort>` 完成，避免把连接坐标
+ * 复制到终端记录。
  */
-
-/** 远程服务端 /health 报的版本(是实验条件,进 flags);服务端升级时更新。 */
-export const NOWLEDGE_VERSION = "0.10.39";
 
 export interface NowledgeEnv {
   url: string;
@@ -42,10 +39,74 @@ export interface NowledgeEnv {
 }
 
 const ENV_FILE = fileURLToPath(new URL("../../.env", import.meta.url));
+const COHORT_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.]+)?$/;
+const UNBOUND_SPACE = "unbound";
 
 const MISSING_ENV_HINT =
-  "[nowledge] 缺 NMEM_URL / NMEM_API_KEY:在仓库 .env(或进程 env)里给出固定远程 mem 实例的" +
-  "隧道 URL 与 API key。quick tunnel URL 每次重启会变,重启后更新 .env 即可。";
+  "[nowledge] 缺 NMEM_URL / NMEM_API_KEY:请在仓库 .env（或进程 env）中给出已配置 mem 服务的连接坐标。" +
+  "不要把这些值复制进命令、日志或源码。";
+
+/**
+ * cohort 是可公开的结果批次标签，不是 URL 或 API key。仓库 .env 只需 URL/key；默认值保证
+ * 当前已配置直连无需额外环境变量即可运行。
+ */
+export function nowledgeCohort(): string {
+  const cohort = process.env.NOWLEDGE_COHORT?.trim() || "configured-local-20260802";
+  if (!COHORT_PATTERN.test(cohort)) {
+    throw new Error(
+      "NOWLEDGE_COHORT must be a 1-64 character lowercase instance/cohort name (letters, digits, _ or -).",
+    );
+  }
+  return cohort;
+}
+
+/**
+ * 实际 Nowledge Space ID 与报告 cohort 是两回事：前者只决定远端读写落点，后者才是
+ * flags/fingerprint 中稳定、可读的实验批次名。未绑定时保持 import/discovery 可用；真正
+ * 启动 Attempt 会由 `requireNowledgeSpaceId` 拒绝回退到服务端 default Space。
+ */
+export function nowledgeSpaceId(): string {
+  const space = process.env.NMEM_SPACE?.trim();
+  if (!space) return UNBOUND_SPACE;
+  if (!COHORT_PATTERN.test(space)) {
+    throw new Error(
+      "NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).",
+    );
+  }
+  return space;
+}
+
+function requireNowledgeSpaceId(): string {
+  const space = nowledgeSpaceId();
+  if (space === UNBOUND_SPACE) {
+    throw new Error(
+      "[nowledge] 缺 NMEM_SPACE：请 source 由 scripts/nowledge-mem.sh adopt 写入的私有 env，禁止回退使用服务端 default Space。",
+    );
+  }
+  return space;
+}
+
+/**
+ * 服务端版本是运行条件；正式运行必须由私有 env 的 `/health` 实测值绑定。未绑定时保留
+ * discovery 可用，但 `requireNowledgeServerVersion` 会在 Attempt 开始前拒绝运行。
+ */
+export function nowledgeServerVersion(): string {
+  return process.env.NOWLEDGE_SERVER_VERSION?.trim() || "unbound";
+}
+
+/**
+ * 真正的 Nowledge Attempt 在 prepare 验证版本格式；不接受未绑定版本。
+ */
+function requireNowledgeServerVersion(): string {
+  const version = nowledgeServerVersion();
+  if (!SERVER_VERSION_PATTERN.test(version)) {
+    throw new Error(
+      `[nowledge] NOWLEDGE_SERVER_VERSION 不是可识别的服务端版本: ${JSON.stringify(version)}`,
+    );
+  }
+  return version;
+}
 
 /**
  * 固定远程连接:进程 env 优先,回退解析仓库 .env(gitignored;兼容带/不带 `export ` 前缀)。
@@ -71,19 +132,32 @@ export function nowledgeEndpoint(): NowledgeEnv {
 
 /**
  * 记忆条件的实验条件,整袋进指纹:换任一个值就是换了一批被测条件,历史结果本就不该混读。
- * `memory` 区分记忆条件与 baseline,`nowledgeVersion` 让服务端升级自然作废旧结果。
+ * `memory` 区分记忆条件与 baseline,`nowledgeVersion` 让服务端升级自然作废旧结果，
+ * `nowledgeCohort` 划定一轮因果连续、起点明确的远程库。URL/key 都是连接坐标，不是条件身份，
+ * 不得进入 flags。
  *
  * 隧道 URL **不在这里**。它是跑起来才存在的连接坐标:换一个地址连的仍是同一个固定实例、
  * 同一个库,attempt 里发生的事一模一样,进 flags 只会让每次 cloudflared 重启作废全部已跑完的
- * 结果(实测:换 URL 后 36 条一条都携带不到)。这轮连的哪个隧道由 `nowledgeAttachRemote()`
- * 在沙箱接线时报成 `ctx.facts("nowledge.endpoint", url)`,留在 attempt 记录里供报告按 fact() 选轴。
+ * 结果。cohort 而非 endpoint 会作为安全的 Attempt fact 留给报告分组。
  */
 export function nowledgeFlags(): Record<string, string> {
-  return { memory: "nowledge", nowledgeVersion: NOWLEDGE_VERSION };
+  return {
+    memory: "nowledge",
+    nowledgeVersion: nowledgeServerVersion(),
+    nowledgeCohort: nowledgeCohort(),
+  };
 }
 
 function commandLog(ctx: SandboxCommandContext, message: string): void {
   ctx.progress({ message });
+}
+
+/** Sandbox / CLI 故障文本偶尔会回显 endpoint 或 Bearer token；Attempt 错误会进入可展示报告，先脱敏。 */
+function redactNowledgeConnection(value: string): string {
+  return value
+    .replace(/https?:\/\/[^\s"'`]+/g, "<redacted-url>")
+    .replace(/\bBearer\s+\S+/gi, "Bearer <redacted>")
+    .replace(/\bnmem_[A-Za-z0-9_-]+\b/g, "<redacted-api-key>");
 }
 
 /**
@@ -100,19 +174,18 @@ async function requireCommand(
 ): Promise<void> {
   const result = await sb.runShell(script);
   if (result.exitCode !== 0) {
-    const tail = (result.stderr || result.stdout).trim().slice(-500) || "no output";
+    const tail = redactNowledgeConnection((result.stderr || result.stdout).trim().slice(-500)) || "no output";
     const message = `[nowledge] ${label} failed (exit ${result.exitCode}): ${tail}`;
     throw opts.shared ? new ExperimentFatalError(message) : new Error(message);
   }
 }
 
 /**
- * prepare 当时实际连上的 URL,按 sandbox 键控(并发 Attempt 各有自己的 sandbox)。
- * preTeardown 探针必须用**这个**值而不是现读 .env:
- * quick tunnel 换 URL 后 .env 会被更新成新地址,现读只会探到新隧道并探活成功,
- * 恰好漏掉「这条 Attempt 连的旧隧道中途死了」——那正是要抓的故障形态。
+ * prepare 当时接入的 cohort，按 sandbox 键控(并发 Attempt 各有自己的 sandbox)。每条 Sandbox
+ * 的 nmem 客户端配置在 prepare 时写死，preTeardown 只读该配置探活，绝不现读宿主 .env（否则
+ * 隧道中途换地址会把旧连接的失败伪装成新连接健康）。
  */
-const attemptEndpoints = new WeakMap<object, string>();
+const attemptConditions = new WeakMap<object, { cohort: string; serverVersion: string }>();
 
 /**
  * Experiment layer prepare command(每 Attempt 一次):装 nmem CLI 并把 client 指向固定远程实例,跑在 Agent postSetup 之前,
@@ -120,39 +193,51 @@ const attemptEndpoints = new WeakMap<object, string>();
  */
 export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpoint): SandboxCommand {
   return async (sb, ctx) => {
+    const cohort = nowledgeCohort();
+    const space = requireNowledgeSpaceId();
+    const serverVersion = requireNowledgeServerVersion();
     const conn = endpoint();
-    attemptEndpoints.set(sb, conn.url);
-    // 记录这条 Attempt 实际连接的隧道；报告要按隧道分组就读 fact("nowledge.endpoint")。
-    // key 只能是 /^[a-z0-9._-]{1,64}$/,所以是点号不是驼峰——写驼峰会在这里直接抛错、整条 errored。
-    ctx.facts("nowledge.endpoint", conn.url);
+    attemptConditions.set(sb, { cohort, serverVersion });
+    ctx.facts("nowledge.cohort", cohort);
+    ctx.facts("nowledge.space", space);
+    ctx.facts("nowledge.server-version", serverVersion);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
     await requireCommand(sb, "python3 probe", "command -v python3", { shared: true });
 
-    // nmem-cli 是 ~12MB 的单二进制 wheel,attempt 级安装可接受;uv 优先,pip 兜底
+    // nmem-cli 是 ~12MB 的单二进制 wheel,attempt 级安装可接受。它与 server/flags 同版本钉住，
+    // 避免 client/server 漂移悄悄改变 memory 条件；uv 优先,pip 兜底。
     await requireCommand(
       sb,
       "nmem-cli install",
-      "command -v nmem >/dev/null 2>&1 || uv tool install nmem-cli >/dev/null 2>&1 || pip install --user -q nmem-cli",
+      `if command -v nmem >/dev/null 2>&1 && [ "$(nmem --version 2>/dev/null)" = "nmem ${serverVersion}" ]; then exit 0; fi; uv tool install --force 'nmem-cli==${serverVersion}' >/dev/null 2>&1 || pip install --user -q --upgrade 'nmem-cli==${serverVersion}'`,
     );
     // hooks 用 shutil.which("nmem") 找 CLI,别赌 codex 进程的 PATH 含 ~/.local/bin
     await requireCommand(
       sb,
       "nmem on PATH",
-      'command -v nmem >/dev/null 2>&1 || { nmem_bin="$HOME/.local/bin/nmem"; test -x "$nmem_bin" && { sudo -n ln -sf "$nmem_bin" /usr/local/bin/nmem 2>/dev/null || ln -sf "$nmem_bin" /usr/local/bin/nmem; }; }; command -v nmem',
+      `nmem_bin="$HOME/.local/bin/nmem"; test -x "$nmem_bin" || nmem_bin="$(command -v nmem 2>/dev/null || true)"; test -n "$nmem_bin" && "$nmem_bin" --version 2>/dev/null | grep -Fx 'nmem ${serverVersion}'; sudo -n ln -sf "$nmem_bin" /usr/local/bin/nmem 2>/dev/null || ln -sf "$nmem_bin" /usr/local/bin/nmem; nmem --version 2>/dev/null | grep -Fx 'nmem ${serverVersion}'`,
     );
 
-    await requireCommand(sb, "nmem client url", `nmem config client set url '${conn.url}'`);
-    await requireCommand(sb, "nmem client api-key", `nmem config client set api-key '${conn.apiKey}'`);
+    // nmem CLI 的 client config 是 $HOME/.nowledge-mem/config.json。不要用 `nmem config client set`
+    // 写它：那会把 URL/key 插值进可由 `niceeval show --timing` 呈现的 shell 命令。文件 API 不记录
+    // 内容到 shell evidence，且这份配置只在 agent 的 home 内可见。
+    const home = (await sb.runShell('printf "%s" "$HOME"')).stdout.trim();
+    if (!home) throw new Error("[nowledge] cannot resolve sandbox HOME for nmem client config");
+    await requireCommand(sb, "nmem config directory", 'mkdir -p "$HOME/.nowledge-mem"');
+    await sb.writeText(
+      `${home}/.nowledge-mem/config.json`,
+      `${JSON.stringify({ apiUrl: conn.url, apiKey: conn.apiKey }, null, 2)}\n`,
+    );
     // 端到端探活:隧道挂了在这里死,不浪费 agent.setup 和模型调用。远程实例是全实验共享的
     // 单点,它挂了整批必死——声明 shared 让止损闸停掉余量,而不是 36 条 attempt 一条条撞。
     await requireCommand(
       sb,
-      `server probe(${conn.url};挂了则服务端/隧道已死,修好后更新 .env)`,
+      "nowledge server probe",
       "nmem --json status",
       { shared: true },
     );
-    commandLog(ctx, `[nowledge] nmem client ready → ${conn.url}`);
+    commandLog(ctx, `[nowledge] nmem ${serverVersion} client ready for cohort ${cohort}`);
   };
 }
 
@@ -173,37 +258,23 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
  */
 export function nowledgeVerifyRemoteAlive(): SandboxCommand {
   return async (sb, ctx) => {
-    const url = attemptEndpoints.get(sb);
+    const condition = attemptConditions.get(sb);
     // prepare 没走到:没有可核对的基准,不额外报错
-    if (!url) return;
+    if (!condition) return;
 
-    const result = await sb.runShell(`nmem --api-url '${url}' --json status`);
+    const result = await sb.runShell("nmem --json status");
     if (result.exitCode !== 0) {
-      const tail = (result.stderr || result.stdout).trim().slice(-300) || "no output";
+      const tail = redactNowledgeConnection((result.stderr || result.stdout).trim().slice(-300)) || "no output";
       throw new Error(
-        `[nowledge] 收尾探针失败:这条 attempt 在 prepare 时连的 ${url} 已不可达(exit ${result.exitCode}: ${tail})。` +
-          `隧道在 attempt 期间换了地址或断了,期间的 memory_add / memory_search 全部落空,` +
-          `本条的记忆条件不成立。修隧道并更新 .env 后重跑本条。`,
+        `[nowledge] 收尾探针失败:cohort ${condition.cohort}（server ${condition.serverVersion}）在本条 attempt 期间已不可达(exit ${result.exitCode}: ${tail})。` +
+          `隧道在 attempt 期间断开或配置失效,期间的 memory_add / memory_search 全部落空,` +
+          `本条的记忆条件不成立。修复该 cohort 的连接后，以新的干净 cohort 重跑本条。`,
       );
     }
-    commandLog(ctx, `[nowledge] endpoint still reachable at preTeardown → ${url}`);
-  };
-}
-
-/**
- * 远程 HTTP MCP(codex 读路径)。url/headers 用 getter 惰性求值:adapter 在 agent.setup
- * 才读这些字段,届时现读 .env,拿到的总是最新连接。
- */
-export function nowledgeMcpServer(endpoint: () => NowledgeEnv = nowledgeEndpoint): McpServer {
-  return {
-    name: "nowledge-mem",
-    get url() {
-      return `${endpoint().url}/mcp/`;
-    },
-    // APP 头对齐插件自带 .mcp.json;Authorization 是隧道公网侧的硬要求(非 loopback 一律 401)
-    get headers() {
-      return { Authorization: `Bearer ${endpoint().apiKey}`, APP: "Codex" };
-    },
+    commandLog(
+      ctx,
+      `[nowledge] cohort ${condition.cohort} (server ${condition.serverVersion}) still reachable at preTeardown`,
+    );
   };
 }
 
@@ -218,9 +289,9 @@ export const nowledgePlugin: CodexPluginSpec = {
 };
 
 /**
- * postSetup:跑插件自带的 install_hooks.py——把 Stop hook 装进全局 hooks.json、
- * 确保 [features] hooks 与 hook state 信任块。它检测到 factory 已写的非托管
- * [mcp_servers.nowledge-mem] 段会跳过自己的 managed MCP 块,不会撞出重复 table。
+ * postSetup:跑插件自带的 install_hooks.py——把 Stop hook 和远程 MCP 块装进全局配置。
+ * Sandbox prepare 已先写 nmem client config，插件是唯一的 MCP 配置作者，避免 Adapter 把
+ * Authorization header 作为 shell 文本写入可展示的 agent setup 记录。
  */
 export function nowledgePostSetup(): SandboxCommand {
   return async (sb, ctx) => {
@@ -241,7 +312,7 @@ export function nowledgePostSetup(): SandboxCommand {
     }
     await shared.appendProjectInstruction(sb, agentsMd.stdout);
 
-    // 自查三件套:全局 hooks.json、features.hooks、factory 写入的 MCP 段
+    // 自查三件套:全局 hooks.json、features.hooks、插件写入的 MCP 段
     await requireCommand(
       sb,
       "hooks.json present",
@@ -256,12 +327,19 @@ export function nowledgePostSetup(): SandboxCommand {
   };
 }
 
-/** codexAgent(...) 的 Nowledge Mem 配置增量;连接默认取固定远程实例(nowledgeEndpoint)。 */
+/**
+ * codexAgent(...) 的 Nowledge Mem 配置增量。`NMEM_SPACE` 必须随每次 `codex exec` 及 resume
+ * 进入进程环境，官方插件的 MCP header、SessionStart/Stop hooks 与 agent 的 nmem CLI fallback
+ * 才会落到同一隔离 Space；adapter 负责把这个值登记为 sensitive value，避免出现在报告中。
+ */
 export function nowledgeCodexConfig(
-  endpoint: () => NowledgeEnv = nowledgeEndpoint,
-): Pick<CodexConfig, "mcpServers" | "plugins" | "configFile" | "postSetup" | "preTeardown"> {
+  space: string,
+): Pick<CodexConfig, "env" | "plugins" | "configFile" | "postSetup" | "preTeardown"> {
+  if (!COHORT_PATTERN.test(space)) {
+    throw new Error("NMEM_SPACE must be a 1-64 character Space ID (lowercase letters, digits, _ or -).");
+  }
   return {
-    mcpServers: [nowledgeMcpServer(endpoint)],
+    env: { NMEM_SPACE: space },
     plugins: [nowledgePlugin],
     // [features] plugins = true 必须在 codex plugin add 之前落盘(adapter 先写 configFile 再装 plugin)
     configFile: "configs/codex/nowledge.toml",

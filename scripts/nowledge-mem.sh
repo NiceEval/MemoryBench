@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Nowledge Mem 实例管理(纯手动运维工具):宿主机 docker 起服务端 + cloudflared quick tunnel
-# 暴露给 E2B 沙箱。niceeval 侧不再调用本脚本——experiments/shared/nowledge.ts 只从仓库 .env 读
-# 固定连接(NMEM_URL / NMEM_API_KEY),服务端生命周期完全在这里手动管。up 完把
-# .cache/nowledge-mem/<name>/env 里的坐标抄进仓库 .env 即接上实验。
+# 暴露给 E2B 沙箱。niceeval 侧不再调用本脚本——experiments/shared/nowledge.ts 只从当前进程
+# 或仓库 .env 读连接。每个 `up <name>`（或外部实例的 `adopt <name>`）写私有
+# `.cache/nowledge-mem/<name>/env`；其中同时记录 cohort 与服务端 `/health` 实测版本。运行时在
+# 不回显的 shell 中 source 它。不要把 URL/key 抄进 .env、命令历史、flags 或终端输出。
 #
 # 每个实例(默认名 default)独立:容器、端口、隧道、数据目录、env 文件。
 #   up <name>   → 起(或复用)实例;数据目录已有内容就是同一个记忆库继续
@@ -10,7 +11,7 @@
 #   down <name> → 拆容器+隧道并【删除该实例数据】;实例目录带 keep 标记文件(手动 touch)时
 #                 拒绝执行,置 NOWLEDGE_FORCE=1 强制——给长期积累库上的防手滑险
 #
-# 用法: scripts/nowledge-mem.sh up|stop|down|status|probe|env [instance-name]
+# 用法: scripts/nowledge-mem.sh up|stop|down|status|probe|env|adopt [instance-name]
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -18,7 +19,10 @@ BASE_DIR="$REPO_ROOT/.cache/nowledge-mem"
 MODEL_CACHE="$BASE_DIR/model-cache" # 跨实例共享:embedding GGUF,可重建
 
 NAME="${2:-default}"
-[[ "$NAME" =~ ^[a-zA-Z0-9_-]+$ ]] || { echo "[nowledge-mem] 非法实例名: $NAME" >&2; exit 1; }
+[[ "$NAME" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || {
+  echo "[nowledge-mem] 非法实例/cohort 名: ${NAME}（必须是 1-64 位小写字母、数字、_ 或 -，且首字符不能是 _ 或 -）" >&2
+  exit 1
+}
 STATE_DIR="$BASE_DIR/$NAME"
 ENV_FILE="$STATE_DIR/env"
 TUNNEL_LOG="$STATE_DIR/cloudflared.log"
@@ -26,8 +30,9 @@ TUNNEL_PID_FILE="$STATE_DIR/cloudflared.pid"
 PORT_FILE="$STATE_DIR/port"
 
 CONTAINER="nowledge-mem-$NAME"
-# 与沙箱内 nmem-cli 版本同步升;server/client 版本漂移未验证过,升级时一起动。
-IMAGE="nowledgelabs/mem:0.10.29"
+# 新建容器的期望镜像标签；真正的实验条件以 /health 实测版本为准，不能拿此常量代表已有实例。
+IMAGE_VERSION="0.10.39"
+IMAGE="nowledgelabs/mem:$IMAGE_VERSION"
 
 log() { printf '[nowledge-mem:%s] %s\n' "$NAME" "$*" >&2; }
 die() { log "ERROR: $*"; exit 1; }
@@ -37,7 +42,15 @@ container_running() {
 }
 
 instance_port() {
-  cat "$PORT_FILE" 2>/dev/null
+  local port
+  port=$(cat "$PORT_FILE" 2>/dev/null) || port=""
+  if [ -n "$port" ]; then
+    printf '%s' "$port"
+    return 0
+  fi
+  # 早期 `up` 在写 state 前异常时，容器仍可能健康地活着。只读 Docker 映射作兜底，不补写
+  # port 文件，避免 status 这种只读操作意外改变保留 target 的状态。
+  docker port "$CONTAINER" 14242/tcp 2>/dev/null | sed -n '1s/.*://p'
 }
 
 alloc_port() {
@@ -69,8 +82,50 @@ wait_for() {
   done
 }
 
+health_json() {
+  curl -fsS "http://localhost:$(instance_port)/health"
+}
+
+health_version_from_json() {
+  python3 -c 'import json,re,sys; v=json.load(sys.stdin).get("version"); isinstance(v,str) and re.fullmatch(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.]+)?",v) or sys.exit("health response has no usable version"); print(v)'
+}
+
+health_version() {
+  health_json | health_version_from_json
+}
+
+health_embedding_mode() {
+  health_json | python3 -c 'import json,sys; print(json.load(sys.stdin)["embedding"]["mode"])'
+}
+
+source_instance_env() {
+  [ -f "$ENV_FILE" ] || return 1
+  # 只 source 本脚本用 %q 写出的 mode 600 私有文件；不回显其内容。
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+}
+
+write_instance_env() { # <url> <api-key> <actual-health-version> [space-id]
+  local url="$1" api_key="$2" server_version="$3" space_id="${4:-$NAME}"
+  [[ "$space_id" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || die "非法 Nowledge Space ID（不写入私有 env）"
+  mkdir -p "$STATE_DIR"
+  (
+    umask 077
+    {
+      printf 'export NMEM_URL=%q\n' "$url"
+      printf 'export NMEM_API_KEY=%q\n' "$api_key"
+      printf 'export NOWLEDGE_COHORT=%q\n' "$NAME"
+      printf 'export NMEM_SPACE=%q\n' "$space_id"
+      printf 'export NOWLEDGE_SERVER_VERSION=%q\n' "$server_version"
+    } >"$ENV_FILE"
+  )
+  chmod 600 "$ENV_FILE"
+}
+
 embedding_degraded() {
-  curl -fsS "http://localhost:$(instance_port)/health" \
+  health_json \
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["embedding"]["degraded"])'
 }
 
@@ -121,7 +176,7 @@ license_activate() {
     return 0
   fi
   log "激活 license …"
-  # 0.10.29 服务端要 license_code + email(官方 nmemctl 还在发 license_id,已过时)。
+  # 0.10.x 服务端要 license_code + email(官方 nmemctl 还在发 license_id,已过时)。
   # 注意:activate 对语义错误(seat 用尽、license 无效)也回 HTTP 200 + {"status":"error","message":…},
   # curl -fsS 抓不到——必须解析 body 的 message,否则失败只剩「is_device_activated 仍 false」这种无解报错。
   local activate_resp
@@ -203,7 +258,9 @@ up() {
   log "等待 /health …"
   wait_for "server /health" 180 curl -fsS "http://localhost:$port/health"
 
-  local api_key
+  local api_key server_version
+  server_version=$(health_version) || die "/health 未返回可用 server version"
+  log "server /health version: $server_version"
   api_key=$(read_key) || die "拿不到 API key(/api/remote-access/reveal-key)"
 
   license_activate
@@ -212,14 +269,15 @@ up() {
   # 模型缓存跨实例共享,通常只有第一次要下;服务端只在启动时探测 GGUF,下载完必须重启。
   if [ "$(embedding_degraded)" = "True" ]; then
     log "embedding 处于降级模式,下载本地模型(进共享缓存,一次性)…"
-    NMEM_API_KEY="$api_key" uvx --from nmem-cli nmem models download --api-url "http://localhost:$port" >&2 \
+    NMEM_API_KEY="$api_key" uvx --from "nmem-cli==$server_version" nmem models download --api-url "http://localhost:$port" >&2 \
       || die "embedding 模型下载失败"
     log "重启容器以加载模型 …"
     docker restart "$CONTAINER" >/dev/null
     wait_for "重启后 /health" 120 curl -fsS "http://localhost:$port/health"
     [ "$(embedding_degraded)" = "False" ] || die "模型下载后 embedding 仍处于降级模式"
+    server_version=$(health_version) || die "重启后 /health 未返回可用 server version"
   fi
-  log "embedding mode: $(curl -fsS "http://localhost:$port/health" | python3 -c 'import json,sys; print(json.load(sys.stdin)["embedding"]["mode"])')"
+  log "embedding mode: $(health_embedding_mode)"
 
   if pid=$(tunnel_pid) && [ -n "$(tunnel_url)" ]; then
     log "隧道已在运行(pid $pid)"
@@ -240,13 +298,9 @@ up() {
   log "经隧道验证 …"
   wait_for "隧道端到端 /health" 90 curl -fsS -H "Authorization: Bearer $api_key" "$url/health"
 
-  {
-    echo "export NMEM_URL=$url"
-    echo "export NMEM_API_KEY=$api_key"
-  } >"$ENV_FILE"
-  log "就绪。连接信息已写入 $ENV_FILE"
-  log "  NMEM_URL=$url"
-  log "  NMEM_API_KEY=${api_key:0:12}…"
+  write_instance_env "$url" "$api_key" "$server_version"
+  log "就绪。私有连接身份已写入 ${ENV_FILE}（cohort=$NAME, server=${server_version}；不会打印 URL 或 API key）"
+  log "运行评测时只在非回显 shell 中 source 该文件"
 }
 
 # 停运行时、保数据:拆隧道+容器,$STATE_DIR(data/config/port/keep)原样保留,下次 up 同库
@@ -296,13 +350,11 @@ probe() {
   mem_count=$(docker exec "$CONTAINER" curl -fsS "http://127.0.0.1:14242/api/license/status" 2>/dev/null \
     | python3 -c 'import json,sys; print(json.load(sys.stdin).get("memory_count","?"))' 2>/dev/null || echo "?")
   log "server probe(拆实例前):memory_count=$mem_count"
-  [ -f "$ENV_FILE" ] || { log "  (无 env 文件,跳过隧道侧 nmem 查询)"; return 0; }
-  local url key
-  url=$(grep -E '^export NMEM_URL=' "$ENV_FILE" | head -1 | cut -d= -f2-)
-  key=$(grep -E '^export NMEM_API_KEY=' "$ENV_FILE" | head -1 | cut -d= -f2-)
-  [ -n "$url" ] && [ -n "$key" ] || { log "  (env 文件缺 URL/KEY,跳过)"; return 0; }
+  source_instance_env || { log "  (无 env 文件,跳过隧道侧 nmem 查询)"; return 0; }
+  local url="${NMEM_URL:-}" key="${NMEM_API_KEY:-}" server_version="${NOWLEDGE_SERVER_VERSION:-}"
+  [ -n "$url" ] && [ -n "$key" ] && [ -n "$server_version" ] || { log "  (env 文件缺连接或 /health 版本,跳过)"; return 0; }
   local threads
-  threads=$(NMEM_API_KEY="$key" uvx --from nmem-cli nmem --api-url "$url" --json threads list 2>/dev/null || echo '')
+  threads=$(NMEM_API_KEY="$key" uvx --from "nmem-cli==$server_version" nmem --api-url "$url" --json threads list 2>/dev/null || echo '')
   printf '%s' "$threads" | python3 -c '
 import json,sys
 raw=sys.stdin.read().strip()
@@ -319,17 +371,53 @@ except Exception:
 status() {
   if container_running; then
     log "容器: 运行中($(docker inspect -f '{{.Config.Image}}' "$CONTAINER"),端口 $(instance_port))"
-    curl -fsS "http://localhost:$(instance_port)/health" 2>/dev/null | head -c 300 >&2 && echo >&2 || log "本地 /health 不通"
-    log "license: $(license_status | head -c 200 || echo '状态不可读')"
+    local server_version embedding_mode
+    server_version=$(health_version 2>/dev/null) || { log "本地 /health 不通或未返回版本"; server_version=""; }
+    embedding_mode=$(health_embedding_mode 2>/dev/null || true)
+    [ -n "$server_version" ] && log "本地 /health: server=$server_version embedding=${embedding_mode:-unknown}"
+    # 对本脚本管理的实例，status 也是无生命周期副作用的身份刷新点：只把实际 health 版本写回
+    # 私有 env，绝不读取/打印连接坐标或重启服务。
+    if [ -n "$server_version" ] && source_instance_env; then
+      if [ -n "${NMEM_URL:-}" ] && [ -n "${NMEM_API_KEY:-}" ]; then
+        write_instance_env "$NMEM_URL" "$NMEM_API_KEY" "$server_version" "${NMEM_SPACE:-$NAME}"
+        log "私有 env 已按 /health 刷新(cohort=$NAME, server=$server_version)"
+      fi
+    fi
   else
     log "容器: 未运行"
   fi
   if pid=$(tunnel_pid); then
-    log "隧道: 运行中(pid $pid)→ $(tunnel_url)"
+    log "隧道: 运行中(pid $pid)"
   else
     log "隧道: 未运行"
   fi
   [ -f "$ENV_FILE" ] && log "env 文件: $ENV_FILE" || log "env 文件: 不存在(先跑 up)"
+}
+
+show_env() {
+  [ -f "$ENV_FILE" ] || die "还没 up"
+  log "私有 env 文件已就绪: $ENV_FILE"
+  if source_instance_env; then
+    log "实验身份: cohort=${NOWLEDGE_COHORT:-unknown}, space=${NMEM_SPACE:-unknown}, server=${NOWLEDGE_SERVER_VERSION:-unknown}"
+  fi
+  log "请只在不回显的 shell 中 source 它；此命令不会输出 URL 或 API key"
+}
+
+# 接管已运行的外部服务：不创建/重启/升级/停止它，只从调用者已导出的连接坐标读取 /health，
+# 并把 cohort + 实测版本连同私有坐标写进本仓库的 mode 600 env。
+adopt() {
+  local url="${NMEM_URL:-}" api_key="${NMEM_API_KEY:-}"
+  local space_id="${NMEM_SPACE:-$NAME}"
+  [ -n "$url" ] && [ -n "$api_key" ] || die "adopt 需要调用 shell 已导出的 NMEM_URL / NMEM_API_KEY"
+  [[ "$space_id" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || die "adopt 需要合法 NMEM_SPACE（不写入私有 env）"
+  url="${url%/}"
+  local health server_version
+  health=$(curl -fsS -H "Authorization: Bearer $api_key" "$url/health" 2>/dev/null) \
+    || die "外部实例 /health 不可达（未输出连接信息）"
+  server_version=$(printf '%s' "$health" | health_version_from_json) \
+    || die "外部实例 /health 未返回可用 server version"
+  write_instance_env "$url" "$api_key" "$server_version" "$space_id"
+  log "已记录外部实例的私有评测身份(cohort=${NAME}, space=${space_id}, server=${server_version}；未创建/重启/升级服务)"
 }
 
 case "${1:-}" in
@@ -338,6 +426,7 @@ case "${1:-}" in
   down) down ;;
   status) status ;;
   probe) probe ;;
-  env) cat "$ENV_FILE" 2>/dev/null || die "还没 up" ;;
-  *) die "用法: $0 up|stop|down|status|probe|env [instance-name(默认 default)]" ;;
+  env) show_env ;;
+  adopt) adopt ;;
+  *) die "用法: $0 up|stop|down|status|probe|env|adopt [instance-name(默认 default)]" ;;
 esac
