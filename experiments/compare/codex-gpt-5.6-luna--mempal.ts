@@ -36,8 +36,10 @@ export default defineExperiment({
   // 记忆态直接留在沙箱 $HOME/.mempal 里跨题存活,不再每题 restore/回存一遍 tgz;
   // 沙箱创建 + 依赖安装也从每题一次降到每台物理 Sandbox 一次。
   //
-  // 代价要记住:① 复用运行与结果沿用双向绝缘,中断重跑是全量重跑;② host 侧 tgz 只在物理 Sandbox
-  // 退休时写一次(寿命续不上而轮换、或 run 收尾),run 中途硬崩会丢掉这一轮积累的记忆。
+  // 代价要记住:① 当前 setup/teardown 是 opaque lifecycle callback,所以 carry 被禁用、中断后计划内题目
+  // 全量重跑；这不是 sandboxReuse 本身的规则。中断 Attempt 可能已污染旧 checkpoint,正式比较要换新
+  // MEMPAL_COHORT 从头重建。② host 侧 tgz 只在物理 Sandbox 退休时写一次(寿命续不上而轮换、或
+  // run 收尾),run 中途硬崩会丢掉这一轮积累的记忆。
   maxConcurrency: 1,
   // 与 claude 组对齐(重型题可能超 10 分钟),消除条件间超时偏置——2026-07-10 重跑里
   // 本实验 repomod/terminal-cancel 正是死于 600s 默认超时(setup 含 ~514MB 模型预热)。

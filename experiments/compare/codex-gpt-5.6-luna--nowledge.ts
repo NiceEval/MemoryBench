@@ -41,9 +41,11 @@ export default defineExperiment({
   // nowledge 若留在 4 路,跨 eval 的记忆可见顺序就是不确定的(eval N 不保证读得到 N-1 刚写的),
   // 两个记忆条件配得不一样,pass rate 差异就分不清是记忆实现的差异还是积累顺序的差异。
   //
-  // 代价与 mempal 同款:① 复用与结果沿用双向绝缘,中断重跑是全量重跑(36 题串行 ≈ 3h),
-  // 没有「重跑即续跑」;② 换来的是沙箱创建 + 公共准备从每题一次降到每台物理 Sandbox 一次,
-  // 以及 toggl-cli 那条 rust 工具链 / cargo 缓存跨题存活(实测省约 1 分钟/题)。
+  // 代价与 mempal 同款:① 当前 prepare 是 opaque command callback,所以 carry 被禁用、中断后计划内题目
+  // 全量重跑(36 题串行 ≈ 3h)；这不是 sandboxReuse 本身的规则。远端库可能已有中断 Attempt 的
+  // 半次写入,正式比较要换新 NOWLEDGE_COHORT 从头重建。② 换来的是沙箱创建 + 公共准备从每题
+  // 一次降到每台物理 Sandbox 一次,以及 toggl-cli 那条 rust 工具链 / cargo 缓存跨题存活
+  // (实测省约 1 分钟/题)。
   maxConcurrency: 1,
   // 与 codex baseline/mempal 对齐,astropy eval 两阶段都要源码构建。
   // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the

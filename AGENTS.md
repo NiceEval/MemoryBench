@@ -131,12 +131,17 @@ Additional source assertions are fine when they are part of the task's functiona
 `judge precheck failed` 先分清 404(模型下架 → 一条 curl 探活换名字)和 timed out(代理并发占满),
 两者报错都指向 baseUrl,极易误诊。见 memory: x1api-gpt-5.4-mini-unavailable、proxy-account-concurrency-cap。
 
-### 复用沙箱的实验永远不参与沿用
+### 当前两个记忆条件因 opaque 生命周期不参与沿用
 
-`sandboxReuse: true` 与沿用**双向绝缘**(上游明写,见 `docs-site/zh/tutorials/rerun-and-cache.mdx`):
-这类实验每次都真跑计划内的全部 attempt,产出的结果也不作为后续运行的沿用来源。所以 mempal / nowledge
-两个条件**每次跑都是全价**,只有 baseline 能吃到沿用。估成本时按这个算,别指望「上次跑过的能省下来」。
-也没有任何强制沿用的开关:`--carry-ignoring-flag` 只吃已搬走的 `flags` 键,`--rerun` 三档只会放大重跑面。
+`sandboxReuse: true` 本身不禁结果沿用；上游对复用与普通 Experiment 使用同一套 carry 门。当前 mempal / nowledge
+仍然每次真跑计划内的全部 attempt，是因为它们分别使用了直接的 lifecycle / prepare callback：直接 callback 是
+opaque，没有稳定 identity，pair 的跨 Run carry 资格因此被阻断。`--dry` 应明确显示
+`sandbox.lifecycle-opaque` / `sandbox.command-opaque` 等原因，且不能给出无效的 `accept` 命令。
+
+中断后的“全量重跑”也不等于状态自动干净。mempal checkpoint 与 Nowledge 远端库可能已经收到中断 Attempt 的
+半次写入；正式对比应改用新的 `MEMPAL_COHORT` / `NOWLEDGE_COHORT`，从头重建该条件的顺序轨迹。沿用旧 cohort
+继续跑只用于调试，不与完整批次混作同一比较样本。没有强制跨过 opaque carry blocker 的开关；要让某条稳定准备
+参与沿用，必须先把它改成带完整 identity 的声明式 command，而不是在下游绕过门。
 
 ## Reporting
 
