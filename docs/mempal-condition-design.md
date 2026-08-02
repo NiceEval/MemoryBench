@@ -79,13 +79,13 @@ E2B 从专用 template provision
 .cache/mempal/state/<MEMPAL_COHORT>/<experimentId>.tgz.meta.json
 ```
 
-`MEMPAL_COHORT` 省略时为 `local`。正式对比必须显式指定一个新的 cohort，并在报告中记录它：
+`MEMPAL_COHORT` 省略时为 `local`。它必须是单个、最长 64 字符的路径安全名称，只能包含字母、数字、点、下划线和连字符，不能使用 `.` / `..` 或路径分隔符。正式对比必须显式指定一个新的 cohort，并在报告中记录它：
 
 ```bash
 MEMPAL_COHORT=2026-07-13-clean-a niceeval exp compare
 ```
 
-metadata 记录 `experimentId`、cohort、字节数、SHA-256 和保存时间，可以确认结果使用了哪份状态。`maxConcurrency: 1` 是必要条件：一个被复用的物理 Sandbox 的 restore 到 save 是共享状态临界区。
+metadata 记录 `experimentId`、cohort、字节数、SHA-256 和保存时间，可以确认结果使用了哪份状态；checkpoint 与 metadata 都先写同目录临时文件再原子替换，metadata 中的 digest 还能发现进程在两次替换之间被强杀造成的不一致。`maxConcurrency: 1` 是必要条件：一个被复用的物理 Sandbox 的 restore 到 save 是共享状态临界区。
 
 不要把同一道固定答案题跨 run 反复喂给同一 cohort。Skill 和 Stop hook 都明确禁止存储 proposal 编号、hidden-test 猜测、任务最终答案或原始 transcript；更严格的研究设计应使用 train/apply 配对任务，或为每轮评测创建新 cohort。
 

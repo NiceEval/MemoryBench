@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SkillSpec } from "niceeval/adapter";
 import { createCheckpoint, restoreCheckpoint } from "niceeval/sandbox";
@@ -17,6 +17,7 @@ import {
 
 const STATE_DIR = fileURLToPath(new URL("../../.cache/mempal/state/", import.meta.url));
 const STATE_PATHS = [".mempal", ".mempal-notes"];
+const COHORT_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
 
 /** mempal crates.io 版本；构建模板、模板身份和结果 flags 共用这一处。 */
 export const MEMPAL_VERSION = "0.9.0";
@@ -36,10 +37,16 @@ export function mempalTemplate(tool: "claude" | "codex"): string {
 
 /** 报告分组与状态 provenance 共用的实验事实。正式比较应显式设置 MEMPAL_COHORT。 */
 export function mempalFlags(): Record<string, string> {
+  const mempalCohort = process.env.MEMPAL_COHORT?.trim() || "local";
+  if (!COHORT_PATTERN.test(mempalCohort) || mempalCohort === "." || mempalCohort === "..") {
+    throw new Error(
+      "MEMPAL_COHORT must be one path-safe segment: 1-64 letters, digits, dots, underscores, or hyphens.",
+    );
+  }
   return {
     memory: "mempal",
     mempalVersion: MEMPAL_VERSION,
-    mempalCohort: process.env.MEMPAL_COHORT?.trim() || "local",
+    mempalCohort,
   };
 }
 
@@ -51,7 +58,18 @@ export const mempalSkill: SkillSpec = {
 };
 
 function statePathFor(experimentId: string): string {
-  return join(STATE_DIR, mempalFlags().mempalCohort, `${experimentId}.tgz`);
+  const cohortRoot = resolve(STATE_DIR, mempalFlags().mempalCohort);
+  const statePath = resolve(cohortRoot, `${experimentId}.tgz`);
+  const insideCohort = relative(cohortRoot, statePath);
+  if (
+    insideCohort === "" ||
+    insideCohort === ".." ||
+    insideCohort.startsWith(`..${sep}`) ||
+    isAbsolute(insideCohort)
+  ) {
+    throw new Error(`[mempal] experimentId escapes its cohort checkpoint directory: ${experimentId}`);
+  }
+  return statePath;
 }
 
 function commandFailure(label: string, result: { exitCode: number; stdout: string; stderr: string }): Error {
@@ -122,8 +140,10 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
     const tmp = `${statePath}.tmp`;
     writeFileSync(tmp, data);
     renameSync(tmp, statePath);
+    const metadataPath = `${statePath}.meta.json`;
+    const metadataTmp = `${metadataPath}.tmp`;
     writeFileSync(
-      `${statePath}.meta.json`,
+      metadataTmp,
       `${JSON.stringify(
         {
           experimentId: ctx.experimentId,
@@ -137,6 +157,7 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
         2,
       )}\n`,
     );
+    renameSync(metadataTmp, metadataPath);
     ctx.fact("mempal.checkpointBytes", data.length);
   } catch (error) {
     ctx.diagnostic({
