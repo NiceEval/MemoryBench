@@ -2,10 +2,14 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineExperimentState } from "niceeval";
 import type { SkillSpec } from "niceeval/adapter";
 import { createCheckpoint, restoreCheckpoint } from "niceeval/sandbox";
-import type { SandboxCommand, SandboxCommandContext, SandboxCommandTarget } from "niceeval/sandbox";
+import type {
+  SandboxCommand,
+  SandboxCommandContext,
+  SandboxCommandTarget,
+  SandboxHook,
+} from "niceeval/sandbox";
 import {
   NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE,
   NICEEVAL_CODEX_E2B_TEMPLATE,
@@ -46,12 +50,7 @@ export const mempalSkill: SkillSpec = {
   name: "mempal-memory",
 };
 
-function statePathFor(experimentId: string | undefined): string {
-  if (!experimentId) {
-    throw new Error(
-      "[mempal] ctx.experimentId is missing — persistent state requires an experiment discovered under experiments/.",
-    );
-  }
+function statePathFor(experimentId: string): string {
   return join(STATE_DIR, mempalFlags().mempalCohort, `${experimentId}.tgz`);
 }
 
@@ -88,86 +87,62 @@ export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
   };
 }
 
-/**
- * 跨 Attempt 的 Mempal 状态不是 Sandbox layer lifecycle。
- * 它在 agent.ensure 之后 load、Agent teardown 之后 save；rolling head 与实验串行形成一条状态序列。
- */
-export function mempalState() {
-  return defineExperimentState({
-    identity: {
-      store: "memorybench-host-checkpoint",
-      memory: "mempal",
-      cohort: mempalFlags().mempalCohort,
-      version: MEMPAL_VERSION,
-      schema: 1,
-    },
-    consistency: { mode: "rolling" },
-    saveOn: "after-load",
-    async load(ctx) {
-      const statePath = statePathFor(ctx.experimentId);
-      let state: Buffer | undefined;
-      try {
-        state = readFileSync(statePath);
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-      }
+/** 每条物理 Sandbox/lane 建成时恢复一次；reuse 时 attempt 间直接保留 `$HOME/.mempal`。 */
+export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
+  const statePath = statePathFor(ctx.experimentId);
+  let state: Buffer | undefined;
+  try {
+    state = readFileSync(statePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
 
-      if (state) {
-        await restoreCheckpoint(ctx.sandbox, state);
-      } else {
-        await ctx.sandbox.runShellOrThrow("mempal init .");
-      }
-      await ctx.sandbox.runShellOrThrow('mkdir -p "$HOME/.mempal-notes"');
+  if (state) {
+    await restoreCheckpoint(sandbox, state);
+  } else {
+    await sandbox.runShellOrThrow("mempal init .");
+  }
+  await sandbox.runShellOrThrow('mkdir -p "$HOME/.mempal-notes"');
+  ctx.fact("mempal.state", state ? "restored" : "empty");
+  ctx.fact("mempal.checkpointBytes", state?.length ?? 0);
+};
 
-      const digest = state
-        ? { _tag: "Sha256" as const, value: createHash("sha256").update(state).digest("hex") }
-        : { _tag: "Unavailable" as const };
-      return {
-        identity: { experimentId: ctx.experimentId, cohort: mempalFlags().mempalCohort },
-        digest,
-        facts: {
-          "mempal.state": state ? "restored" : "empty",
-          "mempal.checkpointBytes": state?.length ?? 0,
+/** 每条物理 Sandbox/lane 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
+export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
+  try {
+    const statePath = statePathFor(ctx.experimentId);
+    const home = (await sandbox.runShellOrThrow('printf "%s" "$HOME"')).stdout.trim();
+    await sandbox.runShellOrThrow(`test -d '${home}/.mempal'`);
+
+    const data = await createCheckpoint(
+      sandbox,
+      STATE_PATHS.map((path) => `${home}/${path}`),
+    );
+    mkdirSync(dirname(statePath), { recursive: true });
+    const tmp = `${statePath}.tmp`;
+    writeFileSync(tmp, data);
+    renameSync(tmp, statePath);
+    writeFileSync(
+      `${statePath}.meta.json`,
+      `${JSON.stringify(
+        {
+          experimentId: ctx.experimentId,
+          cohort: mempalFlags().mempalCohort,
+          mempalVersion: MEMPAL_VERSION,
+          sha256: createHash("sha256").update(data).digest("hex"),
+          bytes: data.length,
+          savedAt: new Date().toISOString(),
         },
-      };
-    },
-    async save(ctx) {
-      const statePath = statePathFor(ctx.experimentId);
-      const home = (await ctx.sandbox.runShellOrThrow('printf "%s" "$HOME"')).stdout.trim();
-      await ctx.sandbox.runShellOrThrow(`test -d '${home}/.mempal'`);
-
-      const data = await createCheckpoint(
-        ctx.sandbox,
-        STATE_PATHS.map((path) => `${home}/${path}`),
-      );
-      mkdirSync(dirname(statePath), { recursive: true });
-      const tmp = `${statePath}.tmp`;
-      writeFileSync(tmp, data);
-      renameSync(tmp, statePath);
-      writeFileSync(
-        `${statePath}.meta.json`,
-        `${JSON.stringify(
-          {
-            experimentId: ctx.experimentId,
-            cohort: mempalFlags().mempalCohort,
-            mempalVersion: MEMPAL_VERSION,
-            sha256: createHash("sha256").update(data).digest("hex"),
-            bytes: data.length,
-            savedAt: new Date().toISOString(),
-          },
-          null,
-          2,
-        )}\n`,
-      );
-      const digest = {
-        _tag: "Sha256" as const,
-        value: createHash("sha256").update(data).digest("hex"),
-      };
-      return {
-        identity: { experimentId: ctx.experimentId, cohort: mempalFlags().mempalCohort },
-        digest,
-        facts: { "mempal.checkpointBytes": data.length },
-      };
-    },
-  });
-}
+        null,
+        2,
+      )}\n`,
+    );
+    ctx.fact("mempal.checkpointBytes", data.length);
+  } catch (error) {
+    ctx.diagnostic({
+      code: "mempal-checkpoint-save-failed",
+      level: "warning",
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+};

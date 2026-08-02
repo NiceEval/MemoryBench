@@ -46,24 +46,27 @@ pnpm template:mempal codex    # → memorybench-codex-mempal-<base-sha12>-0-9-0
 免得构建的模板和实验引用的模板悄悄错位。它不会在 `pnpm install`、typecheck 或普通 eval 中隐式
 发布远端资源。
 
-## Attempt 生命周期与 fail-fast
+## 物理 Sandbox 生命周期与 fail-fast
 
-每个 mempal attempt 的相关阶段如下：
+Mempal checkpoint 属于 sandbox lifecycle，而不是顶层 `state`。fresh 模式下一条 Attempt 对应一台
+物理 Sandbox；Codex 的 `sandboxReuse: true` 且 `maxConcurrency: 1` 时，一个被复用的物理 Sandbox 会连续承接多个
+Attempt，因此 restore/save 各只在该物理实例创建/退休时执行一次，`prepare` 和 agent 生命周期仍每条 Attempt 重放：
 
 ```text
 E2B 从专用 template provision
-  → sandbox.setup
-      → command -v mempal + embedding cache 薄探针（缺失立即报模板配置错）
+  → sandbox lifecycle setup
       → 恢复 cohort/experiment 对应状态，或严格初始化空库
+  → 每条 Attempt 的 sandbox.prepare
+      → command -v mempal + embedding cache 薄探针（缺失立即报模板配置错）
   → agent.setup
       → adapter 安装 mempal-memory Skill
       → Claude: adapter 按 settingsFile 安装原生 Stop hook 配置
   → agent run
-  → sandbox.teardown
+  → 物理 Sandbox 退休时 sandbox lifecycle teardown
       → 打包状态、原子回存、写 provenance metadata
 ```
 
-完整的 init → ingest → search 自检在模板构建阶段只跑一次；attempt 不重复做业务无关的向量化工作。恢复/回存复用 NiceEval checkpoint 原语，provider 的二进制 I/O 重试留在 provider 层。只有 teardown 回存是 best-effort：它不能把已经完成的模型任务改判，但失败会通过 `diagnostic` 持久化到结果。
+完整的 init → ingest → search 自检在模板构建阶段只跑一次；Attempt 不重复做业务无关的向量化工作。恢复/回存复用 NiceEval checkpoint 原语，provider 的二进制 I/O 重试留在 provider 层。只有 lifecycle teardown 回存是 best-effort：它不能把已经完成的模型任务改判，但失败会通过 `diagnostic` 持久化到结果。
 
 运行后应从 trace 中核对 agent 是否执行 `mempal search`，以及在确有可复用决策时是否执行 `mempal ingest`。
 
@@ -82,7 +85,7 @@ E2B 从专用 template provision
 MEMPAL_COHORT=2026-07-13-clean-a niceeval exp compare
 ```
 
-metadata 记录 `experimentId`、cohort、字节数、SHA-256 和保存时间，可以确认结果使用了哪份状态。`maxConcurrency: 1` 是必要条件：restore 到 save 是共享状态临界区。
+metadata 记录 `experimentId`、cohort、字节数、SHA-256 和保存时间，可以确认结果使用了哪份状态。`maxConcurrency: 1` 是必要条件：一个被复用的物理 Sandbox 的 restore 到 save 是共享状态临界区。
 
 不要把同一道固定答案题跨 run 反复喂给同一 cohort。Skill 和 Stop hook 都明确禁止存储 proposal 编号、hidden-test 猜测、任务最终答案或原始 transcript；更严格的研究设计应使用 train/apply 配对任务，或为每轮评测创建新 cohort。
 

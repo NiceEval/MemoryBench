@@ -1,7 +1,7 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
 import { e2bSandbox } from "niceeval/sandbox";
-import { mempalFlags, mempalPrepare, mempalSkill, mempalState, mempalTemplate } from "../shared/mempal.ts";
+import { mempalFlags, mempalLoadState, mempalPrepare, mempalSaveState, mempalSkill, mempalTemplate } from "../shared/mempal.ts";
 
 // claude-dp-v4 的 mempal 变体:同模型同沙箱,只多一层 mempal 记忆条件 ——
 // mempal CLI(agent 用自带 shell 跑 `mempal search` / `mempal ingest`,Skill 教它怎么用)+
@@ -26,8 +26,10 @@ export default defineExperiment({
   }),
   flags: { ...mempalFlags() },
   model: "deepseek-v4-flash",
-  sandbox: e2bSandbox({ template: mempalTemplate("claude") }).prepare(mempalPrepare("claude")),
-  state: mempalState(),
+  sandbox: e2bSandbox({ template: mempalTemplate("claude") })
+    .prepare(mempalPrepare("claude"))
+    .setup(mempalLoadState)
+    .teardown(mempalSaveState),
   attempts: 1,
   earlyExit: true,
   // 串行跑(niceeval ≥0.4.5 按实验限流,不影响同批基线):attempt 的

@@ -1,7 +1,7 @@
 import { defineExperiment } from "niceeval";
 import { e2bSandbox } from "niceeval/sandbox";
 import { codexAgent } from "niceeval/adapter";
-import { mempalFlags, mempalPrepare, mempalSkill, mempalState, mempalTemplate } from "../shared/mempal.ts";
+import { mempalFlags, mempalLoadState, mempalPrepare, mempalSaveState, mempalSkill, mempalTemplate } from "../shared/mempal.ts";
 
 // codex-gpt-5.6-luna 的 mempal 变体:agent 用自带 shell 跑 mempal CLI(`search` / `ingest`),
 // Skill 教它先搜索、后写入耐久决策。不走 MCP(见 shared/mempal.ts 文件头注)。
@@ -22,8 +22,9 @@ export default defineExperiment({
   // 完整 lifetimeMs(e2b 的 setTimeout 是「从此刻起再活这么久」),所以一条泳道能无限续下去,
   // 只要单条 attempt 装得下 1 小时。
   sandbox: e2bSandbox({ template: mempalTemplate("codex"), lifetimeMs: 60 * 60_000 })
-    .prepare(mempalPrepare("codex")),
-  state: mempalState(),
+    .prepare(mempalPrepare("codex"))
+    .setup(mempalLoadState)
+    .teardown(mempalSaveState),
   sandboxReuse: true,
   earlyExit: false,
   // 串行 = 一条泳道。复用下 maxConcurrency 的含义是【并行泳道条数】,泳道内部本来就是依次承接,
@@ -31,7 +32,7 @@ export default defineExperiment({
   // 5 个并发状态序列各自 restore 同一个 <experimentId>.tgz 又各自写回去,
   // 后写覆盖先写,跨 eval 的记忆累积大半丢失(claude 那条同名注释配的就是 1)。
   //
-  // 复用把串行的代价补了回来:prepare 每条 Attempt 做模板实况检查，State load/save 每窗口一次，
+  // 复用把串行的代价补了回来:prepare 每条 Attempt 做模板实况检查，lifecycle load/save 每泳道一次，
   // 记忆态直接留在沙箱 $HOME/.mempal 里跨题存活,不再每题 restore/回存一遍 tgz;
   // 沙箱创建 + 依赖安装也从每题一次降到每泳道一次。
   //
