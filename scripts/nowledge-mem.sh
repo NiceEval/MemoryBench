@@ -107,9 +107,8 @@ source_instance_env() {
   set +a
 }
 
-write_instance_env() { # <url> <api-key> <actual-health-version> [space-id]
-  local url="$1" api_key="$2" server_version="$3" space_id="${4:-$NAME}"
-  [[ "$space_id" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || die "非法 Nowledge Space ID（不写入私有 env）"
+write_instance_env() { # <url> <api-key> <actual-health-version>
+  local url="$1" api_key="$2" server_version="$3"
   mkdir -p "$STATE_DIR"
   (
     umask 077
@@ -118,7 +117,6 @@ write_instance_env() { # <url> <api-key> <actual-health-version> [space-id]
       printf 'export NMEM_API_KEY=%q\n' "$api_key"
       printf 'export NOWLEDGE_COHORT=%q\n' "$NAME"
       printf 'export NOWLEDGE_SERVER_VERSION=%q\n' "$server_version"
-      printf 'export NMEM_SPACE=%q\n' "$space_id"
     } >"$ENV_FILE"
   )
   chmod 600 "$ENV_FILE"
@@ -379,7 +377,7 @@ status() {
     # 私有 env，绝不读取/打印连接坐标或重启服务。
     if [ -n "$server_version" ] && source_instance_env; then
       if [ -n "${NMEM_URL:-}" ] && [ -n "${NMEM_API_KEY:-}" ]; then
-        write_instance_env "$NMEM_URL" "$NMEM_API_KEY" "$server_version" "${NMEM_SPACE:-$NAME}"
+        write_instance_env "$NMEM_URL" "$NMEM_API_KEY" "$server_version"
         log "私有 env 已按 /health 刷新(cohort=$NAME, server=$server_version)"
       fi
     fi
@@ -398,7 +396,7 @@ show_env() {
   [ -f "$ENV_FILE" ] || die "还没 up"
   log "私有 env 文件已就绪: $ENV_FILE"
   if source_instance_env; then
-    log "实验身份: cohort=${NOWLEDGE_COHORT:-unknown}, space=${NMEM_SPACE:-unknown}, server=${NOWLEDGE_SERVER_VERSION:-unknown}"
+    log "实验身份: cohort=${NOWLEDGE_COHORT:-unknown}, server=${NOWLEDGE_SERVER_VERSION:-unknown}"
   fi
   log "请只在不回显的 shell 中 source 它；此命令不会输出 URL 或 API key"
 }
@@ -407,17 +405,15 @@ show_env() {
 # 并把 cohort + 实测版本连同私有坐标写进本仓库的 mode 600 env。
 adopt() {
   local url="${NMEM_URL:-}" api_key="${NMEM_API_KEY:-}"
-  local space_id="${NMEM_SPACE:-$NAME}"
   [ -n "$url" ] && [ -n "$api_key" ] || die "adopt 需要调用 shell 已导出的 NMEM_URL / NMEM_API_KEY"
-  [[ "$space_id" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || die "adopt 需要合法 NMEM_SPACE（不写入私有 env）"
   url="${url%/}"
   local health server_version
   health=$(curl -fsS -H "Authorization: Bearer $api_key" "$url/health" 2>/dev/null) \
     || die "外部实例 /health 不可达（未输出连接信息）"
   server_version=$(printf '%s' "$health" | health_version_from_json) \
     || die "外部实例 /health 未返回可用 server version"
-  write_instance_env "$url" "$api_key" "$server_version" "$space_id"
-  log "已记录外部实例的私有评测身份(cohort=${NAME}, space=${space_id}, server=${server_version}；未创建/重启/升级服务)"
+  write_instance_env "$url" "$api_key" "$server_version"
+  log "已记录外部实例的私有评测身份(cohort=${NAME}, server=${server_version}；未创建/重启/升级服务)"
 }
 
 case "${1:-}" in
