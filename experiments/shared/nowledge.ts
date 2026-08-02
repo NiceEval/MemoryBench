@@ -65,7 +65,7 @@ export function nowledgeCohort(): string {
  * NOWLEDGE_SERVER_VERSION 时优先采用它。
  */
 export function nowledgeServerVersion(): string {
-  return process.env.NOWLEDGE_SERVER_VERSION?.trim() || "0.10.39";
+  return process.env.NOWLEDGE_SERVER_VERSION?.trim() || "0.10.48";
 }
 
 /** 真正的 Nowledge Attempt 在 prepare 验证版本格式。 */
