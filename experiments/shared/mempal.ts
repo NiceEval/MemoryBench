@@ -87,7 +87,7 @@ export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
   };
 }
 
-/** 每条物理 Sandbox/lane 建成时恢复一次；reuse 时 attempt 间直接保留 `$HOME/.mempal`。 */
+/** 每台物理 Sandbox 建成时恢复一次；reuse 时 Attempt 间直接保留 `$HOME/.mempal`。 */
 export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
   const statePath = statePathFor(ctx.experimentId);
   let state: Buffer | undefined;
@@ -107,7 +107,7 @@ export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
   ctx.fact("mempal.checkpointBytes", state?.length ?? 0);
 };
 
-/** 每条物理 Sandbox/lane 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
+/** 每台物理 Sandbox 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
 export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
   try {
     const statePath = statePathFor(ctx.experimentId);

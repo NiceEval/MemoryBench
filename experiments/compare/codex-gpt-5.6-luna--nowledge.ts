@@ -25,8 +25,8 @@ export default defineExperiment({
   flags: { ...nowledgeFlags() },
   model: "gpt-5.6-luna",
   // 复用下 provider 必须能声明实例寿命,不声明会在第一条 attempt 派发前硬失败。1 小时是 e2b
-  // 账号档位硬上限,但它不是泳道总预算:每次派发前 runner 都会 ensureLifetime 续到完整 lifetimeMs,
-  // 所以一条泳道能无限续下去,只要单条 attempt 装得下 1 小时(详见 codex-gpt-5.6-luna--mempal.ts)。
+  // 账号档位硬上限,但它不是整次 run 的总预算:每次派发前 runner 都会 ensureLifetime 续到完整 lifetimeMs,
+  // 所以同一物理 Sandbox 可以持续复用,只要单条 Attempt 装得下 1 小时(详见 codex-gpt-5.6-luna--mempal.ts)。
   sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 })
     .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
@@ -36,13 +36,13 @@ export default defineExperiment({
   // 吸收(2026-07-30 用 dogfood × attempts:3 验过:第 2、3 条 attempt 踩残留 $HOME 仍全过)。
   sandboxReuse: true,
   earlyExit: false,
-  // 串行 = 一条泳道。这里不是怕并行踩坏写入(中心化 server 自理并发读写,见 shared/nowledge.ts
+  // maxConcurrency: 1 让 Attempt 串行。这里不是怕并行踩坏写入(中心化 server 自理并发读写,见 shared/nowledge.ts
   // 文件头「可并发」),而是为了**跨记忆条件可比**:mempal 因为 checkpoint 文件必须串行,
   // nowledge 若留在 4 路,跨 eval 的记忆可见顺序就是不确定的(eval N 不保证读得到 N-1 刚写的),
   // 两个记忆条件配得不一样,pass rate 差异就分不清是记忆实现的差异还是积累顺序的差异。
   //
   // 代价与 mempal 同款:① 复用与结果沿用双向绝缘,中断重跑是全量重跑(36 题串行 ≈ 3h),
-  // 没有「重跑即续跑」;② 换来的是沙箱创建 + 公共准备从每题一次降到每泳道一次,
+  // 没有「重跑即续跑」;② 换来的是沙箱创建 + 公共准备从每题一次降到每台物理 Sandbox 一次,
   // 以及 toggl-cli 那条 rust 工具链 / cargo 缓存跨题存活(实测省约 1 分钟/题)。
   maxConcurrency: 1,
   // 与 codex baseline/mempal 对齐,astropy eval 两阶段都要源码构建。
