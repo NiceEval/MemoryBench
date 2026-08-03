@@ -131,17 +131,19 @@ Additional source assertions are fine when they are part of the task's functiona
 `judge precheck failed` 先分清 404(模型下架 → 一条 curl 探活换名字)和 timed out(代理并发占满),
 两者报错都指向 baseUrl,极易误诊。见 memory: x1api-gpt-5.4-mini-unavailable、proxy-account-concurrency-cap。
 
-### 当前两个记忆条件因 opaque 生命周期不参与沿用
+### 记忆条件的 callback 默认允许结果沿用
 
-`sandboxReuse: true` 本身不禁结果沿用；上游对复用与普通 Experiment 使用同一套 carry 门。当前 mempal / nowledge
-仍然每次真跑计划内的全部 attempt，是因为它们分别使用了直接的 lifecycle / prepare callback：直接 callback 是
-opaque，没有稳定 identity，pair 的跨 Run carry 资格因此被阻断。`--dry` 应明确显示
-`sandbox.lifecycle-opaque` / `sandbox.command-opaque` 等原因，且不能给出无效的 `accept` 命令。
+`sandboxReuse: true` 本身不禁结果沿用；上游对复用与普通 Experiment 使用同一套 carry 门。mempal / nowledge
+使用的直接 lifecycle / prepare callback 不提供额外 identity，但不再阻断跨 Run carry。其它指纹输入相同时，终态结果
+默认沿用，避免声明遗漏让昂贵评测永久重跑。
+
+这不表示 Runner 能识别 callback 的语义变化。实现变化应改用 `defineSandboxCommand()` 并提高 `revision`；动态输入
+进入 `inputs`。已经在旧 identity 下产生结果时，修正声明后对受影响选择执行 `--rerun all`。
 
 中断后的“全量重跑”也不等于状态自动干净。mempal checkpoint 与 Nowledge 远端库可能已经收到中断 Attempt 的
 半次写入；正式对比应改用新的 `MEMPAL_COHORT` / `NOWLEDGE_COHORT`，从头重建该条件的顺序轨迹。沿用旧 cohort
-继续跑只用于调试，不与完整批次混作同一比较样本。没有强制跨过 opaque carry blocker 的开关；要让某条稳定准备
-参与沿用，必须先把它改成带完整 identity 的声明式 command，而不是在下游绕过门。
+继续跑只用于调试，不与完整批次混作同一比较样本。直接 callback 不再是 carry blocker；真正无法固定的 Provider
+环境身份仍会以 `carry-disabled` 阻断沿用。
 
 ## Reporting
 
