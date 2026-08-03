@@ -6,7 +6,7 @@ Powered by [NiceEval](https://github.com/CorrectRoadH/NiceEval)
 
 MemoryBench 是一个针对 coding agent **记忆能力**的评测:同一批真实开发任务、同一个模型,只切换 memory 条件,看最终代码、diff、测试和命令是否真的变好。
 
-agent memory 的实现正在快速分化——[Tape](https://tape.systems/)、[Nowledge Mem](https://mem.nowledge.co/)、[mempal](https://github.com/ZhangHanDong/mempal/) 都在解决"agent 会忘"的问题,但目前缺一个可复现的评测来说清楚它们到底有没有用、值不值得多花的 token 和延迟。MemoryBench 就是这个评测。
+agent memory 的实现正在快速分化——[Tape](https://tape.systems/)、[Nowledge Mem](https://mem.nowledge.co/)、[mempal](https://github.com/ZhangHanDong/mempal/)、[Mem0](https://github.com/mem0ai/mem0) 都在解决"agent 会忘"的问题,但目前缺一个可复现的评测来说清楚它们到底有没有用、值不值得多花的 token 和延迟。MemoryBench 就是这个评测。
 
 ---
 
@@ -30,7 +30,9 @@ memory 的作用不做成额外验收项。真实开发里用户关心的是任�
 | no-memory baseline | 已接入 |
 | bub + Tape | 已接入 |
 | Codex / Claude Code host memory | 已接入 |
-| Nowledge Mem  | 已接入 |
+| mempal | 已接入 |
+| Nowledge Mem | 已接入 |
+| Mem0 | 已接入(codex;见 `experiments/shared/mem0.ts`) |
 
 
 完整候选列表见 [docs/benchmarks.md](docs/benchmarks.md)。

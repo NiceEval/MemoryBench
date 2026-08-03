@@ -6,7 +6,7 @@ Powered by [NiceEval](https://github.com/CorrectRoadH/NiceEval)
 
 MemoryBench is an evaluation of coding agents' **memory capability**: the same batch of real development tasks, the same model, only the memory condition is switched — and we check whether the final code, diff, tests, and commands actually get better.
 
-Agent memory implementations are diversifying fast — [Tape](https://tape.systems/), [Nowledge Mem](https://mem.nowledge.co/), and [mempal](https://github.com/ZhangHanDong/mempal/) are all tackling the "agents forget" problem, but there's currently no reproducible evaluation that can clearly say whether they actually help and whether they're worth the extra tokens and latency. MemoryBench is that evaluation.
+Agent memory implementations are diversifying fast — [Tape](https://tape.systems/), [Nowledge Mem](https://mem.nowledge.co/), [mempal](https://github.com/ZhangHanDong/mempal/), and [Mem0](https://github.com/mem0ai/mem0) are all tackling the "agents forget" problem, but there's currently no reproducible evaluation that can clearly say whether they actually help and whether they're worth the extra tokens and latency. MemoryBench is that evaluation.
 
 ---
 
@@ -30,7 +30,9 @@ Memory's contribution is not scored as an extra checklist item. In real developm
 | no-memory baseline | integrated |
 | bub + Tape | integrated |
 | Codex / Claude Code host memory | integrated |
+| mempal | integrated |
 | Nowledge Mem | integrated |
+| Mem0 | integrated (codex; see `experiments/shared/mem0.ts`) |
 
 Full candidate list in [docs/benchmarks.md](docs/benchmarks.md).
 

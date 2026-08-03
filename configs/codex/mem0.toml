@@ -1,0 +1,9 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+# Mem0 集成所需的 feature 门:plugins 必须在 codex plugin add 前生效;
+# hooks / codex_hooks 覆盖不同 Codex 版本的命名(mem0 官方 installer 查的是 codex_hooks)。
+# MCP 段不在这里——mcp_servers 是 adapter 保留键,远程端点走 factory 的 mcpServers /
+# 或 postSetup 把插件自带的 bearer_token_env_var 改写成 http_headers。
+[features]
+plugins = true
+hooks = true
+codex_hooks = true
