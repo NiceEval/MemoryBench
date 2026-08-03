@@ -1,6 +1,6 @@
 {
   "format": "niceeval.results",
-  "schemaVersion": 14,
+  "schemaVersion": 15,
   "producer": {
     "name": "niceeval"
   },
