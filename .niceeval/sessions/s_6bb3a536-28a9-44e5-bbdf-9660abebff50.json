@@ -1,0 +1,20 @@
+{
+  "sessionId": "s_6bb3a536-28a9-44e5-bbdf-9660abebff50",
+  "pid": 142972,
+  "startedAt": "2026-08-03T13:19:32.127Z",
+  "status": "completed",
+  "experiments": [
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+      "runId": "2889eff1-b3a4-4cb6-9236-976744ee192a",
+      "path": ".niceeval/compare_codex-gpt-5.6-luna--nowledge/2026-08-03T13-19-44-670Z-8095"
+    }
+  ],
+  "completedAt": "2026-08-03T13:19:44.944Z",
+  "completion": {
+    "status": "complete",
+    "unstarted": 0,
+    "earlyExitUnstarted": 0,
+    "reporterErrors": []
+  }
+}

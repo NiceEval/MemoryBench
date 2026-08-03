@@ -1,0 +1,288 @@
+{
+  "id": "toggl-cli/01-entry-stats",
+  "description": "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's output/JSON/duration conventions for new commands",
+  "verdict": "errored",
+  "fingerprint": "79efc645adb06887c5ede7b8d9e3caac31b8af5e87627c34bb57956880981695",
+  "configHash": "daaf432037ae4945ebb8459af8baeffce7a35c07f39138c22e1aa658368e5ecb",
+  "attempt": 0,
+  "durationMs": 116592,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Cannot verify Sandbox platform against planned target linux-x64-gnu: fetch failed",
+    "origin": {
+      "scope": "attempt",
+      "phase": "agent.ensure"
+    },
+    "stack": "SandboxTargetVerificationError: Cannot verify Sandbox platform against planned target linux-x64-gnu: fetch failed\n    at catch (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/provisioner.ts:103:23)\n    at EffectPrimitive.effect_instruction_i0 (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/core-effect.ts:1683:29)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)\n    at body (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/Utils.ts:786:14)\n    at FiberRuntime.Sync (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:950:27)\n    at FiberRuntime.evaluateMessageWhileSuspended (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:918:14)"
+  },
+  "diagnostics": [
+    {
+      "code": "sandbox-space-probe-failed",
+      "level": "warning",
+      "detail": "sandbox 磁盘空间观测退化：探针命令退出码 unknown，未记录磁盘 facts；fetch failed",
+      "origin": {
+        "scope": "attempt",
+        "phase": "sandbox.prepare.eval"
+      }
+    }
+  ],
+  "facts": {
+    "nowledge.cohort": "configured-local-20260802",
+    "nowledge.server-version": "0.10.48"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 929
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 107717,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 930,
+          "durationMs": 4631,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 930,
+              "durationMs": 224,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799070
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "if",
+              "startOffsetMs": 1154,
+              "durationMs": 2495,
+              "command": {
+                "display": "if command -v nmem >/dev/null 2>&1 && [ \"$(nmem --version 2>/dev/null)\" = \"nmem 0.10.48\" ]; then exit 0; fi; uv tool install --force 'nmem-cli==0.10.48' >/dev/…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798846
+                }
+              }
+            },
+            {
+              "id": "n4",
+              "key": "sandbox.command",
+              "label": "nmem_bin=\"$HOME/.local/bin/nmem\";",
+              "startOffsetMs": 3649,
+              "durationMs": 371,
+              "command": {
+                "display": "nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" || nmem_bin=\"$(command -v nmem 2>/dev/null || true)\"; test -n \"$nmem_bin\" && \"$nmem_bin\" --version 2>/dev…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1796351
+                }
+              }
+            },
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "printf",
+              "startOffsetMs": 4020,
+              "durationMs": 244,
+              "command": {
+                "display": "printf \"%s\" \"$HOME\"",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795980
+                }
+              }
+            },
+            {
+              "id": "n6",
+              "key": "sandbox.command",
+              "label": "mkdir",
+              "startOffsetMs": 4264,
+              "durationMs": 248,
+              "command": {
+                "display": "mkdir -p \"$HOME/.nowledge-mem\"",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795736
+                }
+              }
+            },
+            {
+              "id": "n7",
+              "key": "sandbox.command",
+              "label": "nmem",
+              "startOffsetMs": 4735,
+              "durationMs": 826,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795265
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 5561,
+          "durationMs": 23301,
+          "children": [
+            {
+              "id": "n9",
+              "key": "sandbox.command",
+              "label": "bash",
+              "startOffsetMs": 5561,
+              "durationMs": 23301,
+              "command": {
+                "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  APT_WAIT='-o DPkg::Lock::Timeout=300'\n  apt-get …",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1794438
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.prepare",
+          "label": "eval#1",
+          "startOffsetMs": 28862,
+          "durationMs": 79785,
+          "children": [
+            {
+              "id": "n11",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 28863,
+              "durationMs": 6244,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin https://github.com/CorrectRoadH/toggl-cli.git .niceeval-clone\nmv .niceeval-clone/.git .git…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1771137
+                }
+              }
+            },
+            {
+              "id": "n12",
+              "key": "sandbox.command",
+              "label": "export",
+              "startOffsetMs": 35107,
+              "durationMs": 65307,
+              "command": {
+                "display": "export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo\nexport PATH=\"/usr/local/cargo/bin:$PATH\"\ncargo build --tests --quiet",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1764892
+                }
+              }
+            },
+            {
+              "id": "n13",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 100414,
+              "durationMs": 8232,
+              "failed": true,
+              "command": {
+                "display": "set -euo pipefail\ndf -Pk / 2>/dev/null\ndu -sk /opt/cargo-target 2>/dev/null",
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1699586
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 7925,
+      "failed": true,
+      "children": [
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 108647,
+          "durationMs": 7924,
+          "failed": true,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1691353
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "executionMs": 116592,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "irqnp64mb76odlikobb8o",
+    "reused": true,
+    "reuseSandbox": 3,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1YA3606GGTSPQ",
+  "startedAt": "2026-08-03T09:16:04.840Z",
+  "locatorRunId": "42baf0fa-4197-476c-917a-c3ee95603b79"
+}

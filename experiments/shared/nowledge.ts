@@ -13,7 +13,7 @@ import type {
  * Nowledge Mem 记忆条件:固定远程实例。
  *
  * 拓扑:mem 服务端在外部长期运行，并以可从 E2B 访问的 URL 暴露；连接坐标
- * (NMEM_URL / NMEM_API_KEY)只放在 gitignored 的仓库 `.env` 或当前进程环境中，niceeval
+ * (NMEM_API_URL / NMEM_API_KEY)只放在 gitignored 的仓库 `.env` 或当前进程环境中，niceeval
  * 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
  * Experiment layer 的 `nowledgeAttachRemote` 每条 Attempt 接线(装 nmem CLI、把 client 指向远程、
  * 端到端探活),Agent `preTeardown` 再用 `nowledgeVerifyRemoteAlive` 核对同一个 URL 仍存活。
@@ -42,7 +42,7 @@ const COHORT_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.]+)?$/;
 
 const MISSING_ENV_HINT =
-  "[nowledge] 缺 NMEM_URL / NMEM_API_KEY:请在仓库 .env（或进程 env）中给出已配置 mem 服务的连接坐标。" +
+  "[nowledge] 缺 NMEM_API_URL / NMEM_API_KEY:请在仓库 .env（或进程 env）中给出已配置 mem 服务的连接坐标。" +
   "不要把这些值复制进命令、日志或源码。";
 
 /**
@@ -83,13 +83,13 @@ function requireNowledgeServerVersion(): string {
  * 每次调用现读——.env 里换了 URL 不需要重启任何东西。
  */
 export function nowledgeEndpoint(): NowledgeEnv {
-  let url = process.env.NMEM_URL?.trim();
+  let url = process.env.NMEM_API_URL?.trim();
   let apiKey = process.env.NMEM_API_KEY?.trim();
   if (!url || !apiKey) {
     try {
       for (const line of readFileSync(ENV_FILE, "utf8").split("\n")) {
-        const match = line.match(/^(?:export )?(NMEM_URL|NMEM_API_KEY)=(.+)$/);
-        if (match?.[1] === "NMEM_URL") url ||= match[2].trim();
+        const match = line.match(/^(?:export )?(NMEM_API_URL|NMEM_API_KEY)=(.+)$/);
+        if (match?.[1] === "NMEM_API_URL") url = match[2].trim();
         if (match?.[1] === "NMEM_API_KEY") apiKey ||= match[2].trim();
       }
     } catch {

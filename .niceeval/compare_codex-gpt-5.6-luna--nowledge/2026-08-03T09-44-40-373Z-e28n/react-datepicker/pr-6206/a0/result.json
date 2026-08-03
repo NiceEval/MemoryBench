@@ -1,0 +1,177 @@
+{
+  "id": "react-datepicker/pr-6206",
+  "description": "react-datepicker PR #6206: fix DatePicker's day-click / input-display / selectsMultiple all going off-by-one-day when the explicit timeZone prop differs from the local timezone (real GitHub issue #6193)",
+  "verdict": "errored",
+  "fingerprint": "0ed13b1f2f54d3058378498bd662b55b6d47828c337e3b8f049d79df6ad64e12",
+  "configHash": "daaf432037ae4945ebb8459af8baeffce7a35c07f39138c22e1aa658368e5ecb",
+  "attempt": 0,
+  "durationMs": 5671,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "[nowledge] nowledge server probe failed (exit 1): error: /health returned 503: Remote API key is not configured",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.experiment"
+    },
+    "stack": "ExperimentFatalError: [nowledge] nowledge server probe failed (exit 1): error: /health returned 503: Remote API key is not configured\n    at requireCommand (/home/ctrdh/Code/NiceEval/MemoryBench/experiments/shared/nowledge.ts:149:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/experiments/shared/nowledge.ts:205:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "facts": {
+    "nowledge.cohort": "configured-local-20260802",
+    "nowledge.server-version": "0.10.48"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1341
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 4325,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 1342,
+          "durationMs": 4325,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 1343,
+              "durationMs": 246,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798657
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "if",
+              "startOffsetMs": 1589,
+              "durationMs": 2503,
+              "command": {
+                "display": "if command -v nmem >/dev/null 2>&1 && [ \"$(nmem --version 2>/dev/null)\" = \"nmem 0.10.48\" ]; then exit 0; fi; uv tool install --force 'nmem-cli==0.10.48' >/dev/…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798410
+                }
+              }
+            },
+            {
+              "id": "n4",
+              "key": "sandbox.command",
+              "label": "nmem_bin=\"$HOME/.local/bin/nmem\";",
+              "startOffsetMs": 4092,
+              "durationMs": 361,
+              "command": {
+                "display": "nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" || nmem_bin=\"$(command -v nmem 2>/dev/null || true)\"; test -n \"$nmem_bin\" && \"$nmem_bin\" --version 2>/dev…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795908
+                }
+              }
+            },
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "printf",
+              "startOffsetMs": 4453,
+              "durationMs": 216,
+              "command": {
+                "display": "printf \"%s\" \"$HOME\"",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795546
+                }
+              }
+            },
+            {
+              "id": "n6",
+              "key": "sandbox.command",
+              "label": "mkdir",
+              "startOffsetMs": 4669,
+              "durationMs": 255,
+              "command": {
+                "display": "mkdir -p \"$HOME/.nowledge-mem\"",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795330
+                }
+              }
+            },
+            {
+              "id": "n7",
+              "key": "sandbox.command",
+              "label": "nmem",
+              "startOffsetMs": 5158,
+              "durationMs": 509,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1794841
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 5671,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i4ib5gxo8lbxz9i92vcbk",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1Q47CWRDE6CDX",
+  "startedAt": "2026-08-03T09:44:34.220Z",
+  "locatorRunId": "b0b107a8-7c73-4e2a-9dc8-b4e612b000cc",
+  "artifacts": [
+    "commands"
+  ]
+}

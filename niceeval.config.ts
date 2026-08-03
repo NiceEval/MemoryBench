@@ -78,5 +78,5 @@ export default defineConfig({
   // `maximum number of concurrent E2B sandboxes (20)`;nowledge 组另有两条死于代理
   // `Concurrency limit exceeded for user`。改成 4 之后,实验级声明(nowledge 4 / mempal 1)
   // 只会把它压得更低,不会再放开。
-  maxConcurrency: 4,
+  maxConcurrency: 8,
 });

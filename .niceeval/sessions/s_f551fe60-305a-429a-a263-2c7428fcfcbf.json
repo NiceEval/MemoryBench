@@ -1,0 +1,33 @@
+{
+  "sessionId": "s_f551fe60-305a-429a-a263-2c7428fcfcbf",
+  "pid": 2564462,
+  "startedAt": "2026-08-03T09:02:12.274Z",
+  "status": "active",
+  "heartbeatAt": "2026-08-03T09:02:52.437Z",
+  "experiments": [
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna--mempal",
+      "runId": "950027a1-11e5-42bd-9e63-b52f67d147eb",
+      "state": "teardown",
+      "running": 0,
+      "queued": 0,
+      "elsewhere": 0
+    },
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+      "runId": "4f272866-b9dc-48c2-9add-3069198dbb72",
+      "state": "running",
+      "running": 1,
+      "queued": 10,
+      "elsewhere": 0
+    },
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna",
+      "runId": "c3e0f5fb-b897-4bc8-be7d-dc497b30f591",
+      "state": "teardown",
+      "running": 0,
+      "queued": 0,
+      "elsewhere": 0
+    }
+  ]
+}

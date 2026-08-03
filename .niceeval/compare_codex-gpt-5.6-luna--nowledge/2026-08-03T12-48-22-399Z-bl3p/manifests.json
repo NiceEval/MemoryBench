@@ -1,0 +1,152 @@
+{
+  "react-datepicker/pr-6206": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": true,
+      "strict": false,
+      "flags.memory": "nowledge",
+      "flags.nowledgeVersion": "0.10.48",
+      "flags.nowledgeCohort": "configured-local-20260802",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "lifetime": {
+                "_tag": "Configured",
+                "milliseconds": 3600000
+              }
+            },
+            "privateIdentityDigest": "a34e69d747c536481d061dd60ba157517f55d8c3b837d4d424e745d4174cafd5"
+          }
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "index": 0
+          }
+        ]
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "3"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "react-datepicker/pr-6206",
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna--nowledge"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "a34e69d747c536481d061dd60ba157517f55d8c3b837d4d424e745d4174cafd5"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "experiment",
+            "id": "compare/codex-gpt-5.6-luna--nowledge"
+          },
+          "index": 0
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "df5a9c9a0473638a3821e5001411d208de7109e87a62acc1fdbf0813707c5310",
+          "buildKeys": []
+        },
+        "publishable": {
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "6c17227a03dd072cd8057cf0085a78bafeda1d6c33e6badacc5bf09d4892578f"
+      }
+    },
+    "source": {
+      "evals/react-datepicker/pr-6206/eval.ts": "4798afa25c64d8982c6bffba3942a3ba48313f012cd74de41bda8c3cf51c8f2c"
+    },
+    "data": {}
+  }
+}
