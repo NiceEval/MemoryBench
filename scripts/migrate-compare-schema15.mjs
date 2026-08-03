@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * One-off schema 14 -> 15 migration for the two explicitly approved compare
+ * One-off schema 14 -> 15 migration for the three explicitly approved compare
  * experiments.  Run with --audit before --migrate.
  *
  * schema 15's breaking data change is the required `checked` fact on every
@@ -21,6 +21,7 @@ const NEW_SCHEMA = 15;
 const TARGETS = new Map([
   ["compare/codex-gpt-5.6-luna", ".niceeval/compare_codex-gpt-5.6-luna"],
   ["compare/codex-gpt-5.6-luna--mempal", ".niceeval/compare_codex-gpt-5.6-luna--mempal"],
+  ["compare/codex-gpt-5.6-luna--nowledge", ".niceeval/compare_codex-gpt-5.6-luna--nowledge"],
 ]);
 
 const OLD_COMMAND_KEYS = ["display", "exitCode", "phase", "stderr", "stdout", "timingNodeId"].sort();
@@ -31,6 +32,9 @@ const SKILL_EXCLUDE_DISPLAYS = new Set([
 ]);
 const CODEX_SEND_PREFIX = '$(if [ -x "$HOME/.local/bin/codex" ]; then echo "$HOME/.local/bin/codex"; else command -v \'codex\'; fi) exec';
 const YARN_INSTALL_DISPLAY = "npm install -g --prefix /usr/local yarn@1.22.22 && yarn install --ignore-scripts --ignore-engines";
+const NOWLEDGE_PLUGIN_REMOVE_DISPLAY =
+  '$(if [ -x "$HOME/.local/bin/codex" ]; then echo "$HOME/.local/bin/codex"; else command -v \'codex\'; fi) plugin marketplace remove \'nowledge-community\'';
+const NOWLEDGE_STATUS_DISPLAY = "nmem --json status";
 
 const mode = process.argv.slice(2).filter((arg) => arg.startsWith("--"));
 if (mode.length !== 1 || !["--audit", "--migrate"].includes(mode[0])) {
@@ -98,6 +102,18 @@ function deriveChecked(entry, commandRel) {
     return {
       checked: false,
       rule: "codex adapter send uses unchecked sb.runShell()",
+    };
+  }
+  if (entry.phase === "agent.setup" && entry.display === NOWLEDGE_PLUGIN_REMOVE_DISPLAY) {
+    return {
+      checked: false,
+      rule: "codex adapter plugin cleanup uses unchecked sb.runShell().catch()",
+    };
+  }
+  if (entry.phase === "sandbox.prepare.experiment" && entry.display === NOWLEDGE_STATUS_DISPLAY) {
+    return {
+      checked: false,
+      rule: "nowledgeAttachRemote requireCommand obtains the result from ordinary sb.runShell()",
     };
   }
   if (entry.phase === "eval.run" && entry.display === "bash tests/run-tests.sh") {
