@@ -1,0 +1,482 @@
+{
+  "id": "react-hook-form/pr-13594",
+  "description": "react-hook-form pr-13594: on a disabled form, setValue(..., { shouldDirty: true }) must still mark the field and form dirty (an explicit programmatic dirty request), while ordinary interaction on a disabled form stays non-dirty (real react-hook-form issue #13592)",
+  "verdict": "failed",
+  "fingerprint": "7b6004cc44a2190541da759754ba33932a8b3a55fa6840b3469da552f1a93c90",
+  "configHash": "8b05327037faf431d27284c5ffcb220fe298f0ae95579ed9f2eda73bf589d04f",
+  "attempt": 0,
+  "durationMs": 606434,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13594/eval.ts",
+        "line": 81,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-hook-form/pr-13594/eval.ts",
+            "line": 62,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13594/eval.ts",
+        "line": 93,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…act/dist/pure.js:91:13) at src/__tests__/useForm/formState.test.tsx:1129:11\"\noutput tail:\n      at HTMLInputElement.dispatchEvent (node_modules/.pnpm/jsdom@26.1.0_supports-color@8.1.1/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)\n      at node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/events.js:19:20\n      at node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/pure.js:107:16\n      at node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/act-compat.js:47:24\n      at process.env.NODE_ENV.exports.act (node_modules/.pnpm/react@19.2.7/node_modules/react/cjs/react.development.js:814:22)\n      at node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/act-compat.js:46:25\n      at Object.eventWrapper (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/pure.js:106:28)\n      at fireEvent (node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/events.js:12:35)\n      at Function.fireEvent.<computed> [as change] (node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/events.js:110:36)\n      at Function.fireEvent.<computed> [as change] (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/fire-event.js:15:52)\n      at change (src/__tests__/useForm/formState.test.tsx:791:15)\n\n  console.error\n    You called act(async () => ...) without await. This could lead to unexpected testing behaviour, interleaving multiple act calls and mixing their scopes. You should - await act(async () => ...);\n\n      1127 |\n      1128 |         await act(async () => {\n    > 1129 |           await waitFor(() => screen.getByText('inValid'));\n           |           ^\n      1130 |         });\n      1131 |\n      1132 |         expect(screen.queryByText(message)).toBeNull();\n\n      at node_modules/.pnpm/react@19.2.7/node_modules/react/cjs/react.development.js:835:21\n      at runJobs (node_modules/.pnpm/@sinonjs+fake-timers@15.4.0/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1010:22)\n      at runInitialJobs (node_modules/.pnpm/@sinonjs+fake-timers@15.4.0/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:2172:13)\n      at doTick (node_modules/.pnpm/@sinonjs+fake-timers@15.4.0/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:2295:13)\n      at Object.tick (node_modules/.pnpm/@sinonjs+fake-timers@15.4.0/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:2342:20)\n      at FakeTimers.advanceTimersByTime (node_modules/.pnpm/@jest+fake-timers@30.4.1/node_modules/@jest/fake-timers/build/index.js:580:19)\n      at node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/pure.js:96:16\n      at Object.asyncWrapper (node_modules/.pnpm/@testing-library+react@16.3.2_@testing-library+dom@10.4.0_@types+react-dom@19.2.3_@type_ba8587520443101ef3292115a57d0340/node_modules/@testing-library/react/dist/pure.js:91:13)\n      at src/__tests__/useForm/formState.test.tsx:1129:11",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 368715,
+    "outputTokens": 10016,
+    "cacheReadTokens": 1908992,
+    "reasoningTokens": 1698,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.6197102,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1011
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 2323,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 1012,
+          "durationMs": 2322,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 1012,
+              "durationMs": 1942,
+              "command": {
+                "display": "command -v mempal",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798988
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "test",
+              "startOffsetMs": 2954,
+              "durationMs": 380,
+              "command": {
+                "display": "test -n \"$(find \"$HOME/.cache/huggingface\" -name \"*.safetensors\" -print -quit 2>/dev/null)\"",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1797046
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 764,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 3334,
+          "durationMs": 277,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1796665
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 3612,
+          "durationMs": 486,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1796388
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 6334,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 4098,
+          "durationMs": 276,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1795902
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 4375,
+          "durationMs": 6057,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1795625
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1943,
+      "children": [
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 10433,
+          "durationMs": 294,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msby5ofi_byjgpq'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1789567
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 11044,
+          "durationMs": 382,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1788955
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 11707,
+          "durationMs": 353,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_pivsn4'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- mempal-memory: .agents/skills/mempal-memory/SKILL.md\n…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1788293
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 12060,
+          "durationMs": 316,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787939
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 350,
+      "children": [
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 12376,
+          "durationMs": 350,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787624
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 587542,
+      "children": [
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 12727,
+          "durationMs": 2522,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .niceeval-clone\nmv …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787273
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 15249,
+          "durationMs": 2423,
+          "command": {
+            "display": "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1784751
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 17674,
+          "durationMs": 351,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1782326
+            }
+          }
+        },
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 18025,
+          "durationMs": 576471,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1781975
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 594502,
+          "durationMs": 311,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1205510
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 17674,
+          "durationMs": 577139,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 368715,
+            "outputTokens": 10016,
+            "cacheReadTokens": 1908992,
+            "reasoningTokens": 1698,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 594817,
+          "durationMs": 1049,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1205196
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 597934,
+          "durationMs": 2332,
+          "failed": true,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1202078
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 825,
+      "children": [
+        {
+          "id": "n21",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 600268,
+          "durationMs": 825,
+          "children": [
+            {
+              "id": "n22",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 600268,
+              "durationMs": 460,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1199745
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 2
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 5340
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 606434,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i50883e5hpn2kh7h0c3bl",
+    "reused": true,
+    "reuseSandbox": 4,
+    "reuseOrdinal": 6
+  },
+  "locator": "@1ETE6YYQNHY1B",
+  "startedAt": "2026-08-02T15:20:04.908Z",
+  "locatorRunId": "63340121-5766-4c62-9c8a-2521ec41d073",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}

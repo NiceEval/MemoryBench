@@ -1,0 +1,160 @@
+{
+  "format": "niceeval.results",
+  "schemaVersion": 14,
+  "producer": {
+    "name": "niceeval"
+  },
+  "runId": "f8512939-bb2e-41a5-90ba-f1c7ed6eb623",
+  "experimentId": "compare/codex-gpt-5.6-luna",
+  "experiment": {
+    "description": "codex · gpt-5.6-luna",
+    "flags": {
+      "memory": "baseline"
+    },
+    "labels": {
+      "line": "codex"
+    },
+    "attempts": 1,
+    "earlyExit": false,
+    "timeoutMs": 1800000,
+    "maxConcurrency": 4,
+    "selectedEvalIds": [
+      "yet-another-react-lightbox/pr-408"
+    ],
+    "sandboxLayer": {
+      "layer": {
+        "_tag": "Template",
+        "value": {
+          "version": 2,
+          "provider": "e2b",
+          "kind": "template",
+          "publishable": {
+            "lifetime": {
+              "_tag": "ProviderDefault"
+            }
+          },
+          "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+        }
+      },
+      "commands": []
+    },
+    "sandboxPlansByEval": {
+      "yet-another-react-lightbox/pr-408": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "yet-another-react-lightbox/pr-408",
+          "experimentId": "compare/codex-gpt-5.6-luna",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna"
+        },
+        "template": {
+          "version": 2,
+          "provider": "e2b",
+          "kind": "template",
+          "publishable": {
+            "lifetime": {
+              "_tag": "ProviderDefault"
+            }
+          },
+          "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "yet-another-react-lightbox/pr-408"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "e2b",
+          "plannerRevision": "e2b-template-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "provider-standard",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 20,
+            "lane": {
+              "key": "e2b",
+              "limit": 20
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/e2b-template",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "ProviderValidated",
+              "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+            }
+          },
+          "carry": {
+            "_tag": "Eligible"
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "a602c70171a1264796f14667ffa8aaa1278f1a0bcee3f513ec73b9059d9340ab",
+            "buildKeys": []
+          },
+          "publishable": {
+            "lifetime": {
+              "_tag": "ProviderDefault"
+            }
+          },
+          "privateIdentityDigest": "74702cd1783c65f0d4bdd445f5c0b5e95a1b4b1e8824fda068fc6cbf95f6be96"
+        }
+      }
+    },
+    "agentInstalls": [
+      {
+        "order": 0,
+        "ensure": {
+          "agent": "codex",
+          "version": "0.144.1",
+          "revision": "3"
+        },
+        "installer": {
+          "_tag": "Matched",
+          "identity": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installMode": "staged",
+          "platforms": {
+            "_tag": "All"
+          }
+        }
+      }
+    ]
+  },
+  "agent": "codex",
+  "model": "gpt-5.6-luna",
+  "startedAt": "2026-08-03T03:08:38.304Z",
+  "configHash": "e90ce6138715b1ec850efe84edeedbbdaa0a0b52b7cf0058615731048c893c87",
+  "completedAt": "2026-08-03T03:08:38.307Z",
+  "knownEvalIds": [
+    "yet-another-react-lightbox/pr-408"
+  ]
+}

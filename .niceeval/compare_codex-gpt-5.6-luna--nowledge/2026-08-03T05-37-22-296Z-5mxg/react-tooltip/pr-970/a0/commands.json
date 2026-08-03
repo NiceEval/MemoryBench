@@ -1,0 +1,1 @@
+[{"timingNodeId":"n7","phase":"sandbox.prepare.experiment","display":"nmem --json status","exitCode":1,"stdout":"","stderr":"error: /health returned 503: Remote API key is not configured\n"}]
