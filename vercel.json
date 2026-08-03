@@ -1,4 +1,8 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": false
+  },
   "installCommand": "echo 'skip: 报告构建只读 .niceeval/ 与 reports/,不碰本仓库 node_modules'",
   "buildCommand": "bash scripts/vercel-build.sh",
   "outputDirectory": "site"
