@@ -203,11 +203,13 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 - **sandboxReuse 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
   `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 sandboxReuse 提速测量时只能靠 `--timing` 里
   install 耗时的阶梯反推是不是同一条 lane，很别扭。
-- **裸 `show @<locator>`（不带 evidence flag 的紧凑总览）在本仓库根本用不了**：内建报告报
-  "the built-in report has no attempt-input page"，换 `--report reports/memory.tsx` 报同样的错——`reports/memory.tsx`
-  只声明了一个 `report` 页，没有 `input: "attempt"` 页。想开就得往 `pages` 里加 `standardAttemptPage`
-  （会同时给站点多出一页，改之前先确认这是想要的）。加了 evidence flag（`--timing` / `--execution` / `--diff`）反而一切正常，
-  所以日常直接带 flag 用。
+- ~~裸 `show @<locator>` 在本仓库根本用不了~~ **已修复，且它是排查 errored 的首选切片**（2026-08-04 复测）：
+  此前报 "the built-in report has no attempt-input page"，现在直接给出**阶段名 + 完整错误正文**
+  （例：`! agent.ensure` / `! unexpected-error: Cannot verify Sandbox platform … fetch failed`），
+  `ctx.facts()` 与 `ctx.diagnostic` 也只在这个概览里可读。
+  **排查 errored 一定先用它**：`--timing` 只在失败命令后打个 ✗ 不给正文，`--execution` 在 agent 起来之前就挂掉的
+  attempt 上只会说 "no events recorded"，概览行里的错误又被截断成 `unexpected-error:…`——
+  2026-08-04 就是照着这条过时记录先试了 `--timing`/`--execution`，绕了一圈才拿到错误正文。
 - **`--history` 印出来的 locator 有一部分打不开**：`show --exp <id> --history` 会把历史 run 里的 attempt
   一并列出（快照头部写着 "composed from N runs"），但拿它印的 locator 去 `show @<locator> --timing` 会被拒：
   `Locator @xxx is outside the selected record scope.`——同一条命令刚把这个 locator 当作「打开它的方式」印给你，
