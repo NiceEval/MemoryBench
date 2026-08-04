@@ -202,7 +202,7 @@ export const installRustToolchain: SandboxCommand = async (sandbox, ctx) => {
     "python3 --version",
   ].join("\n");
 
-  const installed = await sandbox.runCommand("bash", ["-lc", script], { root: true });
+  const installed = await sandbox.runCommand("bash", ["-lc", script], { user: "root" });
   if (installed.exitCode !== 0) {
     throw new Error(`rust toolchain setup failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
   }
