@@ -1,0 +1,6 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+# remem 集成所需的 feature 门:[features].hooks 必须为 true,SessionStart/Stop hook 才生效。
+# MCP 段不在这里——mcp_servers 是 adapter 保留键,remem 自己在 postSetup 阶段跑
+# `remem install --target codex` 追加 [mcp_servers.remem],发生在 adapter 完成保留键校验之后。
+[features]
+hooks = true
