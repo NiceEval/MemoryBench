@@ -131,7 +131,7 @@ export const REMEM_VERSION = "0.6.47";
  * (2026-08-04)。tag 里带上它,避免同名 tag 悄悄指向不同内容——与
  * scripts/build-codex-remem-docker-image.sh、Dockerfile 头部注释手动保持同步。
  */
-const CODEX_REMEM_DOCKERFILE_REVISION = "r5";
+const CODEX_REMEM_DOCKERFILE_REVISION = "r6";
 
 /** 派生镜像 tag——base 镜像版本、remem 版本、Dockerfile 配方版本都编进去,任一个变了 tag 自然不同。 */
 export const REMEM_DOCKER_IMAGE = `memorybench-codex-remem:${CODEX_REMEM_BASE_IMAGE.split(":")[1]}-${REMEM_VERSION}-${CODEX_REMEM_DOCKERFILE_REVISION}`;

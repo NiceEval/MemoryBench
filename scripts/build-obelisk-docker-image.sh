@@ -21,7 +21,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_IMAGE="niceeval/codex:0.144.1-r4"
 OBELISK_VERSION="0.2.2"
-DOCKERFILE_REVISION="r3"
+DOCKERFILE_REVISION="r4"
 IMAGE_TAG="memorybench-codex-obelisk:0.144.1-r4-${OBELISK_VERSION}-${DOCKERFILE_REVISION}"
 
 echo "==> pulling base image ${BASE_IMAGE}"

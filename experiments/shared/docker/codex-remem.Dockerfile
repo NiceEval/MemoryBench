@@ -91,7 +91,10 @@ COPY --from=remem-builder /usr/local/cargo/bin/remem /usr/local/bin/remem
 # 装 yarn)。基底 r4 没把这两处交给运行用户——root 时代一切畅通,切 USER node 后 2026-08-04
 # 全量实测 corepack enable 直接 EACCES、整批连环 errored。E2B factory 已归一同款契约,
 # Docker 官方配方缺这一半(候选上游缺口,已上报);派生层先补,上游修复后此层可删。
-RUN chown -R node:node /usr/local/bin /usr/local/lib/node_modules
+# 范围取整个 /usr/local 而不是契约点名的两个目录(r5→r6):lightbox 两题用 `n` 换全局 Node
+# 运行时,还要写 /usr/local/n、include/node 与 share,只 chown 两个目录时在 eval.run 阶段
+# EACCES(2026-08-04 实测「Node runtime swap failed」)。
+RUN chown -R node:node /usr/local
 
 # 恢复基底声明的非 root 执行身份,让 sandboxReuse 的复用安全检查真正生效——见文件头注释第 5 点。
 # 除上面显式交给 node 的 Node 工具安装面外,其余内容仍是 root 属主,`node` 只有执行权限。

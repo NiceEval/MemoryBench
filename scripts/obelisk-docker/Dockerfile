@@ -89,7 +89,10 @@ RUN mkdir -p /opt/obelisk-session-archive && chown node:node /opt/obelisk-sessio
 # 装 yarn）。基底 r4 没把这两处交给运行用户，2026-08-04 全量实测切非 root 后 corepack enable
 # 直接 EACCES、整批连环 errored。E2B factory 已归一同款契约，Docker 官方配方缺这一半
 #（候选上游缺口，已上报）；派生层先补，上游修复后此层可删。
-RUN chown -R node:node /usr/local/bin /usr/local/lib/node_modules
+# 范围取整个 /usr/local 而不是契约点名的两个目录（r3→r4）：lightbox 两题用 `n` 换全局
+# Node 运行时，还要写 /usr/local/n、include/node 与 share，只 chown 两个目录时在
+# eval.run 阶段 EACCES（2026-08-04 实测「Node runtime swap failed」）。
+RUN chown -R node:node /usr/local
 
 # 恢复基底声明的非 root 执行身份，让 sandboxReuse 的复用安全检查真正生效——见上方两段注释。
 # 装的全部内容都在这之前以 root 完成。
