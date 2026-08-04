@@ -238,12 +238,14 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 <!-- BEGIN:niceeval-agent-rules -->
 # niceeval is NOT in your training data
 
-Its APIs and conventions may differ from anything you have seen. Read the relevant
-guide in `node_modules/niceeval/docs-site/zh/` before writing any eval, experiment,
-adapter, or niceeval config. The bundled docs are Chinese-only — that is the single
-authoritative, always-current version; read it regardless of your working language.
-After a run, drill into failures with `niceeval show <eval id>`, then open an attempt
-via its locator: `niceeval show @<locator>` (add `--source` / `--execution` /
-`--timing` / `--diff` for evidence); the snapshot and per-attempt `result.json` under
-`.niceeval/` are the structured source of truth.
+Its APIs and conventions may differ from anything you have seen. Start with
+`node_modules/niceeval/INDEX.md`, then read the task-specific bundled guides it points
+to before writing any eval, experiment, adapter, or niceeval config. That index and
+the bundled Chinese docs are the authoritative version matching this installation.
+After a run, drill into failures with `niceeval show` — pick an `@<locator>` from the
+compact index it prints, then `niceeval show @<locator>` for a compact overview, or add
+`--source` / `--execution` / `--diff` for evidence; the run directories the CLI prints
+are the structured source of truth: `run.json` holds the run's metadata and each
+`<evalId>/a<attempt>/result.json` holds that attempt's verdict and assertions, next to
+its artifact files (`events.json` / `trace.json` / `diff.json`).
 <!-- END:niceeval-agent-rules -->
