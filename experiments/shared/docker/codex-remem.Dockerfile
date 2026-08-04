@@ -42,24 +42,25 @@
 # - 两件事都修好后,这个派生 Dockerfile 本身可以整体退休,shared/remem.ts 改回直接引用
 #   `niceeval/codex:...` 官方镜像字面量。
 #
-# 5. (2026-08-04,r3)派生镜像没有声明 `USER`,`docker run` 默认以 root 跑——这不是「装完就
-#    完事」,niceeval 的 Docker Sandbox 文档化契约是「非 root 是预制环境自己的义务,不是 runner
-#    的强加」(niceeval docs「Docker：从官方基线继续构建」):镜像不声明 USER 就默认 root,
-#    sandboxReuse 的复用安全检查在检测到 root 身份时拒绝复用、静默把物理沙箱退休、给下一条
-#    Attempt 开一个全新容器。这份 Dockerfile 之前只删 Yarn、装 remem、补 python3,唯独漏了这
-#    一步——真正的后果是 remem.ts 文件头记录的「postSetup 写入不存活到下一条 Attempt」:不是
-#    Agent 级钩子不共享文件系统写入,是每条 Attempt 压根没有分到同一个物理容器,`$HOME` 每次
-#    都是全新的。修法与上游 Codex/Claude Code 官方镜像同款(niceeval commit cbac5659):安装
-#    步骤保持 root 不动(COPY 在 USER 声明之前执行,天然是 root),收尾切 `USER node`——
-#    `niceeval/codex` 基础镜像自带这个 uid 1000 用户,`/usr/local/bin` 下的东西对所有用户
-#    可读可执行,只是不可写,remem 只需要被执行、不需要被 node 用户写入,不受影响。已用同一
-#    派生镜像反事实验证:以 uid 1000 跑时 sandboxReuse 的复用检查通过,`$HOME` 标记文件跨
-#    题间 reset 存活。
+# 5. (2026-08-04,r3→r4)基底镜像收尾声明执行身份——niceeval 的 Docker Sandbox 文档化契约是
+#    「非 root 是预制环境自己的义务,不是 runner 的强加」(niceeval docs「Docker：从官方基线
+#    继续构建」):镜像不声明 USER 就默认 root,sandboxReuse 的复用安全检查在检测到 root 身份
+#    时拒绝复用、静默把物理沙箱退休、给下一条 Attempt 开一个全新容器。`niceeval/codex:0.144.1-r3`
+#    没有声明 USER(默认 root),这份派生 Dockerfile 当时（r3 配方）自己在收尾补了一行 `USER node`
+#    才补上这个契约,真正的后果是 remem.ts 文件头记录的「postSetup 写入不存活到下一条 Attempt」:
+#    不是 Agent 级钩子不共享文件系统写入,是每条 Attempt 压根没有分到同一个物理容器,`$HOME`
+#    每次都是全新的。`niceeval/codex:0.144.1-r4`(NiceEval commit cbac5659)已经把这行 `USER node`
+#    收进基底本身——派生镜像不再需要自己补,但也不能只是"删掉派生层的 USER node 就完事":
+#    基底收尾已经是非 root,而这份 Dockerfile 后续所有需要写系统目录的步骤(删 Yarn、装 python3、
+#    COPY 二进制到 /usr/local/bin)都要求 root,所以派生层必须先显式 `USER root` 切回去做完这些
+#    安装动作,再显式 `USER node` 把身份还原成基底声明的样子——这一行现在的语义是"恢复基底身份",
+#    不再是"这份派生 Dockerfile 自己发明了非 root"。已用同一派生镜像反事实验证:以 uid 1000 跑时
+#    sandboxReuse 的复用检查通过,`$HOME` 标记文件跨题间 reset 存活。
 #
 # 重建:见 scripts/build-codex-remem-docker-image.sh(tag 与 experiments/shared/remem.ts
 # 里的常量手动保持同步,不是自动计算的哈希——两边都要跟着改)。
 
-ARG BASE_IMAGE=niceeval/codex:0.144.1-r3
+ARG BASE_IMAGE=niceeval/codex:0.144.1-r4
 ARG REMEM_VERSION=0.6.47
 
 # ---- builder stage:与最终 stage 同代 glibc(都基于 Debian bookworm),编译产物直接可跑 ----
@@ -68,8 +69,12 @@ ARG REMEM_VERSION
 RUN cargo install remem-ai --version "${REMEM_VERSION}" --bin remem \
     --no-default-features --locked
 
-# ---- 最终 stage:派生自钉死的 niceeval 官方 Codex 镜像 ----
+# ---- 最终 stage:派生自钉死的 niceeval 官方 Codex 镜像(r4 基底收尾已声明 USER node) ----
 FROM ${BASE_IMAGE}
+
+# 基底已经是非 root(USER node),但接下来这几步(删系统目录下的 Yarn、apt 装 python3、
+# COPY 二进制到 /usr/local/bin)都要写只有 root 能写的路径,显式切回 root 做完再切回来。
+USER root
 
 # 删除预装 Yarn——本仓库的 eval 安装步骤假设环境没有它,见文件头注释第 3 点。
 RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg \
@@ -81,7 +86,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 \
 
 COPY --from=remem-builder /usr/local/cargo/bin/remem /usr/local/bin/remem
 
-# 声明非 root 执行身份,让 sandboxReuse 的复用安全检查真正生效——见文件头注释第 5 点。装的
-# 全部内容都在这之前以 root 完成,`node` 只需要执行权限,不需要写权限。
+# 恢复基底声明的非 root 执行身份,让 sandboxReuse 的复用安全检查真正生效——见文件头注释第 5 点。
+# 装的全部内容都在这之前以 root 完成,`node` 只需要执行权限,不需要写权限。
 USER node
 RUN remem --version

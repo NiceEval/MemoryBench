@@ -122,28 +122,30 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
 export const OBELISK_VERSION = "0.2.2";
 
 /**
- * 本地派生镜像：`scripts/obelisk-docker/Dockerfile` 从官方 `niceeval/codex:0.144.1-r3`
- * 删掉预装 Yarn、把 obelisk CLI 烘进镜像、末尾声明 `USER node`，`pnpm docker:obelisk` 构建。
- * 为什么要非 root、为什么要把 CLI 安装从运行时挪进构建期，完整背景见 Dockerfile 文件头
+ * 本地派生镜像：`scripts/obelisk-docker/Dockerfile` 从官方 `niceeval/codex:0.144.1-r4`
+ * 删掉预装 Yarn、把 obelisk CLI 烘进镜像、恢复基底声明的 `USER node`，`pnpm docker:obelisk`
+ * 构建。为什么要非 root、为什么要把 CLI 安装从运行时挪进构建期，完整背景见 Dockerfile 文件头
  * 注释与下面「已修：agent 级钩子跨 Attempt 状态不存活」一节——核心结论是：这不是
  * niceeval 的 bug，是本仓库派生镜像此前没有声明执行身份，导致 sandboxReuse 的复用安全
  * 检查拒绝复用、静默把物理沙箱退休、给下一条 Attempt 新建一个全新容器。
  *
- * 选官方 `0.144.1-r3` 而不是安装版 niceeval 0.4.6 导出的 `NICEEVAL_CODEX_DOCKER_IMAGE`
- * 常量（指向 `0.144.1-r4`）是因为 2026-08-04 实测 `docker manifest inspect` 该 tag 在
- * Docker Hub 上 404，只有 `0.144.1-r3` 已发布——已作为上游 bug 一并上报。上游发布 r4 后，
- * 派生镜像的 `FROM` 与这里都要跟着换成 r4。
+ * 最初选官方 `0.144.1-r3` 而不是安装版 niceeval 0.4.6 导出的 `NICEEVAL_CODEX_DOCKER_IMAGE`
+ * 常量（当时已指向 `0.144.1-r4`）是因为 2026-08-04 实测 `docker manifest inspect` 该 tag 在
+ * Docker Hub 上 404，只有 `0.144.1-r3` 已发布——已作为上游 bug 一并上报。**上游已发布 r4**
+ * （NiceEval commit cbac5659，收尾声明 `USER node`，本仓库 2026-08-04 迁移）：派生镜像的
+ * `FROM` 与这里的 tag 前缀都已换成 r4；派生层不再自己发明非 root，删 Yarn/装 CLI 这些安装
+ * 步骤改为显式 `USER root` 做完再显式 `USER node` 恢复基底身份，见 Dockerfile。
  */
-const OBELISK_DOCKERFILE_REVISION = "r1";
+const OBELISK_DOCKERFILE_REVISION = "r2";
 
 /**
  * 派生镜像 tag——base 镜像版本、obelisk 版本、Dockerfile 配方版本都编进去，任一个变了 tag
  * 自然不同（与 remem.ts 的 `REMEM_DOCKER_IMAGE` 同一命名方案）。2026-08-04 从
  * `memorybench-codex-noyarn:0.144.1-r3` 改名为 `memorybench-codex-obelisk`：配方已经从
  * 「只删 Yarn」变成「删 Yarn + 装 obelisk CLI + 非 root」，旧名字不再准确，也不该被新构建
- * 静默覆盖。
+ * 静默覆盖。同日晚些时候基底从 r3 迁到 r4（见上方常量注释），tag 前缀同步更新。
  */
-export const OBELISK_DOCKER_IMAGE = `memorybench-codex-obelisk:0.144.1-r3-${OBELISK_VERSION}-${OBELISK_DOCKERFILE_REVISION}`;
+export const OBELISK_DOCKER_IMAGE = `memorybench-codex-obelisk:0.144.1-r4-${OBELISK_VERSION}-${OBELISK_DOCKERFILE_REVISION}`;
 
 /**
  * 教 agent 用 `obelisk --search` / `--query` 检索历史会话的官方 Skill。仓库是

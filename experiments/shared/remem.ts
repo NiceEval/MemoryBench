@@ -31,7 +31,11 @@ import type {
  * 撞的是同一个更浅、也更好修的原因)。已用同一派生镜像做过反事实验证:补上 `USER node`
  * 后,以 uid 1000 身份跑,sandboxReuse 的复用检查通过,`$HOME` 标记文件确实跨题间 reset
  * 存活。修法见 `codex-remem.Dockerfile` r3(末尾 `USER node`,安装步骤仍在此之前以 root
- * 完成)。
+ * 完成)。基底其后已升级到 `niceeval/codex:0.144.1-r4`(NiceEval commit cbac5659,派生
+ * Dockerfile 同步到 r4):r4 把「收尾声明 `USER node`」收进了基底本身,派生层不用再自己
+ * 发明非 root,但删 Yarn、装 python3、COPY 二进制这些安装步骤都要求 root,派生层因此改为
+ * 显式 `USER root` 做完安装再显式 `USER node` 收尾——这一行现在的语义是恢复基底身份,
+ * 不是发明非 root。
  *
  * 证据来自 `compare/codex-gpt-5.6-luna--remem` 全量结果里的 toggl-cli 链式题,这批题
  * 专门设计成"后面几题的正确答案只能从前面几题建立的约定里回忆,当题不重新说明"
@@ -60,8 +64,9 @@ import type {
  * sandboxReuse 从未真正复用过物理容器,退化成了事实上的 no-memory baseline"。总通过率
  * (32/36)与一个不带记忆的 codex baseline 应该非常接近,唯一的系统性差异就在 toggl-cli 这
  * 三道强制回忆题上。这不是 niceeval 的 bug,是本仓库派生镜像未遵守文档化的执行身份契约——
- * 现已在 Dockerfile r3 修复;用干净 cohort 重新采集有效批次需要用户批准全量重跑成本
- * (2026-08-04 协调决策,见 AGENTS.md「成本纪律」)。
+ * 现已在 Dockerfile r3 修复(基底其后于 2026-08-04 升级到 `niceeval/codex:0.144.1-r4`,
+ * `USER node` 已收进基底本身,派生 Dockerfile 同步到 r4);用干净 cohort 重新采集有效批次
+ * 需要用户批准全量重跑成本(2026-08-04 协调决策,见 AGENTS.md「成本纪律」)。
  *
  * ## 为什么要派生 Docker 镜像(而不是直接在官方 niceeval/codex 镜像上跑)
  *
@@ -105,7 +110,7 @@ import type {
  * 重建镜像:`bash scripts/build-codex-remem-docker-image.sh`。
  */
 
-const CODEX_REMEM_BASE_IMAGE = "niceeval/codex:0.144.1-r3";
+const CODEX_REMEM_BASE_IMAGE = "niceeval/codex:0.144.1-r4";
 
 /**
  * remem crates.io 版本,构建镜像与结果 flags 共用这一处。2026-08-04 GitHub Releases 最新版。
@@ -120,10 +125,13 @@ export const REMEM_VERSION = "0.6.47";
  * Dockerfile 本身的配方版本(与 remem 版本、base 镜像版本正交):派生镜像里"多做了什么"
  * 变了就加一档,不动 REMEM_VERSION。r1 = 只删 Yarn + 装 remem;r2 = 再补上 python3
  * (2026-08-04,见上面文件头注释第 3 点);r3 = 末尾声明 `USER node`(2026-08-04,见下面
- * 「拓扑与记忆态语义」一节根因修正)。tag 里带上它,避免同名 tag 悄悄指向不同内容——
- * 与 scripts/build-codex-remem-docker-image.sh、Dockerfile 头部注释手动保持同步。
+ * 「拓扑与记忆态语义」一节根因修正);r4 = 基底从 `niceeval/codex:0.144.1-r3` 升级到
+ * `0.144.1-r4`(NiceEval commit cbac5659,r4 把 `USER node` 收进了基底本身),派生层不再
+ * 自己发明非 root,改为显式 `USER root` 做完安装步骤再显式 `USER node` 恢复基底身份
+ * (2026-08-04)。tag 里带上它,避免同名 tag 悄悄指向不同内容——与
+ * scripts/build-codex-remem-docker-image.sh、Dockerfile 头部注释手动保持同步。
  */
-const CODEX_REMEM_DOCKERFILE_REVISION = "r3";
+const CODEX_REMEM_DOCKERFILE_REVISION = "r4";
 
 /** 派生镜像 tag——base 镜像版本、remem 版本、Dockerfile 配方版本都编进去,任一个变了 tag 自然不同。 */
 export const REMEM_DOCKER_IMAGE = `memorybench-codex-remem:${CODEX_REMEM_BASE_IMAGE.split(":")[1]}-${REMEM_VERSION}-${CODEX_REMEM_DOCKERFILE_REVISION}`;

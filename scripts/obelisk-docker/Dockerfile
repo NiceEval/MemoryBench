@@ -38,7 +38,7 @@
 # 探测函数（原 obeliskInstall，现改名 obeliskProbe）退化成薄探测，不再做真实安装——与
 # remem 侧 rememPrepare() 同一个思路。
 #
-# 为什么要非 root（2026-08-04）：这份 Dockerfile 此前一直没有声明 `USER`，容器默认以 root
+# 为什么要非 root（2026-08-04，r1）：这份 Dockerfile 此前一直没有声明 `USER`，容器默认以 root
 # 执行。niceeval 的 Docker Sandbox 文档化契约是「非 root 是预制环境自己的义务，不是 runner
 # 的强加」（niceeval docs「Docker：从官方基线继续构建」）：sandboxReuse 的复用安全检查在
 # 检测到 root 身份时拒绝复用，静默把物理沙箱退休、给下一条 Attempt 新建一个全新容器。这正是
@@ -51,13 +51,24 @@
 # shell 命令都以 `; true` 收尾，权限错误不会让 preTeardown/postSetup 报错，只会让归档变成
 # 无声的空操作）。
 #
+# 基底升级到 r4（2026-08-04，r2）：`niceeval/codex:0.144.1-r4`（NiceEval commit cbac5659）
+# 把上面这段「派生层自己补 USER node」的责任收进了基底本身——r4 收尾自带 `USER node`。这不代表
+# 派生层的 USER 声明可以整段删掉：基底切成非 root 之后，下面所有需要写系统目录的步骤（删 Yarn、
+# `npm install -g` 写 `/usr/local/lib/node_modules`、`chown` 归档目录）都要求 root，所以派生层
+# 必须先显式 `USER root` 切回去做完这些安装动作，再显式 `USER node` 收尾——这一行现在的语义是
+# 「root 安装段结束后恢复基底声明的身份」，不再是「这份 Dockerfile 自己发明了非 root」。
+#
 # 重建：pnpm docker:obelisk（见 scripts/build-obelisk-docker-image.sh）。
 
-ARG BASE_IMAGE=niceeval/codex:0.144.1-r3
+ARG BASE_IMAGE=niceeval/codex:0.144.1-r4
 ARG OBELISK_VERSION=0.2.2
 
 FROM ${BASE_IMAGE}
 ARG OBELISK_VERSION
+
+# 基底已经是非 root(USER node),接下来这几步(删 Yarn、npm 全局装 CLI、chown 归档目录)都要写
+# 只有 root 能写的路径,显式切回 root 做完再切回来。
+USER root
 
 RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg \
  && rm -rf /opt/yarn-v1.22.22
@@ -73,7 +84,7 @@ RUN npm install -g "@obelisk-apps/cli@${OBELISK_VERSION}" \
 # postSetup/preTeardown 里以 node 身份读写这里，见上方「为什么要非 root」一段。
 RUN mkdir -p /opt/obelisk-session-archive && chown node:node /opt/obelisk-session-archive
 
-# 声明非 root 执行身份，让 sandboxReuse 的复用安全检查真正生效——见上方「为什么要非 root」。
+# 恢复基底声明的非 root 执行身份，让 sandboxReuse 的复用安全检查真正生效——见上方两段注释。
 # 装的全部内容都在这之前以 root 完成。
 USER node
 RUN obelisk --version
