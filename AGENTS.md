@@ -192,6 +192,11 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 
 已知呈现缺口（**候选上游 feature request**，遇到时直接说「CLI 看不到」，不要退回去读文件）：
 
+- **裸 `show` / `show --exp` 的默认概览只组「最近一批 run」，极易误读成结果丢失**（2026-08-04 实测）：
+  头部 `composed from N runs · Run range …` 是全部提示；run 的记录只含它当时选中的题，最近若只跑过单题验证，
+  默认视图里其余题全部显示 no data、通过率按这个小窗口算——看起来像整个数据集 stale/丢了，实际完整终态
+  都在，要用 `--exp <id> --history` 才能看到。期望：默认概览应组合每题的最新终态（或至少醒目标注
+  「这只是最近窗口的切片，完整数据见 --history」）。
 - **sandboxReuse 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
   `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 sandboxReuse 提速测量时只能靠 `--timing` 里
   install 耗时的阶梯反推是不是同一条 lane，很别扭。
