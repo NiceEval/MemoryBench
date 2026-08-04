@@ -20,7 +20,14 @@
     "timeoutMs": 1800000,
     "maxConcurrency": 1,
     "selectedEvalIds": [
-      "react-datepicker/pr-6167"
+      "react-datepicker/pr-6167",
+      "downshift/pr-1458",
+      "react-datepicker/pr-6073",
+      "react-hook-form/pr-13476",
+      "react-hook-form/pr-13579",
+      "react-tooltip/pr-1282",
+      "react-tooltip/pr-970",
+      "yet-another-react-lightbox/pr-408"
     ],
     "sandboxLayer": {
       "layer": {

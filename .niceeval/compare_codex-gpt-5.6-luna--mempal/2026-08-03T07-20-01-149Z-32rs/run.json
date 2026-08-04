@@ -21,7 +21,10 @@
     "timeoutMs": 1800000,
     "maxConcurrency": 1,
     "selectedEvalIds": [
-      "toggl-cli/02-entry-bill"
+      "toggl-cli/02-entry-bill",
+      "toggl-cli/03-entry-bill-weekly",
+      "toggl-cli/05-entry-invoice",
+      "toggl-cli/06-entry-invoice-monthly"
     ],
     "sandboxLayer": {
       "layer": {

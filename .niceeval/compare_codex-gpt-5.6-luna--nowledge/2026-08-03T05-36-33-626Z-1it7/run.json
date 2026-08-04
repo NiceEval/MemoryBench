@@ -22,7 +22,18 @@
     "timeoutMs": 1800000,
     "maxConcurrency": 1,
     "selectedEvalIds": [
-      "react-datepicker/pr-6172"
+      "react-datepicker/pr-6172",
+      "downshift/pr-1414",
+      "downshift/pr-1456",
+      "downshift/pr-1458",
+      "downshift/pr-1484",
+      "downshift/pr-1587",
+      "downshift/pr-1603",
+      "react-datepicker/pr-6058",
+      "react-datepicker/pr-6073",
+      "react-datepicker/pr-6092",
+      "react-datepicker/pr-6167",
+      "react-datepicker/pr-6168"
     ],
     "sandboxLayer": {
       "layer": {
@@ -164,5 +175,6 @@
   "agent": "codex",
   "model": "gpt-5.6-luna",
   "startedAt": "2026-08-03T05:36:32.275Z",
+  "configHash": "daaf432037ae4945ebb8459af8baeffce7a35c07f39138c22e1aa658368e5ecb",
   "completedAt": "2026-08-03T05:36:33.626Z"
 }

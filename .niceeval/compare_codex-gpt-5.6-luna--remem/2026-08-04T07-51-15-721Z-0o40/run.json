@@ -20,7 +20,14 @@
     "timeoutMs": 1800000,
     "maxConcurrency": 1,
     "selectedEvalIds": [
-      "yet-another-react-lightbox/commit-5578052"
+      "yet-another-react-lightbox/commit-5578052",
+      "downshift/pr-1603",
+      "react-datepicker/pr-6058",
+      "react-hook-form/pr-13515",
+      "react-hook-form/pr-13594",
+      "react-tooltip/pr-1271",
+      "react-tooltip/pr-1275",
+      "react-tooltip/pr-1278"
     ],
     "sandboxLayer": {
       "layer": {
