@@ -136,7 +136,7 @@ export const OBELISK_VERSION = "0.2.2";
  * `FROM` 与这里的 tag 前缀都已换成 r4；派生层不再自己发明非 root，删 Yarn/装 CLI 这些安装
  * 步骤改为显式 `USER root` 做完再显式 `USER node` 恢复基底身份，见 Dockerfile。
  */
-const OBELISK_DOCKERFILE_REVISION = "r2";
+const OBELISK_DOCKERFILE_REVISION = "r3";
 
 /**
  * 派生镜像 tag——base 镜像版本、obelisk 版本、Dockerfile 配方版本都编进去，任一个变了 tag

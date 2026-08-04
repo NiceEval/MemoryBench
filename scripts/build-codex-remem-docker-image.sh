@@ -26,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_DIR="${SCRIPT_DIR}/../experiments/shared/docker"
 BASE_IMAGE="niceeval/codex:0.144.1-r4"
 REMEM_VERSION="0.6.47"
-DOCKERFILE_REVISION="r4"
+DOCKERFILE_REVISION="r5"
 IMAGE_TAG="memorybench-codex-remem:0.144.1-r4-${REMEM_VERSION}-${DOCKERFILE_REVISION}"
 
 echo "==> pulling base image ${BASE_IMAGE}"

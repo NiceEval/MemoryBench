@@ -84,6 +84,13 @@ RUN npm install -g "@obelisk-apps/cli@${OBELISK_VERSION}" \
 # postSetup/preTeardown 里以 node 身份读写这里，见上方「为什么要非 root」一段。
 RUN mkdir -p /opt/obelisk-session-archive && chown node:node /opt/obelisk-session-archive
 
+# Node 工具契约第三条：运行期以 node 身份执行 `corepack enable` / `npm install -g` 要写
+# /usr/local/bin 与 /usr/local/lib/node_modules（react-datepicker 等题的安装步骤用 corepack
+# 装 yarn）。基底 r4 没把这两处交给运行用户，2026-08-04 全量实测切非 root 后 corepack enable
+# 直接 EACCES、整批连环 errored。E2B factory 已归一同款契约，Docker 官方配方缺这一半
+#（候选上游缺口，已上报）；派生层先补，上游修复后此层可删。
+RUN chown -R node:node /usr/local/bin /usr/local/lib/node_modules
+
 # 恢复基底声明的非 root 执行身份，让 sandboxReuse 的复用安全检查真正生效——见上方两段注释。
 # 装的全部内容都在这之前以 root 完成。
 USER node
