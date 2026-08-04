@@ -1,0 +1,404 @@
+{
+  "id": "react-hook-form/pr-13579",
+  "description": "react-hook-form pr-13579: per-event metadata (the field `name`) leaks across subscribe() notifications — a later, unrelated update reports a stale `name` from an earlier clearErrors() call instead of undefined (real react-hook-form issue #13575)",
+  "verdict": "passed",
+  "attempt": 0,
+  "durationMs": 98496,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13579/eval.ts",
+        "line": 79,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-hook-form/pr-13579/eval.ts",
+            "line": 61,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13579/eval.ts",
+        "line": 91,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 42758,
+    "outputTokens": 2609,
+    "cacheReadTokens": 374528,
+    "reasoningTokens": 672,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.0958648,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 654
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 813
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 806,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1467,
+          "durationMs": 276,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1198532
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 1744,
+          "durationMs": 529,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1198255
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 388,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 2274,
+          "durationMs": 387,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1197726
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 244,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 2662,
+          "durationMs": 244,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbjuudz_b62245'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1197338
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 252,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 2906,
+          "durationMs": 252,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1197093
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 93543,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 3161,
+          "durationMs": 2834,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .niceeval-clone\nmv …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1196838
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 5995,
+          "durationMs": 7883,
+          "command": {
+            "display": "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1194004
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 13881,
+          "durationMs": 449,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1186118
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 14330,
+          "durationMs": 79179,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1185670
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 93511,
+          "durationMs": 347,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1106505
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 13880,
+          "durationMs": 79978,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 42758,
+            "outputTokens": 2609,
+            "cacheReadTokens": 374528,
+            "reasoningTokens": 672,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 93864,
+          "durationMs": 292,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1106153
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 94958,
+          "durationMs": 1741,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1105059
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 621,
+      "children": [
+        {
+          "id": "n14",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 1 file",
+          "startOffsetMs": 96701,
+          "durationMs": 621,
+          "children": [
+            {
+              "id": "n15",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 96701,
+              "durationMs": 324,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1103317
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1174
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 675
+    }
+  ],
+  "executionMs": 98496,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i3640rsh4oc4mpbev1szf"
+  },
+  "startedAt": "2026-08-02T08:39:52.561Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-08-02T08-31-57-460Z-ix7j/react-hook-form/pr-13579/a0",
+  "fingerprint": "f023f83e345609c5cd2388da687380121275763c447e158a4560a0cd38ba0856",
+  "configHash": "d68f8e505c22f9e309fa3a1017acbbda7a326b87d6fbbb2d032db694ae79e840",
+  "locator": "@119DAF0SS8C02",
+  "locatorRunId": "c575fd10-7cfd-46b2-a0fb-0c118e766dfb",
+  "acceptedFrom": {
+    "locator": "@1ENYJD4F27WMS",
+    "fingerprint": "4ee1a18bd156dac7c683e7c2305cc5c923b4ca84bbee986d897d7ef807da0c39",
+    "acceptedFingerprint": "f023f83e345609c5cd2388da687380121275763c447e158a4560a0cd38ba0856",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"3\"},\"inst…",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"inst…"
+      },
+      {
+        "selector": "config:sandboxLayer",
+        "from": "{\"layer\":{\"_tag\":\"Template\",\"value\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"templ…",
+        "to": "{\"layer\":{\"_tag\":\"Template\",\"value\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"templ…"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-hook-form/pr-13579\",\"expe…",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-hook-form/pr-13579\",\"expe…"
+      }
+    ]
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "id": "react-tooltip/pr-970",
+  "description": "react-tooltip pr-970: expose the tooltip's actual computed placement so consumers can target it with placement-specific CSS (real react-tooltip feature request)",
+  "verdict": "failed",
+  "attempt": 0,
+  "durationMs": 236420,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-tooltip/pr-970/eval.ts",
+        "line": 106,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-tooltip/pr-970/eval.ts",
+            "line": 80,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-tooltip/pr-970/eval.ts",
+        "line": 120,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…---------------------------------------------------------------------------\"\noutput tail:\n components/TooltipProvider       |   36.19 |      100 |      40 |   36.19 |                                                                                                                                                                                                                                                                                                    \n  TooltipProvider.tsx             |   42.45 |      100 |      50 |   42.45 | 21,24,42-100                                                                                                                                                                                                                                                                                       \n  TooltipWrapper.tsx              |   21.81 |      100 |       0 |   21.81 | 11-53                                                                                                                                                                                                                                                                                              \n  index.ts                        |     100 |      100 |   33.33 |     100 |                                                                                                                                                                                                                                                                                                    \n utils                            |   86.27 |    68.42 |     100 |   86.27 |                                                                                                                                                                                                                                                                                                    \n  compute-positions.ts            |   82.85 |    71.42 |     100 |   82.85 | 59-70                                                                                                                                                                                                                                                                                              \n  debounce.ts                     |   92.59 |       75 |     100 |   92.59 | 20-21                                                                                                                                                                                                                                                                                              \n  use-isomorphic-layout-effect.ts |     100 |        0 |     100 |     100 | 3                                                                                                                                                                                                                                                                                                  \n----------------------------------|---------|----------|---------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 50779,
+    "outputTokens": 6089,
+    "cacheReadTokens": 588800,
+    "reasoningTokens": 3138,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.146193,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 923
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 908
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 31537,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 1833,
+          "durationMs": 31536,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 1835,
+              "durationMs": 1737,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/ReactTooltip/react-tooltip.git .niceeval-clone\nmv .nice…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798166
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "npm",
+              "startOffsetMs": 3572,
+              "durationMs": 29797,
+              "command": {
+                "display": "npm install -g --prefix /usr/local yarn@1.22.22 && yarn install --ignore-scripts --ignore-engines",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1796428
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 1418,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 33369,
+          "durationMs": 266,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1766631
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 33636,
+          "durationMs": 1151,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1766364
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 2447,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 34787,
+          "durationMs": 252,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1765213
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 35039,
+          "durationMs": 2195,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1764961
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 258,
+      "children": [
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 37235,
+          "durationMs": 257,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbw6lih_8enaac'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1762765
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 219,
+      "children": [
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 37492,
+          "durationMs": 219,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1762508
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 196606,
+      "children": [
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 37717,
+          "durationMs": 314,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1762283
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 38033,
+          "durationMs": 183690,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1761967
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 221730,
+          "durationMs": 259,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1578270
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 37717,
+          "durationMs": 184272,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 50779,
+            "outputTokens": 6089,
+            "cacheReadTokens": 588800,
+            "reasoningTokens": 3138,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 221992,
+          "durationMs": 260,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1578007
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 223295,
+          "durationMs": 11022,
+          "failed": true,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1576704
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 586,
+      "children": [
+        {
+          "id": "n16",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 5 files",
+          "startOffsetMs": 234317,
+          "durationMs": 587,
+          "children": [
+            {
+              "id": "n17",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 234317,
+              "durationMs": 315,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1565681
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 2
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1514
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 490
+    }
+  ],
+  "executionMs": 236420,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i0petqzieeud8v9vyxgj8"
+  },
+  "startedAt": "2026-08-02T14:24:21.749Z",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-08-02T13-49-32-205Z-v9ha/react-tooltip/pr-970/a0",
+  "fingerprint": "079f55b86d951716f2d6db5fc91667c1cb97bc8d9967b05aad29b1a4b16f0a3f",
+  "configHash": "d68f8e505c22f9e309fa3a1017acbbda7a326b87d6fbbb2d032db694ae79e840",
+  "locator": "@1KYTGVSZVWFYY",
+  "locatorRunId": "3f4cce1e-4410-4356-b325-3641616317fc",
+  "acceptedFrom": {
+    "locator": "@1WNFDV3BYM25S",
+    "fingerprint": "31d838855d5b8fa5655331f2109f94e96d64b3c372c04792aa817e3b2281a9b9",
+    "acceptedFingerprint": "079f55b86d951716f2d6db5fc91667c1cb97bc8d9967b05aad29b1a4b16f0a3f",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"3\"},\"inst…",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"inst…"
+      },
+      {
+        "selector": "config:sandboxLayer",
+        "from": "{\"layer\":{\"_tag\":\"Template\",\"value\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"templ…",
+        "to": "{\"layer\":{\"_tag\":\"Template\",\"value\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"templ…"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-tooltip/pr-970\",\"experime…",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-tooltip/pr-970\",\"experime…"
+      }
+    ]
+  }
+}

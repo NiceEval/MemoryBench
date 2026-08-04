@@ -1,0 +1,404 @@
+{
+  "id": "downshift/pr-1458",
+  "description": "downshift pr-1458: only react to Backspace/Delete on a selected item when that item is actually focused (real downshift issue)",
+  "verdict": "passed",
+  "attempt": 0,
+  "durationMs": 210594,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/downshift/pr-1458/eval.ts",
+        "line": 96,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/downshift/pr-1458/eval.ts",
+            "line": 72,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/downshift/pr-1458/eval.ts",
+        "line": 114,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 44453,
+    "outputTokens": 3502,
+    "cacheReadTokens": 425472,
+    "reasoningTokens": 1294,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.10801220000000002,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 2256
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1259
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 1834,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 3519,
+          "durationMs": 282,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1196481
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 3805,
+          "durationMs": 1543,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1196195
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 360,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 5350,
+          "durationMs": 359,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1194650
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 300,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 5710,
+          "durationMs": 299,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbjgmnw_34ps10'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1194290
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 319,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 6009,
+          "durationMs": 319,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1193991
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 201739,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 6334,
+          "durationMs": 1363,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/downshift-js/downshift.git .niceeval-clone\nmv .niceeval…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1193667
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 7697,
+          "durationMs": 94811,
+          "command": {
+            "display": "set -euo pipefail\nCYPRESS_INSTALL_BINARY=0 npm install\nnpm install --save-dev @babel/plugin-proposal-private-property-in-object@7.21.11 @babel/plugin-proposal-…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1192303
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 102513,
+          "durationMs": 348,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1097488
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 102861,
+          "durationMs": 99531,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1097139
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 202397,
+          "durationMs": 258,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 997605
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 102513,
+          "durationMs": 100142,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 44453,
+            "outputTokens": 3502,
+            "cacheReadTokens": 425472,
+            "reasoningTokens": 1294,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 202656,
+          "durationMs": 352,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 997345
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 204084,
+          "durationMs": 3983,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 995917
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 567,
+      "children": [
+        {
+          "id": "n14",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 208067,
+          "durationMs": 567,
+          "children": [
+            {
+              "id": "n15",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 208067,
+              "durationMs": 275,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 991934
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 1
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1959
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 589
+    }
+  ],
+  "executionMs": 210594,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "iadiwfdqjf0wxs8vm51zq"
+  },
+  "startedAt": "2026-08-02T08:28:46.318Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-08-02T08-31-57-460Z-ix7j/downshift/pr-1458/a0",
+  "fingerprint": "029aa520658754aa48c48ed4598fa4e1d48fba9c744fd1d481814f458124dee9",
+  "configHash": "d68f8e505c22f9e309fa3a1017acbbda7a326b87d6fbbb2d032db694ae79e840",
+  "locator": "@12AFKPW5TRWH0",
+  "locatorRunId": "fb23087f-e12a-4f08-b7dc-7e8c0cd32447",
+  "acceptedFrom": {
+    "locator": "@102SHCHS1PKGP",
+    "fingerprint": "0b22142c509a921e11f3ce7aa60f1bba36a6aac4b5bc764a0ff31ad71b6e20e6",
+    "acceptedFingerprint": "029aa520658754aa48c48ed4598fa4e1d48fba9c744fd1d481814f458124dee9",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"3\"},\"inst…",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"inst…"
+      },
+      {
+        "selector": "config:sandboxLayer",
+        "from": "{\"layer\":{\"_tag\":\"Template\",\"value\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"templ…",
+        "to": "{\"layer\":{\"_tag\":\"Template\",\"value\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"templ…"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"downshift/pr-1458\",\"experimentI…",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"downshift/pr-1458\",\"experimentI…"
+      }
+    ]
+  }
+}
