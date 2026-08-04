@@ -17,15 +17,25 @@ import type {
  * 远程服务器,跨 run/跨实验天然共享)和 mempal(host 侧 tgz checkpoint,显式跨 run 回存)
  * 都不同,本应是三种记忆条件里状态生命周期最短的一种。
  *
- * **2026-08-04 实测推翻了这个设计意图的前半句。** niceeval 文档承诺"题间 reset 不是整台
- * Sandbox 归零……`$HOME` 等 workdir 外状态会保留",但在 `dockerImageSandbox` +
- * `sandboxReuse: true` 这个组合下,codexAgent 的 postSetup/preTeardown(Agent 级 Hook,
- * 每条 Attempt 一次)对 `$HOME` 的写入**不会存活到下一条 Attempt**——这与并行的 obelisk
- * 记忆条件独立验证的机制性结论一致(obelisk 的证据覆盖面更广:Agent 级钩子对 `$HOME` 和
- * `/opt` 的写入都不存活,只有 Sandbox 级 `.setup()` 建立的基线会保留)。
+ * **2026-08-04 实测推翻了这个设计意图的前半句,但根因不是 niceeval 违反自己的文档承诺。**
+ * niceeval 文档写"题间 reset 不是整台 Sandbox 归零……`$HOME` 等 workdir 外状态会保留",实测
+ * 在 `dockerImageSandbox` + `sandboxReuse: true` 这个组合下,codexAgent 的
+ * postSetup/preTeardown(Agent 级 Hook,每条 Attempt 一次)对 `$HOME` 的写入确实**不会
+ * 存活到下一条 Attempt**——但**根因已定案:本仓库这份派生镜像当时没有声明 `USER`,
+ * `docker run` 默认以 root 执行,而 niceeval Docker Sandbox 的文档化契约是「非 root 是
+ * 预制环境自己的义务,不是 runner 的强加」(niceeval docs「Docker：从官方基线继续构建」)——
+ * sandboxReuse 的复用安全检查在检测到 root 身份时拒绝复用,静默把物理沙箱退休、给下一条
+ * Attempt 新建一个全新容器**。每条 Attempt 压根没有分到同一个物理容器,`$HOME` 自然每次
+ * 都是空的——不是"Agent 级钩子的文件系统写入不共享"这个更深的机制问题(先前版本的这段注释
+ * 与并行的 obelisk 记忆条件的排查结论互相印证过这个更悲观的猜测,现已被推翻:两个记忆条件
+ * 撞的是同一个更浅、也更好修的原因)。已用同一派生镜像做过反事实验证:补上 `USER node`
+ * 后,以 uid 1000 身份跑,sandboxReuse 的复用检查通过,`$HOME` 标记文件确实跨题间 reset
+ * 存活。修法见 `codex-remem.Dockerfile` r3(末尾 `USER node`,安装步骤仍在此之前以 root
+ * 完成)。
  *
  * 证据来自 `compare/codex-gpt-5.6-luna--remem` 全量结果里的 toggl-cli 链式题,这批题
- * 专门设计成"后面几题的正确答案只能从前面几题建立的约定里回忆,当题不重新说明":
+ * 专门设计成"后面几题的正确答案只能从前面几题建立的约定里回忆,当题不重新说明"
+ * (这批实测记录本身仍然准确,只是下面的因果解释已按上一段更正):
  *
  * | eval | 是否需要回忆前题约定 | 结果 |
  * |---|---|---|
@@ -40,16 +50,18 @@ import type {
  * 不是部分退化,是彻底没有前题信息。postSetup 的三件自查(hooks.json 双 hook、
  * mcp_servers.remem)每条 Attempt 都验证通过,`remem doctor`/`remem status` 结构性检查
  * 也从没报过错,说明**接线本身没问题**,问题出在 `$HOME/.remem/remem.db` 这份状态没能
- * 跨 Attempt 存活——大概率每条 Attempt 拿到的都是一个全新、空的 `$HOME`,`remem install`
- * 每次都在从零建库,只是碰巧建库耗时和"检测到已存在"耗时差不多(实测都在 900ms 上下),
- * 光看 postSetup 的执行时长完全看不出区别,这也是这个问题直到跑链式题才暴露的原因。
+ * 跨 Attempt 存活——每条 Attempt 拿到的都是一个全新、空的 `$HOME`(全新容器,不是同一容器
+ * 被清空),`remem install` 每次都在从零建库,只是碰巧建库耗时和"检测到已存在"耗时差不多
+ * (实测都在 900ms 上下),光看 postSetup 的执行时长完全看不出区别,这也是这个问题直到跑
+ * 链式题才暴露的原因。
  *
  * **因此这批 `compare/codex-gpt-5.6-luna--remem` 结果不能读成"remem 记忆条件的真实效果"**,
- * 只能读成"remem 装对了、hook/MCP 真实生效,但在当前 niceeval docker sandboxReuse 实现下
- * 退化成了事实上的 no-memory baseline"。总通过率(32/36)与一个不带记忆的 codex baseline
- * 应该非常接近,唯一的系统性差异就在 toggl-cli 这三道强制回忆题上。这不是 remem 本身的
- * bug,是 niceeval `dockerImageSandbox` + `sandboxReuse` 的 Agent 级 Hook 持久化承诺与
- * 实测行为不符——候选上游 bug report,不在本仓库范围内修。
+ * 只能读成"remem 装对了、hook/MCP 真实生效,但当时派生镜像没声明非 root 身份,导致
+ * sandboxReuse 从未真正复用过物理容器,退化成了事实上的 no-memory baseline"。总通过率
+ * (32/36)与一个不带记忆的 codex baseline 应该非常接近,唯一的系统性差异就在 toggl-cli 这
+ * 三道强制回忆题上。这不是 niceeval 的 bug,是本仓库派生镜像未遵守文档化的执行身份契约——
+ * 现已在 Dockerfile r3 修复;用干净 cohort 重新采集有效批次需要用户批准全量重跑成本
+ * (2026-08-04 协调决策,见 AGENTS.md「成本纪律」)。
  *
  * ## 为什么要派生 Docker 镜像(而不是直接在官方 niceeval/codex 镜像上跑)
  *
@@ -107,10 +119,11 @@ export const REMEM_VERSION = "0.6.47";
 /**
  * Dockerfile 本身的配方版本(与 remem 版本、base 镜像版本正交):派生镜像里"多做了什么"
  * 变了就加一档,不动 REMEM_VERSION。r1 = 只删 Yarn + 装 remem;r2 = 再补上 python3
- * (2026-08-04,见上面文件头注释第 3 点)。tag 里带上它,避免同名 tag 悄悄指向不同内容——
+ * (2026-08-04,见上面文件头注释第 3 点);r3 = 末尾声明 `USER node`(2026-08-04,见下面
+ * 「拓扑与记忆态语义」一节根因修正)。tag 里带上它,避免同名 tag 悄悄指向不同内容——
  * 与 scripts/build-codex-remem-docker-image.sh、Dockerfile 头部注释手动保持同步。
  */
-const CODEX_REMEM_DOCKERFILE_REVISION = "r2";
+const CODEX_REMEM_DOCKERFILE_REVISION = "r3";
 
 /** 派生镜像 tag——base 镜像版本、remem 版本、Dockerfile 配方版本都编进去,任一个变了 tag 自然不同。 */
 export const REMEM_DOCKER_IMAGE = `memorybench-codex-remem:${CODEX_REMEM_BASE_IMAGE.split(":")[1]}-${REMEM_VERSION}-${CODEX_REMEM_DOCKERFILE_REVISION}`;

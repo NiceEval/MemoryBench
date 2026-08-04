@@ -1,5 +1,7 @@
-# 从 NiceEval 官方维护的 codex Docker 镜像派生，只删掉一样东西：预装的 Yarn。
-#
+# 从 NiceEval 官方维护的 codex Docker 镜像派生：删掉预装的 Yarn、把 obelisk CLI 烘进镜像、
+# 声明非 root 执行身份。镜像名从早期的 memorybench-codex-noyarn 改成 memorybench-codex-obelisk
+# ——它已经不只是「去 Yarn」，而是 obelisk 记忆条件专属的预制环境，见下方各段。
+
 # 背景（2026-08-04 冒烟 compare/codex-gpt-5.6-luna--obelisk 时发现）：obelisk CLI 要求
 # Node >=22.13，所以这个记忆条件不能像 mempal/nowledge 那样走 e2bSandbox +
 # NICEEVAL_CODEX_E2B_TEMPLATE（该模板 Node 20.9.0）——只能选 dockerImageSandbox +
@@ -24,9 +26,54 @@
 # 上游把官方镜像的这个不一致修好后，直接改回引用 niceeval 导出的镜像常量，删掉这个 Dockerfile
 # 和对应构建脚本。
 #
+# 为什么把 `npm install -g @obelisk-apps/cli` 从运行时挪进构建期（2026-08-04，与下面「非 root」
+# 一起改）：obelisk CLI 原本由 experiments/shared/obelisk.ts 的 obeliskInstall() 在 Sandbox
+# 级 `.setup()` 里运行时安装，写 `/usr/local/lib/node_modules` 和 `/usr/local/bin`。这份
+# Dockerfile 一旦在收尾声明 `USER node`（见下一段），容器默认执行身份就变成非 root，`node`
+# 用户对 `/usr/local` 下这两个目录都没有写权限，运行时的 `npm install -g` 会直接 permission
+# denied，整个 Sandbox 级 setup 报错。remem 记忆条件的二进制本来就烘进镜像、构建期以 root
+# 完成，不受影响；obelisk 要达到同样的非 root 效果，唯一办法是把它的 CLI 安装也搬进构建期
+# （与上游 Codex/Claude Code 官方镜像同款模式，niceeval commit cbac5659）：装的时候还是 root
+# （FROM 之后没有 USER 声明，Docker 默认 root），装完再声明 `USER node`。运行时 obelisk.ts 的
+# 探测函数（原 obeliskInstall，现改名 obeliskProbe）退化成薄探测，不再做真实安装——与
+# remem 侧 rememPrepare() 同一个思路。
+#
+# 为什么要非 root（2026-08-04）：这份 Dockerfile 此前一直没有声明 `USER`，容器默认以 root
+# 执行。niceeval 的 Docker Sandbox 文档化契约是「非 root 是预制环境自己的义务，不是 runner
+# 的强加」（niceeval docs「Docker：从官方基线继续构建」）：sandboxReuse 的复用安全检查在
+# 检测到 root 身份时拒绝复用，静默把物理沙箱退休、给下一条 Attempt 新建一个全新容器。这正是
+# experiments/shared/obelisk.ts 文件头「仍未解决」段记录的现象（agent 级 postSetup/preTeardown
+# 钩子跨 Attempt 不共享任何写入，`$HOME` 与 `/opt` 都一样）的真实根因——不是钩子本身不共享
+# 文件系统写入，是每条 Attempt 压根没有分到同一个物理容器。已用同一派生镜像做过反事实验证：
+# 补上 `USER node` 后，以 uid 1000 身份跑，sandboxReuse 的复用检查通过，标记文件跨题间 reset
+# 存活。`obeliskArchiveSessions()`/`obeliskRestoreSessions()` 用到的 `/opt/obelisk-session-archive`
+# 需要提前 `chown` 给 `node`，否则运行时 `mkdir -p`/`cp` 会因权限不足静默失败（这两个函数的
+# shell 命令都以 `; true` 收尾，权限错误不会让 preTeardown/postSetup 报错，只会让归档变成
+# 无声的空操作）。
+#
 # 重建：pnpm docker:obelisk（见 scripts/build-obelisk-docker-image.sh）。
 
-FROM niceeval/codex:0.144.1-r3
+ARG BASE_IMAGE=niceeval/codex:0.144.1-r3
+ARG OBELISK_VERSION=0.2.2
+
+FROM ${BASE_IMAGE}
+ARG OBELISK_VERSION
 
 RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg \
  && rm -rf /opt/yarn-v1.22.22
+
+# 烘 obelisk CLI 进镜像（root，构建期）。额外软链一份到 /usr/bin：codex 的 agent 命令子进程
+# PATH 不含 /usr/local/bin（见 experiments/shared/obelisk.ts 文件头「已修：agent 命令子进程
+# PATH 缺口」的完整调查记录），只有 /usr/bin 实测一定能解析到。
+RUN npm install -g "@obelisk-apps/cli@${OBELISK_VERSION}" \
+ && ln -sf "$(command -v obelisk)" /usr/bin/obelisk \
+ && /usr/bin/obelisk --version | grep -Fx "${OBELISK_VERSION}"
+
+# 会话归档目录预先建好并交给 node：obeliskArchiveSessions()/obeliskRestoreSessions() 在
+# postSetup/preTeardown 里以 node 身份读写这里，见上方「为什么要非 root」一段。
+RUN mkdir -p /opt/obelisk-session-archive && chown node:node /opt/obelisk-session-archive
+
+# 声明非 root 执行身份，让 sandboxReuse 的复用安全检查真正生效——见上方「为什么要非 root」。
+# 装的全部内容都在这之前以 root 完成。
+USER node
+RUN obelisk --version

@@ -7,14 +7,19 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
  * 配套的 Claude/Codex 通用 Skill 教 agent 写小段 JS 查询脚本、经 `obelisk --query <file>`
  * 或 `obelisk --search "text"` 检索自己的历史会话。
  *
- * 记忆语义(v1):状态本应就是 `$HOME` 下的 `~/.codex/sessions` + `~/.obelisk`，但实测
- * codex adapter 的 per-attempt agent setup 会把整个 `$HOME` 重置（文件头「已修:$HOME 整个
- * 不跨 Attempt 原生持续」段有完整调查记录，包括先按"只有 sessions 被清"接了一版、被冒烟证伪
- * 的过程），所以实际状态落在 `obeliskArchiveSessions()` / `obeliskRestoreSessions()` 维护的
- * `/opt/obelisk-session-archive`——这个目录特意选在 `$HOME` 之外，同一台 sandboxReuse 复用的
- * 物理沙箱内，`preTeardown` 把每条 Attempt 写下的会话搬进这个 codex 不会碰、也不受 `$HOME`
- * 重置影响的目录，下一条 Attempt 的 `postSetup` 再搬回新 `~/.codex/sessions`。本条件**不做
- * 跨 run 回存**——每次全新 Invocation 从零开始，归档目录本身也在物理沙箱销毁时一并消失，没有
+ * 记忆语义(v1):状态本应就是 `$HOME` 下的 `~/.codex/sessions` + `~/.obelisk`，2026-08-04
+ * 冒烟时一度实测「codex adapter 的 per-attempt agent setup 会把整个 `$HOME` 重置」，据此把
+ * 实际状态落到了 `obeliskArchiveSessions()` / `obeliskRestoreSessions()` 维护的
+ * `/opt/obelisk-session-archive`——这个目录特意选在 `$HOME` 之外。**这个前提本身已被同一天
+ * 晚些时候的排查推翻,见文件头「已修:执行身份根因修正」段:`$HOME` 从未被"重置",是每条
+ * Attempt 压根没有分到同一个物理容器,`$HOME` 自然每次都是全新的。** 保留 `/opt` 归档这层
+ * 设计不是因为它绕开了一个真实的 `$HOME` 重置行为,而是因为 sandboxReuse 复用一旦真正生效
+ * (本仓库已修复,见下),`$HOME` 就会跨 Attempt 天然存活,`/opt` 归档反而是不必要的额外
+ * 复杂度——**但目前仍保留这套 `/opt` 机制**,因为 `preTeardown`/`postSetup` 对 `$HOME` 的
+ * 读写时序仍需要一次真实的多 Attempt 复用批次验证,归档层作为不依赖这次验证结论的后备路径,
+ * 拆除留到那次验证之后。`preTeardown` 把每条 Attempt 写下的会话搬进 `/opt` 下这个 codex 不会
+ * 碰的目录，下一条 Attempt 的 `postSetup` 再搬回新 `~/.codex/sessions`。本条件**不做跨 run
+ * 回存**——每次全新 Invocation 从零开始，归档目录本身也在物理沙箱销毁时一并消失，没有
  * mempal 那种 host 侧 checkpoint tgz，也没有 nowledge 那种远程库；`maxConcurrency: 1` 保证
  * 同一物理沙箱内题目严格串行，归档到的会话历史顺序即真实作答顺序。
  *
@@ -35,7 +40,7 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
  *
  * **已修（2026-08-04，agent 命令子进程 PATH 缺口）：** 冒烟 react-tooltip/ 时发现 agent
  * 自己调用 `obelisk --search` / `--query` 会报 `command not found`，尽管 sandbox 级 setup
- * 里 `obeliskInstall()` 的验证步骤（同样通过 `sb.runShell`）能正常找到并跑通
+ * 里当时的安装步骤（现已改名 `obeliskProbe()`，同样通过 `sb.runShell`）能正常找到并跑通
  * `/usr/local/bin/obelisk`。第一次尝试用 `codexAgent({ env: { PATH: … } })` 把镜像默认 PATH
  * 显式传回去（niceeval docs「codex」节:「Agent 进程环境:env 会注入每次 codex exec …
  * 命令子进程都会继承」）——**重跑验证后这个办法没用，agent 子进程还是找不到 `/usr/local/bin`
@@ -65,57 +70,52 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
  * 上游把官方镜像这个不一致修好后，把下面 `OBELISK_DOCKER_IMAGE` 改回引用 niceeval 导出的镜像
  * 常量，删掉 `scripts/obelisk-docker/` 和构建脚本。
  *
- * **已修（2026-08-04，`$HOME` 整个不跨 Attempt 原生持续；只经验定位，未读 niceeval 源码）：**
- * react-tooltip/ 复用同一条 6-Attempt 串行 lane 时发现，第 5 条（pr-1282）agent 自己跑的
- * `obelisk --query` 返回 `overview({ limit: 6 })` 的 `session_total: 1`——只看到它自己这一条
- * 会话，前面 4 条已完成、每条跑了几分钟的 Attempt 一条都不在。经验定位分三步（不读源码，只观察
- * 沙箱运行时状态）：
+ * **已修（2026-08-04，执行身份根因修正——上面两段「$HOME 重置」「archive/restore 不生效」
+ * 的因果解释均已被推翻，原始经验记录保留，结论重写）：** react-tooltip/ 复用同一条
+ * 6-Attempt 串行 lane 时最初发现，第 5 条（pr-1282）agent 自己跑的 `obelisk --query` 返回
+ * `overview({ limit: 6 })` 的 `session_total: 1`——只看到它自己这一条会话，前面 4 条已完成、
+ * 每条跑了几分钟的 Attempt 一条都不在。经验定位分几步（不读源码，只观察沙箱运行时状态）：
  *
  * 1. 给 `codexAgent({ preTeardown })` 挂探针，agent 回合结束后跑
  *    `find "$HOME/.codex/sessions"` + `echo HOME=$HOME`，结果用 `ctx.diagnostic(...)` 报告——
- *    **这条通道能在 `niceeval show @<locator>`（不带任何 evidence flag 的裸 overview）里看到**，
- *    显示为 `! agent.teardown · N warnings` 加完整 message 正文。两条连续 Attempt 的探针都显示
- *    `HOME=/root`（同一路径，物理沙箱确实复用），但 `~/.codex/sessions` 下只有当前 Attempt
- *    自己的 rollout 文件——上一条 Attempt 几分钟前写下的那份已经不在了。
- * 2. 用 `codexAgent({ postSetup })` 探针（`ctx.facts` 记会话数）确认：**清空发生在 postSetup
- *    有机会跑之前**——第 2 条 Attempt 的 `postSetup` 一开始就已经看到 `~/.codex/sessions` 是空
- *    的，早于任何可见的 shell 命令。
- * 3. 先按「只有 `.codex/sessions` 被清」的假设接了一版方案——`preTeardown` 把会话复制进
- *    `$HOME/.obelisk-session-archive`（还在 `$HOME` 下，只是 `.codex` 之外），`postSetup`
- *    再搬回来——冒烟直接证伪：下一条 Attempt 的 `postSetup` 探针（先 `find` 归档目录本身再
- *    `cp`）显示 `find: '/root/.obelisk-session-archive': No such file or directory`，**归档
- *    目录本身也没能跨 Attempt 留住**。说明不是「`.codex/sessions` 被单独清了」这么窄，是
- *    **整个 `$HOME` 在 codex adapter 的 per-attempt agent setup 里被重置**——与 niceeval docs
- *    明确写的「$HOME...都活过题间重置」这一通用 sandboxReuse 承诺矛盾，是 codex adapter 自己的
- *    行为，且没有任何可见 shell 命令对应这一步。已作为候选上游 feature request 上报（codex
- *    adapter 对 `$HOME` 的隔离语义与 niceeval 的 sandboxReuse 通用文档不一致，未见任何地方
- *    说明，记忆类实验需要一个显式的、经过文档化的会话/HOME 持久化开关）。
+ *    两条连续 Attempt 的探针都显示 `HOME=/root`（同一路径），但 `~/.codex/sessions` 下只有
+ *    当前 Attempt 自己的 rollout 文件——上一条 Attempt 几分钟前写下的那份已经不在了。
+ * 2. 用 `codexAgent({ postSetup })` 探针（`ctx.facts` 记会话数）确认：第 2 条 Attempt 的
+ *    `postSetup` 一开始就已经看到 `~/.codex/sessions` 是空的，早于任何可见的 shell 命令。
+ * 3. 按「归档目录挪到 `$HOME` 之外的 `/opt`」接了一版方案冒烟，同样落空：`preTeardown` 里
+ *    单纯 `date +%s%N >> /opt/obelisk-marker.txt` 写一个标记文件，下一条 Attempt 的
+ *    `postSetup` 用 `cat` 读同一路径，报 `No such file or directory`——`/opt` 与 `$HOME`
+ *    表现完全一致。
  *
- * **仍未解决(2026-08-04，比「只有 $HOME 重置」更深，archive/restore 接线目前不生效)：**
- * 先按「归档目录挪到 `$HOME` 之外的 `/opt`」接了一版（`/usr/local`、`/usr/bin` ——
- * `obeliskInstall()` 装 CLI 的落点——已反复确认跨 Attempt 存活，`npm install -g` 与符号链接
- * 从未在后续 Attempt 的 `agent.setup` 里重跑，`/opt` 是同一文件系统区域、root 天然可写）。
- * 冒烟直接证伪：pr-1271（lane 里第 2 条）的 `postSetup` fact `obelisk.codex_sessions_at_setup`
- * 仍是 0，`/opt/obelisk-session-archive` 在 pr-1271 的 `postSetup` 里同样查不到 pr-1269
- * 归档过的内容。用最简形式排除 cp/find 复杂度干扰后结论更狠：`preTeardown` 里单纯
- * `date +%s%N >> /opt/obelisk-marker.txt` 写一个标记文件，下一条 Attempt 的 `postSetup`
- * 用 `cat` 读同一路径，两次独立冒烟都报 `No such file or directory`——**agent 级
- * `postSetup`/`preTeardown` 钩子之间，哪怕报告的是同一个 `$HOME=/root`、物理沙箱确实复用，
- * 跨 Attempt 也完全不共享任何写入，不论路径在 `$HOME` 内还是 `$HOME` 外的 `/opt`**。这与
- * niceeval docs「$HOME、/tmp 等 workdir 外状态...会保留」的通用 sandboxReuse 承诺直接矛盾，
- * 且矛盾的范围比最初判断的更大——不是「codex 清空了 `~/.codex/sessions`」这么局部，是
- * agent 级 hook 每条 Attempt 拿到的非 workdir 文件系统视图本身就不共享历史写入（只有
- * Sandbox 级 `.setup()` 建立的基线——即 `obeliskInstall()` 装的 CLI——例外地持续可见）。
- * 这已经超出「不读源码只观察运行时」这条约束能继续往下查的范围：不知道是不是有意为之的
- * per-attempt 隔离设计（比如为了让每条 codex Attempt 的执行环境互不污染，属于正常 eval
- * 场景该有的安全带），只是没在通用 sandboxReuse 文档里点出 codex adapter 这层更强的隔离——
- * 已作为候选上游 feature request 上报（文档缺失：agent 级 postSetup/preTeardown 钩子在
- * codex adapter 下的跨 Attempt 文件系统可见性范围没有说明，与 Sandbox 级 setup/teardown
- * 建立的基线是否共享同一视图也没有说明；记忆类实验需要一个文档化的、明确保证可用的跨
- * Attempt 状态存取点）。`obeliskArchiveSessions()` / `obeliskRestoreSessions()` 两个函数
- * 保留在代码里（逻辑本身没问题，`ctx.facts` 也确认能在裸 `niceeval show @<locator>` 概览的
- * `facts:` 行里看到——这条呈现缺口的纠正是这轮排查唯一确定拿到的正向结果），但**目前不产生
- * 跨 Attempt 记忆效果**，是这个记忆条件当前最大的、未解决的缺口。
+ * 当时（步骤 1-3 发生时）把这一组现象解释成「agent 级 `postSetup`/`preTeardown` 钩子之间，
+ * 哪怕报告的是同一个 `$HOME=/root`，跨 Attempt 也完全不共享任何文件系统写入」，并作为候选
+ * 上游 feature request 上报（怀疑是 codex adapter 自己更强的 per-attempt 隔离，且没有文档
+ * 说明）。**这个解释是错的，已被同一天晚些时候的排查推翻。** 真正的根因浅得多、也好修得多：
+ * 这份派生镜像当时没有声明 `USER`，`docker run` 默认以 root 执行；niceeval 的 Docker Sandbox
+ * 文档化契约是「非 root 是预制环境自己的义务，不是 runner 的强加」（niceeval docs「Docker：
+ * 从官方基线继续构建」）——sandboxReuse 的复用安全检查在检测到 root 身份时拒绝复用，静默把
+ * 物理沙箱退休、给下一条 Attempt 新建一个全新容器。步骤 1-3 观测到的每一个现象都能被这一个
+ * 原因完整解释：`$HOME=/root` 在两条 Attempt 里"看起来一样"只是因为两个全新容器都用同一个
+ * 默认 `$HOME` 路径，不是同一个容器；`~/.codex/sessions`、`/opt` 下的任何写入"消失"，是因为
+ * 下一条 Attempt 压根不是同一台物理机器，不是"钩子间不共享写入"这个更深、更奇怪的机制。
+ * 用同一派生镜像做过反事实验证：补上 `USER node` 后，以 uid 1000 身份跑，sandboxReuse 的
+ * 复用检查通过，标记文件确实跨题间 reset 存活。
+ *
+ * 修法（`scripts/obelisk-docker/Dockerfile`）：`npm install -g @obelisk-apps/cli` 从运行时
+ * `.setup()` 挪进构建期（root 执行，见 `obeliskProbe()` 的文档），末尾声明 `USER node`；
+ * `obeliskArchiveSessions()`/`obeliskRestoreSessions()` 用到的 `/opt/obelisk-session-archive`
+ * 额外在构建期 `chown` 给 `node`——这两个函数的 shell 命令都以 `; true` 收尾，目录不可写时
+ * `mkdir -p`/`cp` 会静默失败而不报错，之前一直没暴露是因为反正整个复用机制都没生效，这层
+ * 权限问题被更大的问题掩盖了。
+ *
+ * `obeliskArchiveSessions()`/`obeliskRestoreSessions()` 两个函数本身逻辑没有变，`ctx.facts`
+ * 也确认能在裸 `niceeval show @<locator>` 概览的 `facts:` 行里看到（这条呈现缺口的纠正是
+ * 最初那轮排查唯一确定拿到的正向结果，仍然成立）。**这份修复目前只验证到"容器身份非 root +
+ * sandboxReuse 复用检查通过 + 标记文件跨题间 reset 存活"这一层（零成本，不需要真实模型调用）；
+ * 完整的多 Attempt archive/restore 流程——即这套机制真的能让后一条 Attempt 的 agent 查到
+ * 前面几条 Attempt 的会话——还没有用一次真实的 codex exec 批次验证过，需要用户批准全量重跑
+ * 成本后再采集（2026-08-04 协调决策，见 AGENTS.md「成本纪律」）。** 在那次验证之前，这套
+ * 机制"预期能用"，不是"已证实能用"。
  */
 
 /** npm registry 上 `@obelisk-apps/cli` 当前最新版本；建镜像安装步骤与结果 flags 共用这一处。 */
@@ -123,16 +123,27 @@ export const OBELISK_VERSION = "0.2.2";
 
 /**
  * 本地派生镜像：`scripts/obelisk-docker/Dockerfile` 从官方 `niceeval/codex:0.144.1-r3`
- * 只删掉预装 Yarn（其余原样继承），`pnpm docker:obelisk` 构建。Tag 把 base 版本原样带过来，
- * base 换版本时这里与构建脚本要同步改，旧 tag 不会被新构建覆盖。只在本机可见，不 push 到
- * 任何 registry——多机/CI 跑这个实验前需要各自先 `pnpm docker:obelisk` 一次。
+ * 删掉预装 Yarn、把 obelisk CLI 烘进镜像、末尾声明 `USER node`，`pnpm docker:obelisk` 构建。
+ * 为什么要非 root、为什么要把 CLI 安装从运行时挪进构建期，完整背景见 Dockerfile 文件头
+ * 注释与下面「已修：agent 级钩子跨 Attempt 状态不存活」一节——核心结论是：这不是
+ * niceeval 的 bug，是本仓库派生镜像此前没有声明执行身份，导致 sandboxReuse 的复用安全
+ * 检查拒绝复用、静默把物理沙箱退休、给下一条 Attempt 新建一个全新容器。
  *
  * 选官方 `0.144.1-r3` 而不是安装版 niceeval 0.4.6 导出的 `NICEEVAL_CODEX_DOCKER_IMAGE`
  * 常量（指向 `0.144.1-r4`）是因为 2026-08-04 实测 `docker manifest inspect` 该 tag 在
  * Docker Hub 上 404，只有 `0.144.1-r3` 已发布——已作为上游 bug 一并上报。上游发布 r4 后，
  * 派生镜像的 `FROM` 与这里都要跟着换成 r4。
  */
-export const OBELISK_DOCKER_IMAGE = "memorybench-codex-noyarn:0.144.1-r3";
+const OBELISK_DOCKERFILE_REVISION = "r1";
+
+/**
+ * 派生镜像 tag——base 镜像版本、obelisk 版本、Dockerfile 配方版本都编进去，任一个变了 tag
+ * 自然不同（与 remem.ts 的 `REMEM_DOCKER_IMAGE` 同一命名方案）。2026-08-04 从
+ * `memorybench-codex-noyarn:0.144.1-r3` 改名为 `memorybench-codex-obelisk`：配方已经从
+ * 「只删 Yarn」变成「删 Yarn + 装 obelisk CLI + 非 root」，旧名字不再准确，也不该被新构建
+ * 静默覆盖。
+ */
+export const OBELISK_DOCKER_IMAGE = `memorybench-codex-obelisk:0.144.1-r3-${OBELISK_VERSION}-${OBELISK_DOCKERFILE_REVISION}`;
 
 /**
  * 教 agent 用 `obelisk --search` / `--query` 检索历史会话的官方 Skill。仓库是
@@ -167,15 +178,15 @@ async function requireCommand(sb: Sandbox, label: string, script: string): Promi
 }
 
 /**
- * codex 的 per-attempt agent setup 会把整个 `$HOME` 重置(经运行时探针实测确认，见文件头
- * 「已修:$HOME 整个不跨 Attempt 原生持续」段——先试过把归档放在 `$HOME` 下的 `.codex` 之外，
- * 冒烟直接证伪：下一条 Attempt 连归档目录本身都找不到)。这不是 sandboxReuse 的通用限制
- * （niceeval docs 明确写「$HOME...都活过题间重置」），是 codex adapter 自己的行为，且没有
- * 任何可见的 shell 命令对应这一步。跨 Attempt 记忆本来就是记忆条件自己的职责（与 mempal 的
- * host 侧 checkpoint 同构），这里把它接住：挪到 `$HOME` 之外的 `/opt`——`/usr/local`
- * 与 `/usr/bin`（`obeliskInstall()` 装 CLI 的落点）已经反复确认跨 Attempt 存活，`/opt` 是
- * 同一文件系统区域、root 天然可写，物理沙箱在世的整个 Invocation 内持续累积——不需要出
- * sandbox，甚至不需要 host 侧文件，纯粹是 `/opt` 与（每次重置的）`$HOME` 两处目录互相同步。
+ * 归档目录挪到 `$HOME` 之外的 `/opt`：跨 Attempt 记忆本来就是记忆条件自己的职责（与 mempal
+ * 的 host 侧 checkpoint 同构）。选 `/opt` 而不是 `$HOME` 下的子目录不是因为 `/opt` 有什么
+ * 特殊豁免——两者现在都会跨题间 reset 存活（见文件头「已修：执行身份根因修正」段，`/opt` 与
+ * `$HOME` 之前"看起来都不存活"是同一个根因：容器压根没有被复用）——纯粹是保持路径固定、
+ * 不与 codex 自己管理的 `~/.codex/sessions` 目录混在一起，也不用担心 codex 未来的版本清理
+ * 或改写 `$HOME` 下这个子路径。`/usr/local`、`/usr/bin`（`obeliskProbe()` 探测的落点，CLI
+ * 本身已烘进镜像）在同一台物理沙箱内同样持续可见，`/opt/obelisk-session-archive` 额外在
+ * 镜像构建期 `chown` 给了 `node`（见 `scripts/obelisk-docker/Dockerfile`），运行时以 node
+ * 身份写入不受权限阻挡。
  */
 const SESSION_ARCHIVE_DIR = "/opt/obelisk-session-archive";
 
@@ -215,25 +226,36 @@ export function obeliskRestoreSessions(): SandboxCommand {
 }
 
 /**
- * Sandbox 级 `.setup()`：每台物理沙箱只跑一次，全局装 CLI（root 落 `/usr/local`，天然在 PATH
- * 上）。声明式写法：已装且版本吻合就跳过，不吻合（含从未装过）就重装，重放多少次都收敛到同一
- * 结果，符合复用对幂等的要求。不在这里代 agent 建索引或跑 `obelisk --build`——首次索引和后续
- * 查询都是被测 Skill 该教会 agent 自己做的事，属于记忆条件本身，不是环境准备。
+ * Sandbox 级 `.setup()`：每台物理沙箱只跑一次，薄探测——只验证派生镜像里已经烘好的 obelisk
+ * 二进制版本对不对，不在这里装任何东西。与 remem 侧 `rememPrepare()` 同一个思路（remem 验证
+ * Docker 镜像里烘好的二进制，这里验证同一件事）。
  *
- * 额外软链一份到 `/usr/bin`：codex 的 agent 命令子进程 PATH 不含 `/usr/local/bin`（文件头
- * 「已修:agent 命令子进程 PATH 缺口」有完整调查记录，`env.PATH` 覆盖对这层不生效），只有
- * `/usr/bin`（`git`、`sed` 所在目录）实测 agent 子进程一定能解析到。
+ * **2026-08-04 由「装」改成「探」**：此前这里用 `npm install -g` 在运行时把 CLI 装进
+ * `/usr/local`，是因为当时镜像没有声明非 root 执行身份，`npm install -g` 可以直接以 root
+ * 写系统目录。补上 `USER node`（见 `scripts/obelisk-docker/Dockerfile`）后，容器默认执行
+ * 身份变成 node，而 `/usr/local/lib/node_modules`、`/usr/local/bin`、`/usr/bin` 都只有
+ * root 可写——运行时再跑 `npm install -g` 会直接 permission denied。修法是把安装本身挪进
+ * Dockerfile 构建期（那时还是 root），这里的 `.setup()` 退化成纯探测，与 remem 记忆条件的
+ * 架构完全对齐。
+ *
+ * 不在这里代 agent 建索引或跑 `obelisk --build`——首次索引和后续查询都是被测 Skill 该教会
+ * agent 自己做的事，属于记忆条件本身，不是环境准备。
  */
-export function obeliskInstall(): SandboxHook {
+export function obeliskProbe(): SandboxHook {
   return async (sb, ctx) => {
+    const probe = await sb.runShell("command -v obelisk");
+    if (probe.exitCode !== 0) {
+      throw new Error(
+        `[obelisk] image does not contain obelisk. Build ${OBELISK_DOCKER_IMAGE} with ` +
+          "`bash scripts/build-obelisk-docker-image.sh`, then use that image.",
+      );
+    }
+    await requireCommand(sb, "obelisk on PATH", `obelisk --version 2>/dev/null | grep -Fx "${OBELISK_VERSION}"`);
     await requireCommand(
       sb,
-      "obelisk-cli install",
-      `if command -v obelisk >/dev/null 2>&1 && [ "$(obelisk --version 2>/dev/null)" = "${OBELISK_VERSION}" ]; then exit 0; fi; npm install -g @obelisk-apps/cli@${OBELISK_VERSION}`,
+      "obelisk on agent PATH",
+      `/usr/bin/obelisk --version 2>/dev/null | grep -Fx "${OBELISK_VERSION}"`,
     );
-    await requireCommand(sb, "obelisk on PATH", `obelisk --version 2>/dev/null | grep -Fx "${OBELISK_VERSION}"`);
-    await requireCommand(sb, "obelisk symlink for agent PATH", `ln -sf "$(command -v obelisk)" /usr/bin/obelisk`);
-    await requireCommand(sb, "obelisk on agent PATH", `/usr/bin/obelisk --version 2>/dev/null | grep -Fx "${OBELISK_VERSION}"`);
-    commandLog(ctx, `[obelisk] obelisk-cli ${OBELISK_VERSION} ready`);
+    commandLog(ctx, `[obelisk] image probe passed: obelisk-cli ${OBELISK_VERSION}`);
   };
 }

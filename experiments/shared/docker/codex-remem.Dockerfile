@@ -42,6 +42,20 @@
 # - 两件事都修好后,这个派生 Dockerfile 本身可以整体退休,shared/remem.ts 改回直接引用
 #   `niceeval/codex:...` 官方镜像字面量。
 #
+# 5. (2026-08-04,r3)派生镜像没有声明 `USER`,`docker run` 默认以 root 跑——这不是「装完就
+#    完事」,niceeval 的 Docker Sandbox 文档化契约是「非 root 是预制环境自己的义务,不是 runner
+#    的强加」(niceeval docs「Docker：从官方基线继续构建」):镜像不声明 USER 就默认 root,
+#    sandboxReuse 的复用安全检查在检测到 root 身份时拒绝复用、静默把物理沙箱退休、给下一条
+#    Attempt 开一个全新容器。这份 Dockerfile 之前只删 Yarn、装 remem、补 python3,唯独漏了这
+#    一步——真正的后果是 remem.ts 文件头记录的「postSetup 写入不存活到下一条 Attempt」:不是
+#    Agent 级钩子不共享文件系统写入,是每条 Attempt 压根没有分到同一个物理容器,`$HOME` 每次
+#    都是全新的。修法与上游 Codex/Claude Code 官方镜像同款(niceeval commit cbac5659):安装
+#    步骤保持 root 不动(COPY 在 USER 声明之前执行,天然是 root),收尾切 `USER node`——
+#    `niceeval/codex` 基础镜像自带这个 uid 1000 用户,`/usr/local/bin` 下的东西对所有用户
+#    可读可执行,只是不可写,remem 只需要被执行、不需要被 node 用户写入,不受影响。已用同一
+#    派生镜像反事实验证:以 uid 1000 跑时 sandboxReuse 的复用检查通过,`$HOME` 标记文件跨
+#    题间 reset 存活。
+#
 # 重建:见 scripts/build-codex-remem-docker-image.sh(tag 与 experiments/shared/remem.ts
 # 里的常量手动保持同步,不是自动计算的哈希——两边都要跟着改)。
 
@@ -66,3 +80,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=remem-builder /usr/local/cargo/bin/remem /usr/local/bin/remem
+
+# 声明非 root 执行身份,让 sandboxReuse 的复用安全检查真正生效——见文件头注释第 5 点。装的
+# 全部内容都在这之前以 root 完成,`node` 只需要执行权限,不需要写权限。
+USER node
+RUN remem --version
