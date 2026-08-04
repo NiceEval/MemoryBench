@@ -214,12 +214,12 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 - ~~`--dry` 的 plan 不说明每条为什么要重跑~~ **已具备**（2026-07-30 实测）：逐条标 `carried` / `locked` /
   `stale: config:agentInstall.revision` / `new`，原因是给全的。注意 `stale: config:agentInstall.revision`
   这一档很容易撞上——agent 的安装版本一变，此前跑的结果全作废。
-- **`niceeval exp` 的多余位置参数被静默当 eval 前缀吞掉**：`exp` 只接一个 `path|experiment`，后面全是
-  eval id 前缀。想跑两个实验而写成 `exp <expA> <expB> toggl-cli/04`，第二个实验名会被当 eval 前缀去匹配、
-  匹配到 0 条、**静默丢弃**，plan 里只剩 expA，无 warning、退出码 0。反向也危险：多写的参数若恰好是个有效
-  eval 前缀（手滑写 `toggl-cli` 而非 `toggl-cli/04`），plan 会悄悄膨胀成 6 题。唯一防线是人肉核对 `--dry`。
-  期望：位置参数匹配不到任何 eval 就报错退出。
-  **但实验的选择本身够用**：实验 id 支持前缀匹配，`exp compare/codex` 正好命中三个 codex 实验（3 configs）
+- ~~`niceeval exp` 的多余位置参数被静默当 eval 前缀吞掉~~ **已修**（2026-08-04 实测）：位置参数匹配不到任何
+  eval 现在会报错退出，并提示怎么跑另一个实验——`No eval matched prefix: <x> in experiments selected by <exp>.` +
+  `Positional args after the first select eval id prefixes. To run another experiment, run it as its own command.`
+  反向的危险仍在：多写的参数若恰好是个**有效** eval 前缀（手滑写 `toggl-cli` 而非 `toggl-cli/04`），plan 会悄悄
+  膨胀成 6 题且不报错，这一半只能靠人肉核对 `--dry`。
+  **实验的选择本身够用**：实验 id 支持前缀匹配，`exp compare/codex` 正好命中三个 codex 实验（3 configs）
   且排除 claude/bub —— 不要因为 `exp` 不支持可重复的 `--exp` 就退回「一个实验开一个进程」，那会丢掉 niceeval 的
   全局并发闸（`maxConcurrency` 是进程内的，3 个进程各开 4 路 = 12 路，直接撞爆代理约 5 路的账号级上限）。
 

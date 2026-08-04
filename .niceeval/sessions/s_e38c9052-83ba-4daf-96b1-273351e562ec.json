@@ -1,0 +1,30 @@
+{
+  "sessionId": "s_e38c9052-83ba-4daf-96b1-273351e562ec",
+  "pid": 993180,
+  "startedAt": "2026-08-04T03:04:10.055Z",
+  "status": "completed",
+  "experiments": [
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna--mempal",
+      "runId": "94b0faab-fdf3-4340-bc4a-3838649512d8",
+      "path": ".niceeval/compare_codex-gpt-5.6-luna--mempal/2026-08-04T03-04-10-070Z-ds5k"
+    },
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+      "runId": "00c5a563-0fde-4354-9e91-4aa407e62dbe",
+      "path": ".niceeval/compare_codex-gpt-5.6-luna--nowledge/2026-08-04T03-04-10-081Z-6ck9"
+    },
+    {
+      "experimentId": "compare/codex-gpt-5.6-luna",
+      "runId": "a8dccc74-ffcb-4f1a-9bdd-da6f414a216c",
+      "path": ".niceeval/compare_codex-gpt-5.6-luna/2026-08-04T03-04-10-093Z-9gj2"
+    }
+  ],
+  "completedAt": "2026-08-04T03:04:10.125Z",
+  "completion": {
+    "status": "complete",
+    "unstarted": 0,
+    "earlyExitUnstarted": 0,
+    "reporterErrors": []
+  }
+}

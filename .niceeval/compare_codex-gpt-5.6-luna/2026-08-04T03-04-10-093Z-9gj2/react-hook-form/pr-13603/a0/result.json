@@ -1,0 +1,382 @@
+{
+  "id": "react-hook-form/pr-13603",
+  "description": "react-hook-form pr-13603: useController keeps writing field updates to the old control after the control prop changes at runtime (real react-hook-form issue)",
+  "verdict": "passed",
+  "fingerprint": "0fd44b6a7190d9e98d0d1a3d53c86fc537ad70287099453efc8b584ba791808a",
+  "configHash": "e90ce6138715b1ec850efe84edeedbbdaa0a0b52b7cf0058615731048c893c87",
+  "attempt": 0,
+  "durationMs": 353713,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13603/eval.ts",
+        "line": 72,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-hook-form/pr-13603/eval.ts",
+            "line": 52,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13603/eval.ts",
+        "line": 84,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 85039,
+    "outputTokens": 7194,
+    "cacheReadTokens": 818944,
+    "reasoningTokens": 2471,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.21009740000000002,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 933
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 926
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 1598,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1860,
+          "durationMs": 272,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1198140
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 2133,
+          "durationMs": 1324,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1197867
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 368,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 3458,
+          "durationMs": 367,
+          "command": {
+            "display": "git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1196542
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 258,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 3825,
+          "durationMs": 258,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbk1o0z_1p7462'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1196174
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 250,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 4083,
+          "durationMs": 250,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1195917
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 347004,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 4334,
+          "durationMs": 2647,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .niceeval-clone\nmv …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1195666
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 6981,
+          "durationMs": 7594,
+          "command": {
+            "display": "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1193018
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 14582,
+          "durationMs": 470,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1185418
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 15053,
+          "durationMs": 332003,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1184947
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 347058,
+          "durationMs": 370,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 852944
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 14582,
+          "durationMs": 332846,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 85039,
+            "outputTokens": 7194,
+            "cacheReadTokens": 818944,
+            "reasoningTokens": 2471,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 347434,
+          "durationMs": 303,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 852568
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 348878,
+          "durationMs": 2457,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 851125
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 616,
+      "children": [
+        {
+          "id": "n14",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 351337,
+          "durationMs": 616,
+          "children": [
+            {
+              "id": "n15",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 351337,
+              "durationMs": 296,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 848666
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1759
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 490
+    }
+  ],
+  "executionMs": 353713,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "iacjivsm2zjdvzkv6akom"
+  },
+  "locator": "@16R00E86A9VN5",
+  "startedAt": "2026-08-02T08:45:09.745Z",
+  "locatorRunId": "c515a818-e4b3-456a-9742-4d5680317480",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-08-02T08-31-57-460Z-ix7j/react-hook-form/pr-13603/a0"
+}
