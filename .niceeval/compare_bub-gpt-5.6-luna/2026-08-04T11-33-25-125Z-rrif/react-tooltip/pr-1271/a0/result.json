@@ -1,0 +1,470 @@
+{
+  "id": "react-tooltip/pr-1271",
+  "description": "react-tooltip pr-1271: fix inaccurate anchor detection during hover/focus transitions and stale-state delayShow timing (real react-tooltip issue)",
+  "verdict": "failed",
+  "fingerprint": "876ae698958ad963f83055a2cc6e8537f928e497240e0b92e2d8e9f24719042a",
+  "configHash": "99e5c4bd5ed1d3e018138a1143c1a305c604049010b5829cf746b4007958a200",
+  "attempt": 0,
+  "durationMs": 251246,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-tooltip/pr-1271/eval.ts",
+        "line": 108,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-tooltip/pr-1271/eval.ts",
+            "line": 74,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-tooltip/pr-1271/eval.ts",
+        "line": 122,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…---------------------------------------------------------------------------\"\noutput tail:\n  clear-timeout-ref.ts              |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  compute-tooltip-position.ts       |   92.92 |    81.81 |     100 |   92.92 | 20-24,27-28                                                                                                                                                                                                                 \n  css-time-to-ms.ts                 |      90 |    33.33 |     100 |      90 | 6                                                                                                                                                                                                                           \n  debounce.ts                       |   87.93 |    77.77 |     100 |   87.93 | 20-21,34-38                                                                                                                                                                                                                 \n  deep-equal.ts                     |       0 |        0 |       0 |       0 | 1-34                                                                                                                                                                                                                        \n  get-scroll-parent.ts              |   84.61 |       70 |     100 |   84.61 | 3-4,19-20                                                                                                                                                                                                                   \n  handle-style.ts                   |       0 |        0 |       0 |       0 | 1-99                                                                                                                                                                                                                        \n  index.ts                          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  parse-data-tooltip-id-selector.ts |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  resolve-data-tooltip-anchor.ts    |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  use-isomorphic-layout-effect.ts   |     100 |        0 |     100 |     100 | 16                                                                                                                                                                                                                          \n------------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 278108,
+    "outputTokens": 6471,
+    "cacheReadTokens": 154624,
+    "requests": 16
+  },
+  "estimatedCostUSD": 0.06647928,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "installed"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 519
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 663
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 4454,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1182,
+          "durationMs": 220,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798817
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 1402,
+          "durationMs": 174,
+          "failed": true,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat $HOME/.local/share/niceeval/bub-install-hash 2>/dev/null)\" = '7319e17be62e'",
+            "exitCode": 1,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798597
+            }
+          }
+        },
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 1576,
+          "durationMs": 197,
+          "command": {
+            "display": "test -x $HOME/.local/bin/uv || (curl -LsSf https://astral.sh/uv/install.sh | sh)",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798423
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "$HOME/.local/bin/uv",
+          "startOffsetMs": 1939,
+          "durationMs": 3324,
+          "command": {
+            "display": "$HOME/.local/bin/uv tool install --reinstall --python 3.12 --prerelease allow 'bub' --overrides /tmp/bub-override.txt --with 'git+https://github.com/bubbuild/b…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798061
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 5263,
+          "durationMs": 201,
+          "command": {
+            "display": "mkdir -p \"$(dirname $HOME/.local/share/niceeval/bub-install-hash)\" && printf '%s' '7319e17be62e' > $HOME/.local/share/niceeval/bub-install-hash",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1794737
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 5465,
+          "durationMs": 172,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat $HOME/.local/share/niceeval/bub-install-hash 2>/dev/null)\" = '7319e17be62e'",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1794535
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 431,
+      "children": [
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 5637,
+          "durationMs": 197,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1794363
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 5834,
+          "durationMs": 234,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1794165
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 540,
+      "children": [
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 6068,
+          "durationMs": 197,
+          "command": {
+            "display": "printf '%s' $HOME",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793932
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 6431,
+          "durationMs": 176,
+          "command": {
+            "display": "mkdir -p $(dirname /home/user/workspace/AGENTS.md) && cat > /home/user/workspace/AGENTS.md <<'FE_EOF_mselbcp1_50sleu'\nYou are a coding agent working in a Next.…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793569
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 243542,
+      "children": [
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 6608,
+          "durationMs": 1520,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/ReactTooltip/react-tooltip.git .niceeval-clone\nmv .nice…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793392
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 8128,
+          "durationMs": 31165,
+          "command": {
+            "display": "npm install -g --prefix /usr/local yarn@1 && yarn install --ignore-scripts --ignore-engines",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791872
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 39293,
+          "durationMs": 332,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1760706
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 39625,
+          "durationMs": 205831,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Your working directory is a checkout of the real react-tooltip repository at the commit where the bu…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1760374
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 245652,
+          "durationMs": 187,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1554348
+            }
+          }
+        },
+        {
+          "id": "n16",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 39293,
+          "durationMs": 206546,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 278108,
+            "outputTokens": 6471,
+            "cacheReadTokens": 154624,
+            "requests": 16
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 245840,
+          "durationMs": 247,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1554160
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 246589,
+          "durationMs": 3560,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1553411
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 412,
+      "children": [
+        {
+          "id": "n19",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 250150,
+          "durationMs": 412,
+          "children": [
+            {
+              "id": "n20",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 250150,
+              "durationMs": 241,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1549850
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 684
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 366
+    }
+  ],
+  "executionMs": 251246,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "iig0wgbh3mc8g4cg0zn84"
+  },
+  "locator": "@1ZSZ6GXKKQ7Y5",
+  "startedAt": "2026-08-04T11:43:57.158Z",
+  "locatorRunId": "9ef0908f-0f46-4c8f-8d7e-72ab2a5ed1fe",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

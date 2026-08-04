@@ -1,0 +1,468 @@
+{
+  "id": "react-hook-form/pr-13603",
+  "description": "react-hook-form pr-13603: useController keeps writing field updates to the old control after the control prop changes at runtime (real react-hook-form issue)",
+  "verdict": "passed",
+  "fingerprint": "a4007aa1e1ad068f1bfb602cce2ce60c4f128004788ab072fdb60f60294ebeb8",
+  "configHash": "99e5c4bd5ed1d3e018138a1143c1a305c604049010b5829cf746b4007958a200",
+  "attempt": 0,
+  "durationMs": 148618,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13603/eval.ts",
+        "line": 72,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-hook-form/pr-13603/eval.ts",
+            "line": 52,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13603/eval.ts",
+        "line": 84,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 69338,
+    "outputTokens": 3389,
+    "cacheReadTokens": 80384,
+    "requests": 11
+  },
+  "estimatedCostUSD": 0.019542080000000003,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "installed"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1013
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1243
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 5040,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 2256,
+          "durationMs": 223,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797744
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 2479,
+          "durationMs": 173,
+          "failed": true,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat $HOME/.local/share/niceeval/bub-install-hash 2>/dev/null)\" = '7319e17be62e'",
+            "exitCode": 1,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797521
+            }
+          }
+        },
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 2652,
+          "durationMs": 201,
+          "command": {
+            "display": "test -x $HOME/.local/bin/uv || (curl -LsSf https://astral.sh/uv/install.sh | sh)",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797348
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "$HOME/.local/bin/uv",
+          "startOffsetMs": 3020,
+          "durationMs": 3896,
+          "command": {
+            "display": "$HOME/.local/bin/uv tool install --reinstall --python 3.12 --prerelease allow 'bub' --overrides /tmp/bub-override.txt --with 'git+https://github.com/bubbuild/b…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1796980
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 6916,
+          "durationMs": 203,
+          "command": {
+            "display": "mkdir -p \"$(dirname $HOME/.local/share/niceeval/bub-install-hash)\" && printf '%s' '7319e17be62e' > $HOME/.local/share/niceeval/bub-install-hash",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793084
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 7119,
+          "durationMs": 176,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat $HOME/.local/share/niceeval/bub-install-hash 2>/dev/null)\" = '7319e17be62e'",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792881
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 571,
+      "children": [
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 7295,
+          "durationMs": 209,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792705
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 7504,
+          "durationMs": 362,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792496
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 540,
+      "children": [
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 7866,
+          "durationMs": 198,
+          "command": {
+            "display": "printf '%s' $HOME",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792134
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 8228,
+          "durationMs": 178,
+          "command": {
+            "display": "mkdir -p $(dirname /home/user/workspace/AGENTS.md) && cat > /home/user/workspace/AGENTS.md <<'FE_EOF_msel8742_3erchy'\nYou are a coding agent working in a Next.…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791772
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 139135,
+      "children": [
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 8406,
+          "durationMs": 2555,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .niceeval-clone\nmv …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791594
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 10962,
+          "durationMs": 8344,
+          "command": {
+            "display": "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1789039
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 19306,
+          "durationMs": 428,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1780694
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "$HOME/.local/bin/bub",
+          "startOffsetMs": 19734,
+          "durationMs": 124321,
+          "command": {
+            "display": "$HOME/.local/bin/bub --workspace /home/user/workspace run 'Your working directory is a checkout of the real react-hook-form repository at the commit where the …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1780266
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 144239,
+          "durationMs": 188,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1655761
+            }
+          }
+        },
+        {
+          "id": "n16",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 19306,
+          "durationMs": 125121,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 69338,
+            "outputTokens": 3389,
+            "cacheReadTokens": 80384,
+            "requests": 11
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 144428,
+          "durationMs": 238,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1655572
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 145166,
+          "durationMs": 2374,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1654834
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 407,
+      "children": [
+        {
+          "id": "n19",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 1 file",
+          "startOffsetMs": 147540,
+          "durationMs": 408,
+          "children": [
+            {
+              "id": "n20",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 147541,
+              "durationMs": 241,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1652460
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 670
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 367
+    }
+  ],
+  "executionMs": 148618,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "igafsakel6n42y7a7i5k2"
+  },
+  "locator": "@1X9SS7ARXEN82",
+  "startedAt": "2026-08-04T11:41:28.158Z",
+  "locatorRunId": "9ef0908f-0f46-4c8f-8d7e-72ab2a5ed1fe",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

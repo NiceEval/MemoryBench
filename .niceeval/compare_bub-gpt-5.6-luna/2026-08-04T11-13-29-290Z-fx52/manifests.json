@@ -1,0 +1,145 @@
+{
+  "react-tooltip/pr-1269": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "bub",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": false,
+      "strict": false,
+      "flags.memory": "baseline",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "user": {
+                "_tag": "EnvironmentDefault"
+              },
+              "lifetime": {
+                "_tag": "ProviderDefault"
+              },
+              "pathPrepend": []
+            },
+            "privateIdentityDigest": "bafa48491753ac2f11331fa146f6a9475cd42b0d05b51f7fa051fdcbcd2f871c"
+          }
+        },
+        "commands": []
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "bub",
+            "version": "0.4.0",
+            "revision": "7319e17be62e"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "bub",
+              "version": "0.4.0",
+              "revision": "7319e17be62e"
+            },
+            "installMode": "sandbox-network",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "react-tooltip/pr-1269",
+        "experimentId": "compare/bub-gpt-5.6-luna",
+        "agentName": "bub"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/bub-gpt-5.6-luna"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          },
+          "pathPrepend": []
+        },
+        "privateIdentityDigest": "bafa48491753ac2f11331fa146f6a9475cd42b0d05b51f7fa051fdcbcd2f871c"
+      },
+      "commands": [],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "e3666899592e1b7e15c8bb8d87e01a401a030ab0771f5e3165da5458ee756d4e",
+          "buildKeys": []
+        },
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          },
+          "pathPrepend": []
+        },
+        "privateIdentityDigest": "c9685edeae0956d15713a9508019a10f87c0a79b3ad68399d261a5550bcfc5c2"
+      }
+    },
+    "source": {
+      "evals/react-tooltip/pr-1269/eval.ts": "0544a5c1ddb3e01c0b01857db38a5173b91c276e83d8474697aa74e4e13d1491"
+    },
+    "data": {}
+  }
+}

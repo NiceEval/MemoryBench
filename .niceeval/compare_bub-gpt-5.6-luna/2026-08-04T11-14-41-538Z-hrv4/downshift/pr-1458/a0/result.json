@@ -1,0 +1,173 @@
+{
+  "id": "downshift/pr-1458",
+  "description": "downshift pr-1458: only react to Backspace/Delete on a selected item when that item is actually focused (real downshift issue)",
+  "verdict": "errored",
+  "fingerprint": "4ef9d8a5fe466301ba80e735d9ea3b2743416468826ef94d54c794c2d9ffc0cc",
+  "configHash": "99e5c4bd5ed1d3e018138a1143c1a305c604049010b5829cf746b4007958a200",
+  "attempt": 0,
+  "durationMs": 16941,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Agent Ensure failed (agent=bub, phase=recheck): expected 0.4.0, actual (none). \nNext: Fix the install prefix, PATH, and exact version, then rerun; do not hand a broken environment to the task.: 2: [unknown] fetch failed",
+    "origin": {
+      "scope": "attempt",
+      "phase": "agent.ensure"
+    },
+    "stack": "AgentEnsureError: Agent Ensure failed (agent=bub, phase=recheck): expected 0.4.0, actual (none). \nNext: Fix the install prefix, PATH, and exact version, then rerun; do not hand a broken environment to the task.: 2: [unknown] fetch failed\n    at Object.onFailure (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/provisioner.ts:554:21)\n    at EffectPrimitive.cause (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/core.ts:910:24)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1200:44)\n    at body (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/Utils.ts:786:14)\n    at FiberRuntime.Failure (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1200:20)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:950:27)\n    at FiberRuntime.evaluateMessageWhileSuspended (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:918:14)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 7406
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1213
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 8320,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 8619,
+          "durationMs": 243,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791381
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 8863,
+          "durationMs": 246,
+          "failed": true,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat $HOME/.local/share/niceeval/bub-install-hash 2>/dev/null)\" = '7319e17be62e'",
+            "exitCode": 1,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791137
+            }
+          }
+        },
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 9109,
+          "durationMs": 225,
+          "command": {
+            "display": "test -x $HOME/.local/bin/uv || (curl -LsSf https://astral.sh/uv/install.sh | sh)",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1790891
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "$HOME/.local/bin/uv",
+          "startOffsetMs": 9526,
+          "durationMs": 3592,
+          "command": {
+            "display": "$HOME/.local/bin/uv tool install --reinstall --python 3.12 --prerelease allow 'bub' --overrides /tmp/bub-override.txt --with 'git+https://github.com/bubbuild/b…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1790474
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 13118,
+          "durationMs": 231,
+          "command": {
+            "display": "mkdir -p \"$(dirname $HOME/.local/share/niceeval/bub-install-hash)\" && printf '%s' '7319e17be62e' > $HOME/.local/share/niceeval/bub-install-hash",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1786882
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 13349,
+          "durationMs": 3590,
+          "failed": true,
+          "command": {
+            "display": "test -x $HOME/.local/bin/bub && test \"$(cat $HOME/.local/share/niceeval/bub-install-hash 2>/dev/null)\" = '7319e17be62e'",
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1786651
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 456
+    }
+  ],
+  "executionMs": 16941,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "irufhkbk1uys6odll9k0g"
+  },
+  "locator": "@1T6K3HM2SXREQ",
+  "startedAt": "2026-08-04T11:14:31.320Z",
+  "locatorRunId": "72be2850-4fde-48c3-9e4a-249ff6bb977c",
+  "artifacts": [
+    "commands"
+  ]
+}
