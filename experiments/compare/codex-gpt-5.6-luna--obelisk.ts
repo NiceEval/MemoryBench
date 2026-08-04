@@ -20,20 +20,18 @@ import {
 // 对照 codex-gpt-5.6-luna.ts 看 pass 率与效率(时间/token/重复失败命令)的差异,也对照
 // mempal/nowledge 两个变体看不同记忆拓扑的差异。
 //
-// 记忆态语义:v1 只在一次 run 的物理沙箱内积累。codex adapter 的 per-attempt agent setup
-// 会清空 `~/.codex/sessions`(实测确认,不是 sandboxReuse 的通用限制),所以状态实际落在
-// `obeliskArchiveSessions()`/`obeliskRestoreSessions()` 维护的 `$HOME/.obelisk-session-archive`
-// ——同一物理沙箱内 preTeardown 归档、postSetup 还原,和 mempal 的 host 侧 checkpoint 同构,
-// 只是全程不出沙箱。maxConcurrency: 1 保证同一物理沙箱内题目严格串行,归档到的顺序就是真实
-// 作答顺序。不做跨 run 回存,每次全新 run 从零开始——没有 mempal 那种 host 侧 tgz,也没有
-// nowledge 那种远程 cohort;归档目录随物理沙箱销毁一并清空。
+// 记忆态语义:v1 设计为一次 run 的物理沙箱内积累,由 obeliskArchiveSessions()/
+// obeliskRestoreSessions() 在 preTeardown/postSetup 归档、还原会话(与 mempal checkpoint
+// 同构,只是全程不出沙箱)。**但目前不生效**:实测 agent 级钩子跨 Attempt 不共享任何文件系统
+// 写入($HOME 与 /opt 都一样,只有 sandbox 级 .setup() 基线存活),完整证据链与候选上游
+// 问题见 shared/obelisk.ts 文件头「仍未解决」段。在上游给出文档化的跨 Attempt 状态存取点
+// 之前,本实验的记忆条件不成立,全量数据暂缓采集(2026-08-04 协调决策)。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · obelisk",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  // postSetup 在 codex 清空 ~/.codex/sessions 之后、agent 回合开始前把归档还原回去;
-  // preTeardown 在 agent 回合结束、codex 清空之前把这条 Attempt 的新会话归档。
-  // 根因与设计见 shared/obelisk.ts 文件头「已修:会话不跨 Attempt 原生持续」段。
+  // postSetup 还原归档、preTeardown 归档本条会话——设计如此,但见文件头:跨 Attempt
+  // 写入目前全部不存活,这对钩子暂不产生记忆效果,保留等上游给出持久化存取点后启用。
   agent: codexAgent({
     skills: [obeliskSkill],
     postSetup: [obeliskRestoreSessions()],

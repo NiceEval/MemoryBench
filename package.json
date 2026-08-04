@@ -7,7 +7,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "smoke": "niceeval exp dev memory/agent-029-use-cache-directive",
-    "template:mempal": "tsx scripts/build-mempal-e2b-template.ts"
+    "template:mempal": "tsx scripts/build-mempal-e2b-template.ts",
+    "docker:obelisk": "bash scripts/build-obelisk-docker-image.sh",
+    "docker:remem": "bash scripts/build-codex-remem-docker-image.sh"
   },
   "devDependencies": {
     "@types/dockerode": "^4.0.1",
