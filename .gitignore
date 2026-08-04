@@ -4,6 +4,8 @@ node_modules/
 .niceeval/**/diff.json
 # locks/ 是运行时的 per-eval 心跳锁,不是结果数据;被强杀的运行会留下残留锁文件,别提交。
 .niceeval/locks/
+# sessions/ 是 `niceeval exp` 的调度清单,只被 `niceeval session list` 读取;站点构建(niceeval view)不读它,不属于站点数据源。
+.niceeval/sessions/
 # site/ 是构建产物,由 Vercel 的 buildCommand(scripts/build-site.mjs)现场生成,不再提交。
 site/
 *.log

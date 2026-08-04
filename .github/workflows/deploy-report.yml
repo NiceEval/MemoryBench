@@ -1,0 +1,41 @@
+name: Deploy Report
+
+# 只在打 tag 时发布：vercel.json 已设 git.deploymentEnabled=false，
+# 普通 push 到 main 不触发部署；发布靠打 vX.Y.Z tag 并 push tag。
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: deploy-report
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      # tag push 事件默认检出 tag 指向的 commit，不需要额外指定 ref。
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      # 用 Vercel CLI 而不是 Deploy Hook：Deploy Hook 只部署分支最新 commit，
+      # 不是 tag 指向的 commit；CLI prebuilt 流程能保证部署内容与 tag 一致。
+      # 构建仍走仓库 vercel.json 的 buildCommand（scripts/vercel-build.sh）。
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
