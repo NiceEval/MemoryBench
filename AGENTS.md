@@ -192,11 +192,14 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 
 已知呈现缺口（**候选上游 feature request**，遇到时直接说「CLI 看不到」，不要退回去读文件）：
 
-- **裸 `show` / `show --exp` 的默认概览只组「最近一批 run」，极易误读成结果丢失**（2026-08-04 实测）：
-  头部 `composed from N runs · Run range …` 是全部提示；run 的记录只含它当时选中的题，最近若只跑过单题验证，
-  默认视图里其余题全部显示 no data、通过率按这个小窗口算——看起来像整个数据集 stale/丢了，实际完整终态
-  都在，要用 `--exp <id> --history` 才能看到。期望：默认概览应组合每题的最新终态（或至少醒目标注
-  「这只是最近窗口的切片，完整数据见 --history」）。
+- **快照组合丢沿用结果：`show`/`view` 的默认概览既不含 carried、accept 也救不回来**（2026-08-04 实测，
+  已到不读源码的排查边界，按 bug 上报）：run 计划明确打印 `36 of 36 carried in from cache`，跑完后
+  `show --exp` 的快照却只有 1 条；把 36 条历史终态逐一 `niceeval accept`（全部成功、发新 locator）后
+  快照也只组进 6 条；accept 后再跑一次全沿用 run，新快照又缩回 1 条。`--history --json` 能证明沿用
+  attempt 确实进了 run 记录（runStartedAt 是新 run、locator 指向历史），是「组快照」这层把它们丢了。
+  **可靠视图只有两个：`show --exp <id> --history`（单实验全史）与 `show --stats`（36 题 × 全实验矩阵）**；
+  报告站点读快照,在上游修复前站点显示的就是残缺切片,不是数据丢了。期望：快照按「每题最新终态」组合,
+  或至少把 carried/accepted 与 fresh 一视同仁。
 - **sandboxReuse 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
   `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 sandboxReuse 提速测量时只能靠 `--timing` 里
   install 耗时的阶梯反推是不是同一条 lane，很别扭。
