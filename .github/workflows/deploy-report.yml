@@ -2,6 +2,7 @@ name: Deploy Report
 
 # 只在打 tag 时发布：vercel.json 已设 git.deploymentEnabled=false，
 # 普通 push 到 main 不触发部署；发布靠打 vX.Y.Z tag 并 push tag。
+# 禁止本地 vercel deploy 当生产路径——线上以本 workflow + 仓库 secrets 为准。
 on:
   push:
     tags:
@@ -28,14 +29,17 @@ jobs:
       - name: Install Vercel CLI
         run: npm i -g vercel@latest
 
-      # 用 Vercel CLI 而不是 Deploy Hook：Deploy Hook 只部署分支最新 commit，
-      # 不是 tag 指向的 commit；CLI prebuilt 流程能保证部署内容与 tag 一致。
-      # 构建仍走仓库 vercel.json 的 buildCommand（scripts/vercel-build.sh）。
+      # 不用 --prebuilt：GHA 本地 build 出的 site/ 含 attempt+artifact，体积可达数百 MB，
+      # `vercel deploy --prebuilt` 上传极易 Upload aborted。改为把源码（含 .niceeval/）
+      # 以 tgz 归档交给 Vercel 云端执行 vercel.json 的 buildCommand，产物不经 Actions 出口。
+      # Deploy Hook 只部署分支 tip，不能钉 tag；本路径保证内容 = tag 指向的 commit。
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy production from tag commit
+        run: >
+          vercel deploy
+          --prod
+          --yes
+          --archive=tgz
+          --token=${{ secrets.VERCEL_TOKEN }}
