@@ -13,6 +13,8 @@ set -euo pipefail
 # cbac5659），r4 把「收尾声明 USER node」收进了基底本身。派生层不再自己发明非 root，但删 Yarn/
 # 装 CLI/chown 归档目录这些需要 root 的步骤都要显式 `USER root` 切回去做，见 Dockerfile。
 #
+# r4→r5（2026-08-05）：补 python3（官方 codex Docker 镜像没有、E2B 模板有；toggl-cli probe 依赖）。
+#
 # Tag 把 base 镜像版本号、obelisk 版本号、Dockerfile 配方版本号都编进去
 # （memorybench-codex-obelisk:<base>-<obelisk>-<recipe>）：任一个换版本，手动同步改这里、
 # Dockerfile 的 ARG 默认值/头部注释、以及 obelisk.ts 里的常量。只在本机可见，不 push 到任何
@@ -21,7 +23,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_IMAGE="niceeval/codex:0.144.1-r4"
 OBELISK_VERSION="0.2.2"
-DOCKERFILE_REVISION="r4"
+DOCKERFILE_REVISION="r5"
 IMAGE_TAG="memorybench-codex-obelisk:0.144.1-r4-${OBELISK_VERSION}-${DOCKERFILE_REVISION}"
 
 echo "==> pulling base image ${BASE_IMAGE}"
@@ -42,7 +44,7 @@ if [ "${DECLARED_USER}" != "node" ]; then
   exit 1
 fi
 
-echo "==> verifying yarn is gone, obelisk is present, and default identity is non-root"
+echo "==> verifying yarn is gone, python3/obelisk present, and default identity is non-root"
 docker run --rm "${IMAGE_TAG}" bash -c '
   if command -v yarn >/dev/null 2>&1 || [ -e /opt/yarn-v1.22.22 ]; then
     echo "yarn still present after derivation" >&2
@@ -52,7 +54,12 @@ docker run --rm "${IMAGE_TAG}" bash -c '
     echo "expected default container identity to be uid 1000 (node), got: $(id -u)" >&2
     exit 1
   fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 missing after derivation" >&2
+    exit 1
+  fi
   echo "default identity: $(whoami) (uid=$(id -u)), HOME=$HOME"
+  python3 --version
   obelisk --version
   /usr/bin/obelisk --version
   node --version

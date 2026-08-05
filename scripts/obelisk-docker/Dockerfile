@@ -58,6 +58,11 @@
 # 必须先显式 `USER root` 切回去做完这些安装动作，再显式 `USER node` 收尾——这一行现在的语义是
 # 「root 安装段结束后恢复基底声明的身份」，不再是「这份 Dockerfile 自己发明了非 root」。
 #
+# r4→r5（2026-08-05）：补齐基础镜像缺的 python3。官方 niceeval/codex Docker 镜像（node-slim
+# 系）不带 python3，E2B 官方模板有——toggl-cli 隐藏 probe 依赖它，2026-08-05 本实验 5 道
+# 编码题在 sandbox.prepare.eval 全挂于 `python3: command not found`。remem 派生镜像 r2 已
+# 同样补过；这里对齐，不改 eval harness（避免跨实验 fingerprint）。
+#
 # 重建：pnpm docker:obelisk（见 scripts/build-obelisk-docker-image.sh）。
 
 ARG BASE_IMAGE=niceeval/codex:0.144.1-r4
@@ -66,12 +71,17 @@ ARG OBELISK_VERSION=0.2.2
 FROM ${BASE_IMAGE}
 ARG OBELISK_VERSION
 
-# 基底已经是非 root(USER node),接下来这几步(删 Yarn、npm 全局装 CLI、chown 归档目录)都要写
-# 只有 root 能写的路径,显式切回 root 做完再切回来。
+# 基底已经是非 root(USER node),接下来这几步(删 Yarn、装 python3、npm 全局装 CLI、chown 归档
+# 目录)都要写只有 root 能写的路径,显式切回 root 做完再切回来。
 USER root
 
 RUN rm -f /usr/local/bin/yarn /usr/local/bin/yarnpkg \
  && rm -rf /opt/yarn-v1.22.22
+
+# 补齐基础镜像缺的 python3——toggl-cli 隐藏 probe / installRustToolchain 探活要用，见上方 r5。
+RUN apt-get update && apt-get install -y --no-install-recommends python3 \
+ && rm -rf /var/lib/apt/lists/* \
+ && python3 --version
 
 # 烘 obelisk CLI 进镜像（root，构建期）。额外软链一份到 /usr/bin：codex 的 agent 命令子进程
 # PATH 不含 /usr/local/bin（见 experiments/shared/obelisk.ts 文件头「已修：agent 命令子进程

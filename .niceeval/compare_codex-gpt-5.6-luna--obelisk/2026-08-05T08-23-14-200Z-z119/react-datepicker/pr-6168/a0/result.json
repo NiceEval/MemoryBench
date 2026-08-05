@@ -1,0 +1,583 @@
+{
+  "id": "react-datepicker/pr-6168",
+  "description": "react-datepicker pr-6168: calendar dialog must opt out of browser auto-translation so Safari's translate feature doesn't corrupt it (real react-datepicker issue)",
+  "verdict": "passed",
+  "fingerprint": "5463f501990a54805ddcc04e8c8c85bafe68d44b2fd22b77da9933cdb9a2c13a",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "attempt": 0,
+  "durationMs": 167673,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6168/eval.ts",
+        "line": 78,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-datepicker/pr-6168/eval.ts",
+            "line": 55,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6168/eval.ts",
+        "line": 92,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 56341,
+    "outputTokens": 1965,
+    "cacheReadTokens": 197888,
+    "reasoningTokens": 401,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.01758396,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit",
+    "obelisk.codex_sessions_at_setup": 0,
+    "obelisk.session_archive_count": 1
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 3
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 119,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 4,
+          "durationMs": 42,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799996
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 47,
+          "durationMs": 75,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799953
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 100,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 123,
+          "durationMs": 42,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799877
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 165,
+          "durationMs": 58,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799835
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 12231,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 223,
+          "durationMs": 42,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msfq9p5q_3vzoyz'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799777
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 266,
+          "durationMs": 11829,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-tcg4ox' && mkdir -p '/tmp/niceeval-git' && git clone --quiet 'https://github.com/tommy0103/obelisk-skill.git'…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799734
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 12095,
+          "durationMs": 41,
+          "command": {
+            "display": "find '/tmp/niceeval-git/tommy0103-obelisk-skill-tcg4ox' -name SKILL.md -not -path '*/.git/*'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787905
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 12137,
+          "durationMs": 36,
+          "command": {
+            "display": "mkdir -p '.agents/skills' && rm -rf '.agents/skills/obelisk' && cp -R '/tmp/niceeval-git/tommy0103-obelisk-skill-tcg4ox/skills/obelisk' '.agents/skills/obelisk'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787863
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 12173,
+          "durationMs": 41,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-tcg4ox'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787827
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 12214,
+          "durationMs": 33,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 1,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787786
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 12287,
+          "durationMs": 43,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_df9pjs'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- obelisk: .agents/skills/obelisk/SKILL.md\n\nBefore answ…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787713
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 12330,
+          "durationMs": 46,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 1,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787670
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 12377,
+          "durationMs": 40,
+          "command": {
+            "display": "mkdir -p \"$HOME/.codex/sessions\" \"/opt/obelisk-session-archive\"; cp -R \"/opt/obelisk-session-archive/.\" \"$HOME/.codex/sessions/\" 2>/dev/null; true",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787623
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 12417,
+          "durationMs": 36,
+          "command": {
+            "display": "find \"$HOME/.codex/sessions\" -name \"*.jsonl\" 2>/dev/null | wc -l | tr -d \" \"",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787583
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 39,
+      "children": [
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 12453,
+          "durationMs": 39,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787547
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 153609,
+      "children": [
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 12494,
+          "durationMs": 6296,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787506
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "corepack",
+          "startOffsetMs": 18790,
+          "durationMs": 13872,
+          "command": {
+            "display": "corepack enable && yarn install --immutable",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1781210
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 32666,
+          "durationMs": 127,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1767334
+            }
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 32793,
+          "durationMs": 127461,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1767207
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 160255,
+          "durationMs": 49,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1639745
+            }
+          }
+        },
+        {
+          "id": "n21",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 32666,
+          "durationMs": 127638,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 56341,
+            "outputTokens": 1965,
+            "cacheReadTokens": 197888,
+            "reasoningTokens": 401,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n22",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 160306,
+          "durationMs": 65,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1639694
+            }
+          }
+        },
+        {
+          "id": "n23",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 160533,
+          "durationMs": 5567,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1639467
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 69,
+      "children": [
+        {
+          "id": "n24",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 166101,
+          "durationMs": 69,
+          "children": [
+            {
+              "id": "n25",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 166101,
+              "durationMs": 66,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1633899
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1503
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 82,
+      "children": [
+        {
+          "id": "n26",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 167674,
+          "durationMs": 37,
+          "command": {
+            "display": "mkdir -p \"/opt/obelisk-session-archive\"; [ -d \"$HOME/.codex/sessions\" ] && cp -R \"$HOME/.codex/sessions/.\" \"/opt/obelisk-session-archive/\" 2>/dev/null; true",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1632326
+            }
+          }
+        },
+        {
+          "id": "n27",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 167711,
+          "durationMs": 45,
+          "command": {
+            "display": "find \"/opt/obelisk-session-archive\" -name \"*.jsonl\" 2>/dev/null | wc -l | tr -d \" \"",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1632289
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "executionMs": 167673,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "e38b16989139",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 1
+  },
+  "locator": "@15ATHRY1BVRDF",
+  "startedAt": "2026-08-05T06:50:30.463Z",
+  "locatorRunId": "42874793-9d96-4fc9-b405-29fdfed66828",
+  "artifacts": [
+    "commands",
+    "events",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna--obelisk/2026-08-05T06-53-18-277Z-sdg2/react-datepicker/pr-6168/a0"
+}

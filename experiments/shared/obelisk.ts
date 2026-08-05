@@ -136,7 +136,9 @@ export const OBELISK_VERSION = "0.2.2";
  * `FROM` 与这里的 tag 前缀都已换成 r4；派生层不再自己发明非 root，删 Yarn/装 CLI 这些安装
  * 步骤改为显式 `USER root` 做完再显式 `USER node` 恢复基底身份，见 Dockerfile。
  */
-const OBELISK_DOCKERFILE_REVISION = "r4";
+// r5 = 补 python3（2026-08-05；官方 codex Docker 镜像缺、toggl-cli probe 需要）。与
+// scripts/build-obelisk-docker-image.sh、Dockerfile 头部 r4→r5 注释手动同步。
+const OBELISK_DOCKERFILE_REVISION = "r5";
 
 /**
  * 派生镜像 tag——base 镜像版本、obelisk 版本、Dockerfile 配方版本都编进去，任一个变了 tag
