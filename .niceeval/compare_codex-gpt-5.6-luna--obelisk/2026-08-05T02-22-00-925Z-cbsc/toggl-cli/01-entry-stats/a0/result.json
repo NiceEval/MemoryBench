@@ -1,0 +1,93 @@
+{
+  "id": "toggl-cli/01-entry-stats",
+  "description": "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's output/JSON/duration conventions for new commands",
+  "verdict": "errored",
+  "fingerprint": "1e7b7db9255a0c5052e81f06d8f5eb2a83eeb90f15c518e250886c4365e37e81",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "attempt": 0,
+  "durationMs": 29291,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "rust toolchain setup failed: ost triple.\ninfo: profile set to default\ninfo: default host triple is x86_64-unknown-linux-gnu\ninfo: syncing channel updates for stable-x86_64-unknown-linux-gnu\ninfo: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)\ninfo: downloading 6 components\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\ninfo: using existing install for stable-x86_64-unknown-linux-gnu\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\nbash: line 34: python3: command not found",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: rust toolchain setup failed: ost triple.\ninfo: profile set to default\ninfo: default host triple is x86_64-unknown-linux-gnu\ninfo: syncing channel updates for stable-x86_64-unknown-linux-gnu\ninfo: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)\ninfo: downloading 6 components\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\ninfo: using existing install for stable-x86_64-unknown-linux-gnu\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\nbash: line 34: python3: command not found\n    at Object.installRustToolchain (/home/ctrdh/Code/NiceEval/MemoryBench/evals/toggl-cli/harness.ts:207:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 29290,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 0,
+          "durationMs": 29291,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "bash",
+              "startOffsetMs": 0,
+              "durationMs": 29290,
+              "command": {
+                "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  APT_WAIT='-o DPkg::Lock::Timeout=300'\n  apt-get …",
+                "exitCode": 127,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799999
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 29291,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "01ef7993af99",
+    "reused": true,
+    "reuseSandbox": 3,
+    "reuseOrdinal": 9
+  },
+  "locator": "@1C48Z85NXFJT8",
+  "startedAt": "2026-08-05T03:51:44.513Z",
+  "locatorRunId": "11b9bcc9-b093-4547-9eca-03c322c2866c",
+  "artifacts": [
+    "commands"
+  ]
+}

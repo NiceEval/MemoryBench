@@ -1,0 +1,601 @@
+{
+  "id": "react-datepicker/pr-6167",
+  "description": "react-datepicker pr-6167: stop rendering an extra wrapper div around the portaled calendar when withPortal is set (real react-datepicker issue)",
+  "verdict": "failed",
+  "fingerprint": "96b1c23d96087e4a3a0e65e1a4e50c99797ac5153c0f2c471f24db830424aa18",
+  "configHash": "bc482bbdde27fc81d57187aca51389008ca5951a37cbbf63e8022b2474257bca",
+  "attempt": 0,
+  "durationMs": 289321,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6167/eval.ts",
+        "line": 76,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-datepicker/pr-6167/eval.ts",
+            "line": 55,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6167/eval.ts",
+        "line": 90,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…--------------|---------|----------|---------|---------|-------------------\"\noutput tail:\nFAIL src/test/datepicker_test.test.tsx\n  ● Test suite failed to run\n\n    Jest encountered an unexpected token\n\n    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.\n\n    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.\n\n    By default \"node_modules\" folder is ignored by transformers.\n\n    Here's what you can do:\n     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.\n     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript\n     • To have some of your \"node_modules\" files transformed, you can specify a custom \"transformIgnorePatterns\" in your config.\n     • If you need a custom transformation, specify a \"transform\" option in your config.\n     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the \"moduleNameMapper\" config option.\n\n    You'll find more details and examples of these config options in the docs:\n    https://jestjs.io/docs/configuration\n    For information about custom transformations, see:\n    https://jestjs.io/docs/code-transformation\n\n    Details:\n\n    /home/sandbox/workspace/src/index.js:33\n    export { default } from './downshift';\n    ^^^^^^\n\n    SyntaxError: Unexpected token 'export'\n\n      27 |   subYears,\n      28 | } from \"../date_utils\";\n    > 29 | import DatePicker, {\n         | ^\n      30 |   registerLocale,\n      31 |   setDefaultLocale,\n      32 |   getDefaultLocale,\n\n      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1318:40)\n      at Object.<anonymous> (src/test/datepicker_test.test.tsx:29:1)\n\nTest Suites: 1 failed, 1 total\nTests:       0 total\nSnapshots:   0 total\nTime:        6.349 s\nRan all test suites matching src/test/datepicker_test.test.tsx.\n------------------------|---------|----------|---------|---------|-------------------\nFile                    | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s \n------------------------|---------|----------|---------|---------|-------------------\nAll files               |       0 |        0 |       0 |       0 |                   \n test                   |       0 |        0 |       0 |       0 |                   \n  run_axe.tsx           |       0 |      100 |       0 |       0 | 1-13              \n  test_utils.ts         |       0 |        0 |       0 |       0 | 1-190             \n test/helper_components |       0 |        0 |       0 |       0 |                   \n  calendar_icon.tsx     |       0 |      100 |       0 |       0 | 1-6               \n  custom_input.tsx      |       0 |        0 |       0 |       0 | 1-32              \n  custom_time_input.tsx |       0 |        0 |       0 |       0 | 1-27              \n  shadow_root.tsx       |       0 |        0 |       0 |       0 | 1-31              \n  test_wrapper.tsx      |       0 |      100 |       0 |       0 | 1-12              \n------------------------|---------|----------|---------|---------|-------------------",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 33957,
+    "outputTokens": 2279,
+    "cacheReadTokens": 254720,
+    "reasoningTokens": 675,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.014620600000000003,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "remem.binary_version": "remem 0.6.47 (schema v75)",
+    "agent.ensure": "hit",
+    "remem.memories": "0",
+    "remem.captured_events": "6"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 79,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 1,
+          "durationMs": 79,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 1,
+              "durationMs": 37,
+              "command": {
+                "display": "command -v remem",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799999
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "remem",
+              "startOffsetMs": 38,
+              "durationMs": 42,
+              "command": {
+                "display": "remem --version",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799962
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 114,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 80,
+          "durationMs": 41,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799920
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 121,
+          "durationMs": 73,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799879
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 1094,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 194,
+          "durationMs": 39,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799806
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 233,
+          "durationMs": 1055,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799767
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 408,
+      "children": [
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 1289,
+          "durationMs": 43,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msfhbgvp_9bytd1'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\nFE_EOF_msfhbgv…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798711
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1417,
+          "durationMs": 37,
+          "command": {
+            "display": "printf '\\n' >> ~/.codex/config.toml && cat /tmp/niceeval-native-config-msfhbgwx-2wjbzj >> ~/.codex/config.toml && printf '\\n' >> ~/.codex/config.toml && rm -f …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798583
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 1454,
+          "durationMs": 43,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'NICEEVAL_PROVIDER_EOF'\n\n[model_providers.s2a]\nname = \"s2a\"\nbase_url = \"https://x1api.top/v1\"\nenv_key = \"CODEX_API_KEY\"\nwire_api …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798545
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "remem",
+          "startOffsetMs": 1497,
+          "durationMs": 80,
+          "command": {
+            "display": "remem install --target codex",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798503
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "remem",
+          "startOffsetMs": 1577,
+          "durationMs": 40,
+          "command": {
+            "display": "remem model use auto",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798423
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 1618,
+          "durationMs": 42,
+          "command": {
+            "display": "grep -q '\"SessionStart\"' \"${CODEX_HOME:-$HOME/.codex}/hooks.json\" && grep -q '\"Stop\"' \"${CODEX_HOME:-$HOME/.codex}/hooks.json\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798382
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 1660,
+          "durationMs": 36,
+          "command": {
+            "display": "grep -q \"mcp_servers.remem\" \"${CODEX_HOME:-$HOME/.codex}/config.toml\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798340
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 40,
+      "children": [
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 1696,
+          "durationMs": 40,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798304
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 286018,
+      "children": [
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 1738,
+          "durationMs": 5897,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798262
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "corepack",
+          "startOffsetMs": 7635,
+          "durationMs": 5102,
+          "command": {
+            "display": "corepack enable && yarn install --immutable",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792365
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 12738,
+          "durationMs": 117,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787262
+            }
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 12855,
+          "durationMs": 267845,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1787145
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 280701,
+          "durationMs": 56,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1519299
+            }
+          }
+        },
+        {
+          "id": "n21",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 12738,
+          "durationMs": 268019,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 33957,
+            "outputTokens": 2279,
+            "cacheReadTokens": 254720,
+            "reasoningTokens": 675,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n22",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 280758,
+          "durationMs": 69,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1519242
+            }
+          }
+        },
+        {
+          "id": "n23",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 280996,
+          "durationMs": 6758,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1519004
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 64,
+      "children": [
+        {
+          "id": "n24",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 1 file",
+          "startOffsetMs": 287754,
+          "durationMs": 63,
+          "children": [
+            {
+              "id": "n25",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 287754,
+              "durationMs": 61,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1512246
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1503
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 143,
+      "children": [
+        {
+          "id": "n26",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 289321,
+          "durationMs": 45,
+          "command": {
+            "display": "test -s \"$HOME/.remem/remem.db\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1510679
+            }
+          }
+        },
+        {
+          "id": "n27",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 289366,
+          "durationMs": 40,
+          "command": {
+            "display": "grep -q '\"Stop\"' \"${CODEX_HOME:-$HOME/.codex}/hooks.json\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1510634
+            }
+          }
+        },
+        {
+          "id": "n28",
+          "key": "sandbox.command",
+          "label": "remem",
+          "startOffsetMs": 289406,
+          "durationMs": 58,
+          "command": {
+            "display": "remem status --json",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1510594
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "executionMs": 289321,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "4549cb880fce",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 10
+  },
+  "locator": "@15VA5TGDMK68C",
+  "startedAt": "2026-08-05T02:39:55.436Z",
+  "locatorRunId": "ed15b395-b491-4486-95c3-256a09a5efde",
+  "artifacts": [
+    "commands",
+    "events",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna--remem/2026-08-05T02-21-18-936Z-je3h/react-datepicker/pr-6167/a0"
+}

@@ -1,0 +1,93 @@
+{
+  "id": "react-datepicker/pr-6058",
+  "description": "react-datepicker pr-6058: changeMonth from a custom header doesn't reset monthSelectedIn back to the first panel with monthsShown=2 (real react-datepicker issue)",
+  "verdict": "errored",
+  "fingerprint": "acd42751e2b85e7e5571f2318515fd24bd3ea169d5964b2f78d96e4ffe6530c7",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "attempt": 0,
+  "durationMs": 138747,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "react-datepicker checkout failed: error: RPC failed; curl 56 GnuTLS recv error (-9): Error decoding the received TLS packet.\nerror: 10684 bytes of body are still expected\nfetch-pack: unexpected disconnect while reading sideband packet\nfatal: early EOF\nfatal: fetch-pack: invalid index-pack output",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: react-datepicker checkout failed: error: RPC failed; curl 56 GnuTLS recv error (-9): Error decoding the received TLS packet.\nerror: 10684 bytes of body are still expected\nfetch-pack: unexpected disconnect while reading sideband packet\nfatal: early EOF\nfatal: fetch-pack: invalid index-pack output\n    at Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/evals/react-datepicker/pr-6058/eval.ts:47:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 138746,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 0,
+          "durationMs": 138747,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 1,
+              "durationMs": 138746,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+                "exitCode": 128,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1800000
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 138747,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "6fe4020c9629",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 7
+  },
+  "locator": "@1SMZ9Y6C7J6NY",
+  "startedAt": "2026-08-05T02:42:00.444Z",
+  "locatorRunId": "11b9bcc9-b093-4547-9eca-03c322c2866c",
+  "artifacts": [
+    "commands"
+  ]
+}

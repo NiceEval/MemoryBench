@@ -1,0 +1,40 @@
+{
+  "id": "toggl-cli/04-billing-doc",
+  "description": "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the `entry bill` session (round up to 15 minutes, billable only)",
+  "verdict": "errored",
+  "fingerprint": "9fb11555d7eb4e11f43b587a199235661ff3efb007bb00950b442b29838e969e",
+  "attempt": 0,
+  "durationMs": 0,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "error": {
+    "code": "judge-precheck-failed",
+    "message": "judge precheck failed: https://x1api.top/v1 (gpt-5.6-sol): fetch failed",
+    "origin": {
+      "scope": "attempt",
+      "phase": "judge.precheck"
+    }
+  },
+  "locator": "@1WC88T9E4W5Y8",
+  "startedAt": "2026-08-04T12:01:21.285Z",
+  "locatorRunId": "443aff61-29c4-4da2-b0de-f5faa5e4a4f5"
+}

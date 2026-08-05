@@ -1,0 +1,459 @@
+{
+  "id": "yet-another-react-lightbox/pr-408",
+  "description": "yet-another-react-lightbox pr-408: let the Zoom plugin opt custom slide types into zoom via supports/maxZoom props (real yet-another-react-lightbox issue)",
+  "verdict": "passed",
+  "attempt": 0,
+  "durationMs": 225865,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/yet-another-react-lightbox/pr-408/eval.ts",
+        "line": 148,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/yet-another-react-lightbox/pr-408/eval.ts",
+            "line": 114,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/yet-another-react-lightbox/pr-408/eval.ts",
+        "line": 162,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 85717,
+    "outputTokens": 7766,
+    "cacheReadTokens": 701952,
+    "reasoningTokens": 2555,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.2025082,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1094
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1057
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 14527,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 2151,
+          "durationMs": 14527,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 2152,
+              "durationMs": 1245,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/igordanchenko/yet-another-react-lightbox.git .niceeval-…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1797848
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 3397,
+              "durationMs": 4341,
+              "command": {
+                "display": "set -euo pipefail\nnpm install -g --prefix /usr/local n@10.2.0\nn 22.13.0",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1796603
+                }
+              }
+            },
+            {
+              "id": "n4",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 7738,
+              "durationMs": 293,
+              "command": {
+                "display": "set -euo pipefail\nMAJOR=$(node -p \"process.versions.node.split('.')[0]\")\nMINOR=$(node -p \"process.versions.node.split('.')[1]\")\nif [ \"$MAJOR\" -lt 22 ] || { [ \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1792262
+                }
+              }
+            },
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "npm",
+              "startOffsetMs": 8031,
+              "durationMs": 8647,
+              "command": {
+                "display": "npm install",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1791969
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 757,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 16678,
+          "durationMs": 284,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1783322
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 16963,
+          "durationMs": 472,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1783037
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 3455,
+      "children": [
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 17435,
+          "durationMs": 300,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1782565
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 17735,
+          "durationMs": 3155,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1782265
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1056,
+      "children": [
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 20890,
+          "durationMs": 1056,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbwqqny_argole'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1779110
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 355,
+      "children": [
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 21946,
+          "durationMs": 355,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1778054
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 199505,
+      "children": [
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 22304,
+          "durationMs": 275,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1777696
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 22580,
+          "durationMs": 191051,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1777420
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 213651,
+          "durationMs": 1169,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1586348
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 22304,
+          "durationMs": 192517,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 85717,
+            "outputTokens": 7766,
+            "cacheReadTokens": 701952,
+            "reasoningTokens": 2555,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 214822,
+          "durationMs": 641,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1585178
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 216866,
+          "durationMs": 4939,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1583133
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 1001,
+      "children": [
+        {
+          "id": "n18",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 6 files",
+          "startOffsetMs": 221806,
+          "durationMs": 1001,
+          "children": [
+            {
+              "id": "n19",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 221806,
+              "durationMs": 663,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1578194
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 3058
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 562
+    }
+  ],
+  "executionMs": 225865,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "i1idebiyj1kan7gig8qbp"
+  },
+  "startedAt": "2026-08-02T14:40:17.892Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-08-02T13-49-32-205Z-v9ha/yet-another-react-lightbox/pr-408/a0",
+  "fingerprint": "716c3033f2c6bcaeb238651253ee2a513cdd9730326c39fadce55c09eb9df98d",
+  "configHash": "de7e9bbd9f401fca84e286f18e63ffc162ae81a87012007a6a76e601b8489890",
+  "locator": "@1P1XZZGACF6Y6",
+  "locatorRunId": "47f06e49-56a7-41e5-b68d-c94bc276fd6c",
+  "acceptedFrom": {
+    "locator": "@1HW9TFEYP45GA",
+    "fingerprint": "a87241a87477aeb33f331f6db5ffa156a6fe94a9aa5d51d6b1312f36d967728f",
+    "acceptedFingerprint": "716c3033f2c6bcaeb238651253ee2a513cdd9730326c39fadce55c09eb9df98d",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"yet-another-react-lightbox/pr-408\",\"experimentId\":\"compare/codex-gpt-5.6-luna\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"238e93b08b9fc974a58f76c6396f38d0e6ec6b78dedbb4110fdb8260241a5720\"},\"commands\":[{\"kind\":\"opaque\",\"owner\":{\"kind\":\"eval\",\"id\":\"yet-another-react-lightbox/pr-408\"},\"index\":0}],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"91a6266b509413bd1f3cb4d361140f63a76c5b917a90be659076afd8e2407c3d\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"9e1b1923d748e806c9a559183d43e0c0026cf5058674c30c5f3dfd509ff0e8a8\"}}",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"yet-another-react-lightbox/pr-408\",\"experimentId\":\"compare/codex-gpt-5.6-luna\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"238e93b08b9fc974a58f76c6396f38d0e6ec6b78dedbb4110fdb8260241a5720\"},\"commands\":[{\"kind\":\"opaque\",\"owner\":{\"kind\":\"eval\",\"id\":\"yet-another-react-lightbox/pr-408\"},\"index\":0}],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"4110ba7e31862f98ce2d19582e8472e3fc1df7319990e1b7e6cf1508c70da2c4\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"9e1b1923d748e806c9a559183d43e0c0026cf5058674c30c5f3dfd509ff0e8a8\"}}"
+      }
+    ]
+  }
+}

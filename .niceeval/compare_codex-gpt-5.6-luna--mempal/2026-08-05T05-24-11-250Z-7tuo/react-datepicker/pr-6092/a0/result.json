@@ -1,0 +1,496 @@
+{
+  "id": "react-datepicker/pr-6092",
+  "description": "react-datepicker PR #6092: add a monthHeaderPosition prop (top/middle/bottom) so the month nav header can render relative to each month's day grid instead of only at the top of the calendar (real react-datepicker feature request)",
+  "verdict": "passed",
+  "attempt": 0,
+  "durationMs": 307295,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6092/eval.ts",
+        "line": 94,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-datepicker/pr-6092/eval.ts",
+            "line": 57,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6092/eval.ts",
+        "line": 108,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 76450,
+    "outputTokens": 7656,
+    "cacheReadTokens": 906752,
+    "reasoningTokens": 2908,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.2130612,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 743
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 636,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 744,
+          "durationMs": 636,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 744,
+              "durationMs": 291,
+              "command": {
+                "display": "command -v mempal",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799255
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "test",
+              "startOffsetMs": 1035,
+              "durationMs": 345,
+              "command": {
+                "display": "test -n \"$(find \"$HOME/.cache/huggingface\" -name \"*.safetensors\" -print -quit 2>/dev/null)\"",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798964
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 637,
+      "children": [
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1380,
+          "durationMs": 303,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798619
+            }
+          }
+        },
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 1683,
+          "durationMs": 334,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798316
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 4058,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 2017,
+          "durationMs": 294,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797982
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 2311,
+          "durationMs": 3764,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797689
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1829,
+      "children": [
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 6075,
+          "durationMs": 300,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbwv72o_gawqha'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793924
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 6680,
+          "durationMs": 291,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793319
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 7259,
+          "durationMs": 338,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_7ymlx3'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- mempal-memory: .agents/skills/mempal-memory/SKILL.md\n…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792740
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 7597,
+          "durationMs": 306,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792402
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 293,
+      "children": [
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 7904,
+          "durationMs": 293,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792095
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 251302,
+      "children": [
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 8197,
+          "durationMs": 5050,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791802
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "corepack",
+          "startOffsetMs": 13247,
+          "durationMs": 3081,
+          "command": {
+            "display": "corepack enable && yarn install --immutable",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1786752
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 16330,
+          "durationMs": 1040,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1783669
+            }
+          }
+        },
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 17370,
+          "durationMs": 222076,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1782630
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 239448,
+          "durationMs": 1380,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1560551
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 16330,
+          "durationMs": 224498,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 76450,
+            "outputTokens": 7656,
+            "cacheReadTokens": 906752,
+            "reasoningTokens": 2908,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 240831,
+          "durationMs": 1484,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1559168
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 246704,
+          "durationMs": 12794,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1553295
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 1302,
+      "children": [
+        {
+          "id": "n21",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 3 files",
+          "startOffsetMs": 259499,
+          "durationMs": 1301,
+          "children": [
+            {
+              "id": "n22",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 259499,
+              "durationMs": 535,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1540500
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 46494
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 307295,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "iv26v2cw2phnmwiqjl6sb",
+    "reused": true,
+    "reuseSandbox": 2,
+    "reuseOrdinal": 4
+  },
+  "startedAt": "2026-08-02T14:44:00.596Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna--mempal/2026-08-02T13-46-23-297Z-k51y/react-datepicker/pr-6092/a0",
+  "fingerprint": "4a7e4e65aa27e7c37d91ee25eae54afe45cfc646774aa082662f05f0a36d9dcc",
+  "configHash": "3d94d6db178ea2ff2257baefbd3729bc9603bf4caea358cb49a8a9b46a5288bf",
+  "locator": "@12GSKA6FBY1DQ",
+  "locatorRunId": "ef25446c-0006-42f0-b6f7-6bc9012c033e",
+  "acceptedFrom": {
+    "locator": "@1G8DGAN7Y8K21",
+    "fingerprint": "1b056b44e90d5ab37fc46979ab5c2ac4165bba01670dcce6dcd3f5a4a6ce3ce8",
+    "acceptedFingerprint": "4a7e4e65aa27e7c37d91ee25eae54afe45cfc646774aa082662f05f0a36d9dcc",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-datepicker/pr-6092\",\"experimentId\":\"compare/codex-gpt-5.6-luna--mempal\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--mempal\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"a7f1420c8a5d3b8d567b09d9aa3b6f641aca0f9225c94cd6aa46dcce3760ffc8\"},\"commands\":[{\"kind\":\"opaque\",\"owner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--mempal\"},\"index\":0}],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"011e1a2a64b3fbee2d0f55027dd1f3567463dd830ecc2f9e85bd2c604ffdd951\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"04b8bb253198f3f7e3aba08f8c92eb9792808c8e720ddd1071c9c6bc10d2d242\"}}",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-datepicker/pr-6092\",\"experimentId\":\"compare/codex-gpt-5.6-luna--mempal\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--mempal\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"a7f1420c8a5d3b8d567b09d9aa3b6f641aca0f9225c94cd6aa46dcce3760ffc8\"},\"commands\":[{\"kind\":\"opaque\",\"owner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--mempal\"},\"index\":0}],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"df259d170a471f64676b35574f5b3ee2c4ea508c9e59ef670d937b7da8ef39f3\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"04b8bb253198f3f7e3aba08f8c92eb9792808c8e720ddd1071c9c6bc10d2d242\"}}"
+      }
+    ]
+  }
+}

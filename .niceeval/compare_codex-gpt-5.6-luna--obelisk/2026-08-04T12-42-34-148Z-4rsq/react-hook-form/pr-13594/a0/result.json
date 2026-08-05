@@ -1,0 +1,582 @@
+{
+  "id": "react-hook-form/pr-13594",
+  "description": "react-hook-form pr-13594: on a disabled form, setValue(..., { shouldDirty: true }) must still mark the field and form dirty (an explicit programmatic dirty request), while ordinary interaction on a disabled form stays non-dirty (real react-hook-form issue #13592)",
+  "verdict": "passed",
+  "fingerprint": "b6cb083dd27af904370435b6f9757ee6c83cfad99de7726880dd776e3e7bc507",
+  "configHash": "201eac8dcce24b77f12fe68d8c8667b28a88a8fd68dcff10d521e84eaf8c6e5d",
+  "attempt": 0,
+  "durationMs": 697715,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13594/eval.ts",
+        "line": 81,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-hook-form/pr-13594/eval.ts",
+            "line": 62,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-hook-form/pr-13594/eval.ts",
+        "line": 93,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 101246,
+    "outputTokens": 17586,
+    "cacheReadTokens": 2814976,
+    "reasoningTokens": 7649,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.09765192000000002,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit",
+    "obelisk.codex_sessions_at_setup": 4,
+    "obelisk.session_archive_count": 5
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 111,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 0,
+          "durationMs": 38,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1800000
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 38,
+          "durationMs": 74,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799962
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 98,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 112,
+          "durationMs": 42,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799888
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 154,
+          "durationMs": 55,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799846
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 8207,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 209,
+          "durationMs": 47,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msep6mba_6blo6j'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799791
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 256,
+          "durationMs": 7785,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-w6bsdz' && mkdir -p '/tmp/niceeval-git' && git clone --quiet 'https://github.com/tommy0103/obelisk-skill.git'…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799744
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 8041,
+          "durationMs": 39,
+          "command": {
+            "display": "find '/tmp/niceeval-git/tommy0103-obelisk-skill-w6bsdz' -name SKILL.md -not -path '*/.git/*'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791959
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 8080,
+          "durationMs": 43,
+          "command": {
+            "display": "mkdir -p '.agents/skills' && rm -rf '.agents/skills/obelisk' && cp -R '/tmp/niceeval-git/tommy0103-obelisk-skill-w6bsdz/skills/obelisk' '.agents/skills/obelisk'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791920
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 8124,
+          "durationMs": 39,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-w6bsdz'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791876
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 8163,
+          "durationMs": 43,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791837
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 8246,
+          "durationMs": 37,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_qajiu5'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- obelisk: .agents/skills/obelisk/SKILL.md\n\nBefore answ…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791754
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 8283,
+          "durationMs": 41,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791717
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 8324,
+          "durationMs": 50,
+          "command": {
+            "display": "mkdir -p \"$HOME/.codex/sessions\" \"/opt/obelisk-session-archive\"; cp -R \"/opt/obelisk-session-archive/.\" \"$HOME/.codex/sessions/\" 2>/dev/null; true",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791676
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 8374,
+          "durationMs": 43,
+          "command": {
+            "display": "find \"$HOME/.codex/sessions\" -name \"*.jsonl\" 2>/dev/null | wc -l | tr -d \" \"",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791626
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 40,
+      "children": [
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 8417,
+          "durationMs": 39,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791583
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 687680,
+      "children": [
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 8457,
+          "durationMs": 39349,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .niceeval-clone\nmv …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791543
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 47807,
+          "durationMs": 16673,
+          "command": {
+            "display": "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1752193
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 64481,
+          "durationMs": 232,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1735519
+            }
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 64713,
+          "durationMs": 629680,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1735287
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 694394,
+          "durationMs": 56,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1105606
+            }
+          }
+        },
+        {
+          "id": "n21",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 64481,
+          "durationMs": 629969,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 101246,
+            "outputTokens": 17586,
+            "cacheReadTokens": 2814976,
+            "reasoningTokens": 7649,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n22",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 694450,
+          "durationMs": 70,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1105550
+            }
+          }
+        },
+        {
+          "id": "n23",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 694675,
+          "durationMs": 1461,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1105325
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 75,
+      "children": [
+        {
+          "id": "n24",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 696136,
+          "durationMs": 75,
+          "children": [
+            {
+              "id": "n25",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 696136,
+              "durationMs": 72,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1103864
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1504
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 85,
+      "children": [
+        {
+          "id": "n26",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 697715,
+          "durationMs": 47,
+          "command": {
+            "display": "mkdir -p \"/opt/obelisk-session-archive\"; [ -d \"$HOME/.codex/sessions\" ] && cp -R \"$HOME/.codex/sessions/.\" \"/opt/obelisk-session-archive/\" 2>/dev/null; true",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1102285
+            }
+          }
+        },
+        {
+          "id": "n27",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 697762,
+          "durationMs": 38,
+          "command": {
+            "display": "find \"/opt/obelisk-session-archive\" -name \"*.jsonl\" 2>/dev/null | wc -l | tr -d \" \"",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1102238
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "executionMs": 697715,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "863ff2bc3028",
+    "reused": true,
+    "reuseSandbox": 2,
+    "reuseOrdinal": 10
+  },
+  "locator": "@18ZMVE0FFQ01T",
+  "startedAt": "2026-08-04T13:32:21.029Z",
+  "locatorRunId": "b96e0a3d-c1bd-4f59-a6e5-ca2449e443fe",
+  "artifacts": [
+    "commands",
+    "events",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}

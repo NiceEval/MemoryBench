@@ -1,0 +1,109 @@
+{
+  "id": "react-datepicker/pr-6058",
+  "description": "react-datepicker pr-6058: changeMonth from a custom header doesn't reset monthSelectedIn back to the first panel with monthsShown=2 (real react-datepicker issue)",
+  "verdict": "errored",
+  "fingerprint": "4d784776b9a0d62dadb912df00b7c63f0d78f9063cea2ea3bee2c8692ae61aaf",
+  "configHash": "8a90f26e0cc8f594816af392dc6628d06068340302d8ff3990725ede49dc7ea1",
+  "attempt": 0,
+  "durationMs": 9327,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "yarn install failed: /lib/node_modules/corepack/dist/lib/corepack.cjs:14066:5)\n    at async Promise.all (index 0)\n    at async EnableCommand.execute (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:14047:5)\n    at async EnableCommand.validateAndExecute (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:1343:26)\n    at async _Cli.run (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:2453:22)\n    at async Object.runMain (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:14560:19)",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: yarn install failed: /lib/node_modules/corepack/dist/lib/corepack.cjs:14066:5)\n    at async Promise.all (index 0)\n    at async EnableCommand.execute (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:14047:5)\n    at async EnableCommand.validateAndExecute (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:1343:26)\n    at async _Cli.run (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:2453:22)\n    at async Object.runMain (/usr/local/lib/node_modules/corepack/dist/lib/corepack.cjs:14560:19)\n    at Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/evals/react-datepicker/pr-6058/eval.ts:53:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 9327,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 0,
+          "durationMs": 9327,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 1,
+              "durationMs": 9235,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1800000
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "corepack",
+              "startOffsetMs": 9236,
+              "durationMs": 91,
+              "command": {
+                "display": "corepack enable && yarn install --immutable",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1790764
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 9327,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "e8e159cd6628",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 7
+  },
+  "locator": "@1MHT64GFNPM76",
+  "startedAt": "2026-08-04T11:47:51.581Z",
+  "locatorRunId": "443aff61-29c4-4da2-b0de-f5faa5e4a4f5",
+  "artifacts": [
+    "commands"
+  ]
+}

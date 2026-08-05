@@ -1,0 +1,418 @@
+{
+  "id": "react-tooltip/pr-1271",
+  "description": "react-tooltip pr-1271: fix inaccurate anchor detection during hover/focus transitions and stale-state delayShow timing (real react-tooltip issue)",
+  "verdict": "failed",
+  "attempt": 0,
+  "durationMs": 224249,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-tooltip/pr-1271/eval.ts",
+        "line": 108,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-tooltip/pr-1271/eval.ts",
+            "line": 74,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-tooltip/pr-1271/eval.ts",
+        "line": 122,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "failed",
+      "score": 0,
+      "expected": "exit 0",
+      "received": "exit 1 · \"…---------------------------------------------------------------------------\"\noutput tail:\n  clear-timeout-ref.ts              |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  compute-tooltip-position.ts       |   92.92 |    81.81 |     100 |   92.92 | 20-24,27-28                                                                                                                                                                                                                 \n  css-time-to-ms.ts                 |      90 |    33.33 |     100 |      90 | 6                                                                                                                                                                                                                           \n  debounce.ts                       |   87.93 |    77.77 |     100 |   87.93 | 20-21,34-38                                                                                                                                                                                                                 \n  deep-equal.ts                     |       0 |        0 |       0 |       0 | 1-34                                                                                                                                                                                                                        \n  get-scroll-parent.ts              |   84.61 |       70 |     100 |   84.61 | 3-4,19-20                                                                                                                                                                                                                   \n  handle-style.ts                   |       0 |        0 |       0 |       0 | 1-99                                                                                                                                                                                                                        \n  index.ts                          |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  parse-data-tooltip-id-selector.ts |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  resolve-data-tooltip-anchor.ts    |     100 |      100 |     100 |     100 |                                                                                                                                                                                                                             \n  use-isomorphic-layout-effect.ts   |     100 |        0 |     100 |     100 | 16                                                                                                                                                                                                                          \n------------------------------------|---------|----------|---------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 59964,
+    "outputTokens": 5244,
+    "cacheReadTokens": 784640,
+    "reasoningTokens": 1686,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.169892,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 652
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 852
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 878,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1505,
+          "durationMs": 338,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798495
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 1844,
+          "durationMs": 538,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798156
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 670,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 2382,
+          "durationMs": 317,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797618
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 2699,
+          "durationMs": 353,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1797301
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 257,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 3052,
+          "durationMs": 257,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbvtj25_4pxcw8'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1796948
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 268,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 3309,
+          "durationMs": 268,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1796691
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 217794,
+      "children": [
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 3579,
+          "durationMs": 1640,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/ReactTooltip/react-tooltip.git .niceeval-clone\nmv .nice…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1796421
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 5219,
+          "durationMs": 33054,
+          "command": {
+            "display": "npm install -g --prefix /usr/local yarn@1 && yarn install --ignore-scripts --ignore-engines",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1794781
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 38277,
+          "durationMs": 380,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1761723
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 38658,
+          "durationMs": 177842,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1761342
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 216504,
+          "durationMs": 267,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1583468
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 38277,
+          "durationMs": 178494,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 59964,
+            "outputTokens": 5244,
+            "cacheReadTokens": 784640,
+            "reasoningTokens": 1686,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 216773,
+          "durationMs": 327,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1583199
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 218035,
+          "durationMs": 3333,
+          "failed": true,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 1,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1581937
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 656,
+      "children": [
+        {
+          "id": "n15",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 2 files",
+          "startOffsetMs": 221371,
+          "durationMs": 656,
+          "children": [
+            {
+              "id": "n16",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 221371,
+              "durationMs": 323,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1578601
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 2
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 2221
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 488
+    }
+  ],
+  "executionMs": 224249,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "ilx8tp85dhxdc20so5cr1"
+  },
+  "startedAt": "2026-08-02T14:14:46.225Z",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna/2026-08-02T13-49-32-205Z-v9ha/react-tooltip/pr-1271/a0",
+  "fingerprint": "f1d8f92216bac1e5bf652bd07ab58a9679115b81091d78ad7c252f59b3b98826",
+  "configHash": "de7e9bbd9f401fca84e286f18e63ffc162ae81a87012007a6a76e601b8489890",
+  "locator": "@1ZFE5Z879ER8Q",
+  "locatorRunId": "47f06e49-56a7-41e5-b68d-c94bc276fd6c",
+  "acceptedFrom": {
+    "locator": "@126YT4XEYR4NB",
+    "fingerprint": "d2158ca8327f16d04cf3efb9c818b82b57a93ab563200376fead008283893604",
+    "acceptedFingerprint": "f1d8f92216bac1e5bf652bd07ab58a9679115b81091d78ad7c252f59b3b98826",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-tooltip/pr-1271\",\"experimentId\":\"compare/codex-gpt-5.6-luna\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"238e93b08b9fc974a58f76c6396f38d0e6ec6b78dedbb4110fdb8260241a5720\"},\"commands\":[],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"91a6266b509413bd1f3cb4d361140f63a76c5b917a90be659076afd8e2407c3d\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"9e1b1923d748e806c9a559183d43e0c0026cf5058674c30c5f3dfd509ff0e8a8\"}}",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-tooltip/pr-1271\",\"experimentId\":\"compare/codex-gpt-5.6-luna\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"238e93b08b9fc974a58f76c6396f38d0e6ec6b78dedbb4110fdb8260241a5720\"},\"commands\":[],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"4110ba7e31862f98ce2d19582e8472e3fc1df7319990e1b7e6cf1508c70da2c4\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"ProviderDefault\"}},\"privateIdentityDigest\":\"9e1b1923d748e806c9a559183d43e0c0026cf5058674c30c5f3dfd509ff0e8a8\"}}"
+      }
+    ]
+  }
+}

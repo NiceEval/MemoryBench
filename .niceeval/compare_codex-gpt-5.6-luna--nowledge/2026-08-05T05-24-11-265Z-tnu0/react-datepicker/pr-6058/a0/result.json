@@ -1,0 +1,747 @@
+{
+  "id": "react-datepicker/pr-6058",
+  "description": "react-datepicker pr-6058: changeMonth from a custom header doesn't reset monthSelectedIn back to the first panel with monthsShown=2 (real react-datepicker issue)",
+  "verdict": "passed",
+  "attempt": 0,
+  "durationMs": 284973,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6058/eval.ts",
+        "line": 76,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/react-datepicker/pr-6058/eval.ts",
+            "line": 58,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/react-datepicker/pr-6058/eval.ts",
+        "line": 90,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-tests.sh"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 78395,
+    "outputTokens": 6763,
+    "cacheReadTokens": 1123584,
+    "reasoningTokens": 1997,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.23133140000000002,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "nowledge.cohort": "configured-local-20260802",
+    "nowledge.server-version": "0.10.48",
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 581
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 30904,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 582,
+          "durationMs": 2432,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 584,
+              "durationMs": 381,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799416
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "if",
+              "startOffsetMs": 965,
+              "durationMs": 222,
+              "command": {
+                "display": "if command -v nmem >/dev/null 2>&1 && [ \"$(nmem --version 2>/dev/null)\" = \"nmem 0.10.48\" ]; then exit 0; fi; uv tool install --force 'nmem-cli==0.10.48' >/dev/…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799034
+                }
+              }
+            },
+            {
+              "id": "n4",
+              "key": "sandbox.command",
+              "label": "nmem_bin=\"$HOME/.local/bin/nmem\";",
+              "startOffsetMs": 1187,
+              "durationMs": 289,
+              "command": {
+                "display": "nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" || nmem_bin=\"$(command -v nmem 2>/dev/null || true)\"; test -n \"$nmem_bin\" && \"$nmem_bin\" --version 2>/dev…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798813
+                }
+              }
+            },
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "printf",
+              "startOffsetMs": 1476,
+              "durationMs": 223,
+              "command": {
+                "display": "printf \"%s\" \"$HOME\"",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798524
+                }
+              }
+            },
+            {
+              "id": "n6",
+              "key": "sandbox.command",
+              "label": "mkdir",
+              "startOffsetMs": 1699,
+              "durationMs": 247,
+              "command": {
+                "display": "mkdir -p \"$HOME/.nowledge-mem\"",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798301
+                }
+              }
+            },
+            {
+              "id": "n7",
+              "key": "sandbox.command",
+              "label": "nmem",
+              "startOffsetMs": 2202,
+              "durationMs": 811,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1797798
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 3014,
+          "durationMs": 28472,
+          "children": [
+            {
+              "id": "n9",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 3014,
+              "durationMs": 5728,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/Hacker0x01/react-datepicker.git .niceeval-clone\nmv .nic…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1796985
+                }
+              }
+            },
+            {
+              "id": "n10",
+              "key": "sandbox.command",
+              "label": "corepack",
+              "startOffsetMs": 8743,
+              "durationMs": 22743,
+              "command": {
+                "display": "corepack enable && yarn install --immutable",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1791257
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 603,
+      "children": [
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 31487,
+          "durationMs": 323,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1768513
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 31811,
+          "durationMs": 277,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1768188
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 3895,
+      "children": [
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 32088,
+          "durationMs": 238,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1767911
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 32327,
+          "durationMs": 3656,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1767673
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 5692,
+      "children": [
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 35990,
+          "durationMs": 228,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msbwbnm6_8uttdt'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\nFE_EOF_msbwbnm…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1764010
+            }
+          }
+        },
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 36457,
+          "durationMs": 210,
+          "command": {
+            "display": "printf '\\n' >> ~/.codex/config.toml && cat /tmp/niceeval-native-config-msbwbnsj-b2mrl1 >> ~/.codex/config.toml && printf '\\n' >> ~/.codex/config.toml && rm -f …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1763542
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 36667,
+          "durationMs": 296,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'NICEEVAL_PROVIDER_EOF'\n\n[model_providers.s2a]\nname = \"s2a\"\nbase_url = \"https://x1api.top/v1\"\nenv_key = \"CODEX_API_KEY\"\nwire_api …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1763333
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 36963,
+          "durationMs": 279,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) plugin list --json",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1763036
+            }
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 37244,
+          "durationMs": 301,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) plugin marketplace remove 'nowledge-community'",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1762755
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 37545,
+          "durationMs": 1017,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) plugin marketplace add 'nowledge-co/community' --sparse …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1762455
+            }
+          }
+        },
+        {
+          "id": "n21",
+          "key": "sandbox.command",
+          "label": "codex",
+          "startOffsetMs": 38562,
+          "durationMs": 323,
+          "command": {
+            "display": "codex plugin marketplace list --json",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1761437
+            }
+          }
+        },
+        {
+          "id": "n22",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 38885,
+          "durationMs": 307,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) plugin add 'nowledge-mem@nowledge-community'",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1761114
+            }
+          }
+        },
+        {
+          "id": "n23",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 39192,
+          "durationMs": 340,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) plugin list --json --marketplace 'nowledge-community'",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1760807
+            }
+          }
+        },
+        {
+          "id": "n24",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 39533,
+          "durationMs": 268,
+          "command": {
+            "display": "find \"${CODEX_HOME:-$HOME/.codex}\" -type f -name install_hooks.py -path \"*nowledge-mem*\" 2>/dev/null | head -1",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1760467
+            }
+          }
+        },
+        {
+          "id": "n25",
+          "key": "sandbox.command",
+          "label": "python3",
+          "startOffsetMs": 39801,
+          "durationMs": 378,
+          "command": {
+            "display": "python3 '/home/user/.codex/.tmp/marketplaces/nowledge-community/nowledge-mem-codex-plugin/scripts/install_hooks.py'",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1760198
+            }
+          }
+        },
+        {
+          "id": "n26",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 40179,
+          "durationMs": 237,
+          "command": {
+            "display": "cat \"$(dirname \"$(dirname '/home/user/.codex/.tmp/marketplaces/nowledge-community/nowledge-mem-codex-plugin/scripts/install_hooks.py')\")/AGENTS.md\"",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1759820
+            }
+          }
+        },
+        {
+          "id": "n27",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 40668,
+          "durationMs": 220,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_4ibb99'\n# Nowledge Mem for Codex\n\nYou have access to the user's knowledge through the installed plugin skills, the `nmem` CL…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1759331
+            }
+          }
+        },
+        {
+          "id": "n28",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 40889,
+          "durationMs": 311,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1759111
+            }
+          }
+        },
+        {
+          "id": "n29",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 41200,
+          "durationMs": 215,
+          "command": {
+            "display": "test -f \"${CODEX_HOME:-$HOME/.codex}/hooks.json\"",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1758799
+            }
+          }
+        },
+        {
+          "id": "n30",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 41415,
+          "durationMs": 261,
+          "command": {
+            "display": "grep -q \"mcp_servers.nowledge-mem\" \"${CODEX_HOME:-$HOME/.codex}/config.toml\"",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1758584
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 299,
+      "children": [
+        {
+          "id": "n31",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 41676,
+          "durationMs": 299,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1758323
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 240167,
+      "children": [
+        {
+          "id": "n32",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 41985,
+          "durationMs": 753,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1758014
+            }
+          }
+        },
+        {
+          "id": "n33",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 42739,
+          "durationMs": 225118,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1757260
+            }
+          }
+        },
+        {
+          "id": "n34",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 267860,
+          "durationMs": 262,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1532138
+            }
+          }
+        },
+        {
+          "id": "n35",
+          "key": "agent.turn",
+          "label": "s1/t1",
+          "startOffsetMs": 41985,
+          "durationMs": 226137,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 78395,
+            "outputTokens": 6763,
+            "cacheReadTokens": 1123584,
+            "reasoningTokens": 1997,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n36",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 268124,
+          "durationMs": 260,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1531874
+            }
+          }
+        },
+        {
+          "id": "n37",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 269836,
+          "durationMs": 12305,
+          "command": {
+            "display": "bash tests/run-tests.sh",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1530163
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 608,
+      "children": [
+        {
+          "id": "n38",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 3 files",
+          "startOffsetMs": 282142,
+          "durationMs": 607,
+          "children": [
+            {
+              "id": "n39",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 282142,
+              "durationMs": 310,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1517856
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 2223
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 284973,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "iionqqedtqqdmk4r9choc",
+    "reused": true,
+    "reuseSandbox": 2,
+    "reuseOrdinal": 2
+  },
+  "startedAt": "2026-08-02T14:28:19.000Z",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ],
+  "artifactBase": "compare_codex-gpt-5.6-luna--nowledge/2026-08-02T13-50-05-028Z-yjje/react-datepicker/pr-6058/a0",
+  "fingerprint": "d80670d2f2dd54004571f436475e81a2160df21a9e096a84d56d12e9178ce1b2",
+  "configHash": "1a0c58e047e29c96852beb99b00b6289bae18a1fdbe5f431e8ffa24fe8a218e4",
+  "locator": "@17D2G5PGQ2AEK",
+  "locatorRunId": "c3790b30-a8a5-4bb5-8d5a-5aa4d48c0bec",
+  "acceptedFrom": {
+    "locator": "@14HP3X3K58JAB",
+    "fingerprint": "362b9924da224b2362af9eaf55d9dd98f383c339bf8f6ac3335c52ae9617a021",
+    "acceptedFingerprint": "d80670d2f2dd54004571f436475e81a2160df21a9e096a84d56d12e9178ce1b2",
+    "differences": [
+      {
+        "selector": "config:agentInstalls",
+        "from": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"4\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]",
+        "to": "[{\"order\":0,\"ensure\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installer\":{\"_tag\":\"Matched\",\"identity\":{\"agent\":\"codex\",\"version\":\"0.144.1\",\"revision\":\"5\"},\"installMode\":\"staged\",\"platforms\":{\"_tag\":\"All\"}}}]"
+      },
+      {
+        "selector": "plan:physical",
+        "from": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-datepicker/pr-6058\",\"experimentId\":\"compare/codex-gpt-5.6-luna--nowledge\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--nowledge\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653\"},\"commands\":[{\"kind\":\"opaque\",\"owner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--nowledge\"},\"index\":0},{\"kind\":\"opaque\",\"owner\":{\"kind\":\"eval\",\"id\":\"react-datepicker/pr-6058\"},\"index\":0}],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642\"}}",
+        "to": "{\"version\":1,\"mode\":\"sandbox\",\"pair\":{\"evalId\":\"react-datepicker/pr-6058\",\"experimentId\":\"compare/codex-gpt-5.6-luna--nowledge\",\"agentName\":\"codex\"},\"templateOwner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--nowledge\"},\"template\":{\"version\":2,\"provider\":\"e2b\",\"kind\":\"template\",\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653\"},\"commands\":[{\"kind\":\"opaque\",\"owner\":{\"kind\":\"experiment\",\"id\":\"compare/codex-gpt-5.6-luna--nowledge\"},\"index\":0},{\"kind\":\"opaque\",\"owner\":{\"kind\":\"eval\",\"id\":\"react-datepicker/pr-6058\"},\"index\":0}],\"providerPlan\":{\"version\":3,\"provider\":\"e2b\",\"plannerRevision\":\"e2b-template-1\",\"caseKind\":\"prebuilt\",\"target\":{\"source\":\"provider-standard\",\"platform\":{\"_tag\":\"Linux\",\"os\":\"linux\",\"arch\":\"x64\",\"libc\":\"gnu\"}},\"scheduling\":{\"recommendedConcurrency\":20,\"lane\":{\"key\":\"e2b\",\"limit\":20},\"admission\":{\"_tag\":\"Shared\"}},\"providerModule\":\"niceeval/e2b-template\",\"capabilities\":{\"retention\":{\"_tag\":\"Suspendable\"},\"reuse\":{\"_tag\":\"Supported\"},\"sessionLimit\":{\"_tag\":\"ProviderValidated\",\"reason\":\"E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed.\"}},\"carry\":{\"_tag\":\"Eligible\"},\"build\":{\"_tag\":\"None\",\"caseKey\":\"97e6f82f489eb1de459277edf1300cfa20353d677164ad00b702b32e99644122\",\"buildKeys\":[]},\"publishable\":{\"user\":{\"_tag\":\"EnvironmentDefault\"},\"lifetime\":{\"_tag\":\"Configured\",\"milliseconds\":3600000}},\"privateIdentityDigest\":\"dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642\"}}"
+      }
+    ]
+  }
+}

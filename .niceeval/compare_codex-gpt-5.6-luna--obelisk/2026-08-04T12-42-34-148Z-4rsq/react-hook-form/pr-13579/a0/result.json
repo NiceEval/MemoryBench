@@ -1,0 +1,449 @@
+{
+  "id": "react-hook-form/pr-13579",
+  "description": "react-hook-form pr-13579: per-event metadata (the field `name`) leaks across subscribe() notifications — a later, unrelated update reports a stale `name` from an earlier clearErrors() call instead of undefined (real react-hook-form issue #13575)",
+  "verdict": "errored",
+  "fingerprint": "db5da88b0f66af0d350a7acb969d4ba590d085fb86ecb79be03b3bc3f49cc30c",
+  "configHash": "201eac8dcce24b77f12fe68d8c8667b28a88a8fd68dcff10d521e84eaf8c6e5d",
+  "attempt": 0,
+  "durationMs": 171466,
+  "assertions": [],
+  "evaluationKind": "pass",
+  "usage": {},
+  "error": {
+    "code": "unexpected-error",
+    "message": "pnpm install failed: npm warn using --force Recommended protections disabled.",
+    "origin": {
+      "scope": "attempt",
+      "phase": "eval.run"
+    },
+    "stack": "Error: pnpm install failed: npm warn using --force Recommended protections disabled.\n    at Object.test (/home/ctrdh/Code/NiceEval/MemoryBench/evals/react-hook-form/pr-13579/eval.ts:58:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1301:7)"
+  },
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit",
+    "obelisk.codex_sessions_at_setup": 4,
+    "obelisk.session_archive_count": 4
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 123,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 0,
+          "durationMs": 46,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1800000
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 46,
+          "durationMs": 77,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799954
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 105,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 124,
+          "durationMs": 40,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799876
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 164,
+          "durationMs": 64,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799836
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 1687,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 228,
+          "durationMs": 44,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msep2xwq_1f7a93'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799772
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 272,
+          "durationMs": 1278,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-xkzntj' && mkdir -p '/tmp/niceeval-git' && git clone --quiet 'https://github.com/tommy0103/obelisk-skill.git'…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799728
+            }
+          }
+        },
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 1550,
+          "durationMs": 38,
+          "command": {
+            "display": "find '/tmp/niceeval-git/tommy0103-obelisk-skill-xkzntj' -name SKILL.md -not -path '*/.git/*'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798450
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 1588,
+          "durationMs": 42,
+          "command": {
+            "display": "mkdir -p '.agents/skills' && rm -rf '.agents/skills/obelisk' && cp -R '/tmp/niceeval-git/tommy0103-obelisk-skill-xkzntj/skills/obelisk' '.agents/skills/obelisk'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798412
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 1630,
+          "durationMs": 38,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-xkzntj'",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798370
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 1668,
+          "durationMs": 46,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' '.agents/skills/' >> .git/info/exclude",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798332
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 1758,
+          "durationMs": 37,
+          "command": {
+            "display": "cat >> 'AGENTS.md' <<'NICEEVAL_EOF_mq434n'\n\n## Skills\n\nSkill files are installed in `.agents/skills/`:\n\n- obelisk: .agents/skills/obelisk/SKILL.md\n\nBefore answ…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798242
+            }
+          }
+        },
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 1795,
+          "durationMs": 40,
+          "command": {
+            "display": "test -d .git && mkdir -p .git/info && printf '%s\\n' 'AGENTS.md' >> .git/info/exclude",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798205
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 1835,
+          "durationMs": 39,
+          "command": {
+            "display": "mkdir -p \"$HOME/.codex/sessions\" \"/opt/obelisk-session-archive\"; cp -R \"/opt/obelisk-session-archive/.\" \"$HOME/.codex/sessions/\" 2>/dev/null; true",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798165
+            }
+          }
+        },
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 1874,
+          "durationMs": 41,
+          "command": {
+            "display": "find \"$HOME/.codex/sessions\" -name \"*.jsonl\" 2>/dev/null | wc -l | tr -d \" \"",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798126
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 36,
+      "children": [
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 1915,
+          "durationMs": 36,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798085
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 167961,
+      "children": [
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 1951,
+          "durationMs": 3684,
+          "command": {
+            "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/react-hook-form/react-hook-form.git .niceeval-clone\nmv …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1798049
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "npm",
+          "startOffsetMs": 5635,
+          "durationMs": 164276,
+          "command": {
+            "display": "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+            "exitCode": 1,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1794365
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 52,
+      "children": [
+        {
+          "id": "n18",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 0 windows · 0 files",
+          "startOffsetMs": 169912,
+          "durationMs": 51,
+          "children": [
+            {
+              "id": "n19",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 169912,
+              "durationMs": 49,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1630088
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1503
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 76,
+      "children": [
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 171466,
+          "durationMs": 38,
+          "command": {
+            "display": "mkdir -p \"/opt/obelisk-session-archive\"; [ -d \"$HOME/.codex/sessions\" ] && cp -R \"$HOME/.codex/sessions/.\" \"/opt/obelisk-session-archive/\" 2>/dev/null; true",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1628533
+            }
+          }
+        },
+        {
+          "id": "n21",
+          "key": "sandbox.command",
+          "label": "find",
+          "startOffsetMs": 171504,
+          "durationMs": 38,
+          "command": {
+            "display": "find \"/opt/obelisk-session-archive\" -name \"*.jsonl\" 2>/dev/null | wc -l | tr -d \" \"",
+            "exitCode": 0,
+            "checked": true,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1628496
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "executionMs": 171466,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "863ff2bc3028",
+    "reused": true,
+    "reuseSandbox": 2,
+    "reuseOrdinal": 9
+  },
+  "locator": "@1FY5HDWF99H4P",
+  "startedAt": "2026-08-04T13:29:29.414Z",
+  "locatorRunId": "b96e0a3d-c1bd-4f59-a6e5-ca2449e443fe",
+  "artifacts": [
+    "commands",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}
