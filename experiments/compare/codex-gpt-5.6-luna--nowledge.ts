@@ -18,7 +18,7 @@ import {
 // niceeval 侧不管服务端生命周期,沙箱钩子负责接线与收尾核对，并始终使用服务端 default Space。
 // 本实验内记忆按串行顺序持续积累。
 export default defineExperiment({
-  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
+  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/", "toggl-cli-evolution/"],
   description: "codex · gpt-5.6-luna · Nowledge Mem",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: codexAgent(nowledgeCodexConfig()),

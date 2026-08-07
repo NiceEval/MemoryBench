@@ -22,7 +22,7 @@ import {
 // 隔离:中心化 server 下并行 attempt 共享同一记忆库,故 maxConcurrency:1 串行 —— 让跨 eval 的记忆
 // 累积顺序确定(eval N 读得到 eval N-1 写的),与 mempal 条件语义对齐。
 export default defineExperiment({
-  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
+  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/", "toggl-cli-evolution/"],
   description: "claude-code · deepseek-v4-flash · Nowledge Mem",
   labels: { line: "claude" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: claudeCodeAgent({

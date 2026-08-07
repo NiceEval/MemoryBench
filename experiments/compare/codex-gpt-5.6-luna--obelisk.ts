@@ -31,7 +31,7 @@ import {
 // 完整的多 Attempt archive/restore 流程还没有用真实 codex exec 批次验证过,全量数据仍暂缓
 // 采集,需要用户批准重跑成本后再开(2026-08-04 协调决策)。**
 export default defineExperiment({
-  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
+  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/", "toggl-cli-evolution/"],
   description: "codex · gpt-5.6-luna · obelisk",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   // postSetup 还原归档、preTeardown 归档本条会话——见文件头:执行身份根因已修,但完整跨
