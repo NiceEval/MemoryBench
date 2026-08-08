@@ -37,12 +37,9 @@ export default defineExperiment({
   // 复用:remem 二进制已烘进镜像,sandbox 级只有 rememPrepare 这层薄探测,省的是 codex CLI
   // 安装 + 公共依赖每题重付一次。postSetup 的 `remem install --target codex` 在残留 $HOME
   // 上幂等重放(2026-08-04 手工验证过两遍:key/db 显示 existing、mcp_servers.remem 不重复写)。
-  sandboxReuse: true,
   earlyExit: false,
-  // maxConcurrency: 1 让 Attempt 串行,与 mempal/nowledge 两个记忆条件的实验对齐,理由不同于
-  // nowledge(远程服务器自己处理并发读写):remem 状态是本条物理沙箱专属的本地文件,串行
-  // 本身就是记忆按顺序积累的前提,不是为了避免写冲突而设的额外约束。
-  maxConcurrency: 1,
+  // Group 内按声明顺序积累本地状态；不同仓库家族使用独立 Sandbox 并行推进。
+  maxConcurrency: 4,
   // 与 codex baseline/mempal/nowledge 对齐;toggl-cli 链式题需要 30 分钟的 agent deadline,
   // 实验上限保持一致不截断它的单题超时。
   timeoutMs: 1_800_000,

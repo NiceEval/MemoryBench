@@ -25,22 +25,9 @@ export default defineExperiment({
     .prepare(mempalPrepare("codex"))
     .setup(mempalLoadState)
     .teardown(mempalSaveState),
-  sandboxReuse: true,
   earlyExit: false,
-  // maxConcurrency: 1 让所有 Attempt 串行承接同一台复用的物理 Sandbox。
-  // 这同时修掉一个一直在丢记忆的 bug:原来写 5 而注释说「串行」,
-  // 5 个并发状态序列各自 restore 同一个 <experimentId>.tgz 又各自写回去,
-  // 后写覆盖先写,跨 eval 的记忆累积大半丢失(claude 那条同名注释配的就是 1)。
-  //
-  // 复用把串行的代价补了回来:prepare 每条 Attempt 做模板实况检查，lifecycle load/save 每台物理 Sandbox 一次，
-  // 记忆态直接留在沙箱 $HOME/.mempal 里跨题存活,不再每题 restore/回存一遍 tgz;
-  // 沙箱创建 + 依赖安装也从每题一次降到每台物理 Sandbox 一次。
-  //
-  // 代价要记住:① 当前 setup/teardown 是 opaque lifecycle callback,所以 carry 被禁用、中断后计划内题目
-  // 全量重跑；这不是 sandboxReuse 本身的规则。中断 Attempt 可能已污染旧 checkpoint,正式比较要换新
-  // MEMPAL_COHORT 从头重建。② host 侧 tgz 只在物理 Sandbox 退休时写一次(寿命续不上而轮换、或
-  // run 收尾),run 中途硬崩会丢掉这一轮积累的记忆。
-  maxConcurrency: 1,
+  // Group 内串行复用，Group 间并行；host checkpoint 按 (Experiment, Group) 隔离。
+  maxConcurrency: 4,
   // 与 claude 组对齐(重型题可能超 10 分钟),消除条件间超时偏置——2026-07-10 重跑里
   // 本实验 repomod/terminal-cancel 正是死于 600s 默认超时(setup 含 ~514MB 模型预热)。
   // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the

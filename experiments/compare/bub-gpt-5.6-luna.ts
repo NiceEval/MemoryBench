@@ -10,12 +10,13 @@ import { NICEEVAL_BUB_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
 // 「bub 默认 tape 开 = 带 tape 记忆」是错的)。根据 niceeval docs「内置 agent 能力表」,bub 的
 // tape(`~/.bub/tapes/<hash>.jsonl`)有两个身份:① adapter 读它当 transcript;② `--session-id`
 // 的**会话续接**——而那一栏指的是同一条 Attempt 内跨轮(配 `t.newSession()` 用),不是跨 eval。
-// 本实验不开 sandboxReuse,每条 Attempt 一台全新沙箱,tape 随沙箱销毁,跨题记忆为零。
+// Eval Group 会复用 Sandbox，但 bub 只把 tape 用于同一 Attempt 的会话续接；本实验不提供
+// 跨 Eval 的 tape 检索能力，因此仍是 no-memory baseline。
 // 这和 remem 那条已确诊的 caveat 同构(见 shared/remem.ts):接线没错,但记忆没积累。
 //
 // 所以它的用途是**同模型下 bub vs codex 的 agent 对照**(对 codex-gpt-5.6-luna.ts),以及将来
 // bub--tape 变体的 baseline。真要采 tape 记忆条件,得照 obelisk/remem 的做法另开一个变体文件:
-// sandboxReuse + lifetimeMs + maxConcurrency:1 + tape 归档/还原钩子,且**前提是先零成本验证
+// tape 归档/还原钩子，且**前提是先零成本验证
 // bub 到底有没有跨 session 检索历史 tape 的能力**——文档没有任何一处说它会。
 export default defineExperiment({
   description: "bub · gpt-5.6-luna",
@@ -24,7 +25,7 @@ export default defineExperiment({
   flags: { memory: "baseline" },
   model: "gpt-5.6-luna", // 两边钉同一个模型,差异才归因到 agent / 记忆机制
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
-  sandbox: e2bSandbox({ template: NICEEVAL_BUB_E2B_TEMPLATE }),
+  sandbox: e2bSandbox({ template: NICEEVAL_BUB_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 }),
   // 注:workspace(starter repo)上传 + 装依赖不在这儿 —— 那属于「eval 在什么上面干活」,
   // 写在各 eval 的 test(t) 里(t.sandbox.uploadDirectory + runCommand)。experiment 只管怎么跑。
   earlyExit: false, // 要完整通过率分布,以便报 pass^k

@@ -32,12 +32,12 @@ export default defineExperiment({
   }),
   flags: { ...nowledgeFlags() },
   model: "deepseek-v4-flash",
-  sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE })
+  sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 })
     .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   attempts: 1,
   earlyExit: true,
-  // 串行:中心化记忆库跨 attempt 共享,串行让累积顺序确定(对齐 claude-dp-v4--mempal 语义)。
-  maxConcurrency: 1,
+  // Group 内顺序确定，不同 Group 由中心化服务并发处理。
+  maxConcurrency: 4,
   timeoutMs: 1200000,
 });

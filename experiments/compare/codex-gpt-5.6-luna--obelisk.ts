@@ -48,12 +48,9 @@ export default defineExperiment({
   // mempal/nowledge 两个变体对齐,足够单条 Attempt(30 分钟超时上限)跑完。
   sandbox: dockerImageSandbox({ image: OBELISK_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 })
     .setup(obeliskProbe()),
-  sandboxReuse: true,
   earlyExit: false,
-  // maxConcurrency: 1 让所有 Attempt 串行承接同一台复用的物理容器,与 mempal/nowledge 两个
-  // 变体同款——这里额外是记忆条件本身的要求:obelisk 索引的是 `~/.codex/sessions` 写入顺序,
-  // 并发 Attempt 会把"谁的会话先落盘"变成竞态,索引到的历史顺序不再对应真实作答顺序。
-  maxConcurrency: 1,
+  // Group 内按声明顺序积累 session；不同仓库家族使用独立 Sandbox 并行推进。
+  maxConcurrency: 4,
   // 与 codex baseline/mempal/nowledge 对齐,消除条件间超时偏置;toggl-cli 链式题需要
   // 30 分钟的 agent 超时,实验级上限不能比它更紧。
   timeoutMs: 1_800_000,
