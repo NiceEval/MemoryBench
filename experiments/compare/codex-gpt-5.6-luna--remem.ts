@@ -19,7 +19,7 @@ import { REMEM_DOCKER_IMAGE, rememCodexConfig, rememFlags, rememPrepare } from "
 // (hooks/MCP)本身没问题,但记忆内容没有真正跨题积累,当前这批结果应读作"remem 装对了但
 // 退化成 no-memory baseline",不是 remem 记忆条件的真实效果对照。
 export default defineExperiment({
-  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/", "toggl-cli-evolution/"],
+  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · remem",
   labels: { line: "codex" }, // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: codexAgent(rememCodexConfig()),
