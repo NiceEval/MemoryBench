@@ -7,8 +7,8 @@ import pr408 from "./pr-408/eval.ts";
 
 const NODE_VERSION = "22.13.0";
 const N_VERSION = "10.2.0";
-const installDependencies: SandboxHook = async (sandbox, ctx) => {
-  ctx.progress({ message: `installing Node ${NODE_VERSION} + dependencies` });
+const installNodeRuntime: SandboxHook = async (sandbox, ctx) => {
+  ctx.progress({ message: `installing Node ${NODE_VERSION} for the Eval Group` });
   const nodeSwapped = await sandbox.runShell(
     [
       "set -euo pipefail",
@@ -38,17 +38,9 @@ const installDependencies: SandboxHook = async (sandbox, ctx) => {
       `Node version check failed after swap: ${(nodeChecked.stderr || nodeChecked.stdout).trim().slice(-500)}`,
     );
   }
-
-  const installed = await sandbox.runShell("npm install");
-  if (installed.exitCode !== 0) {
-    throw new Error(
-      `npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
-    );
-  }
 };
 
 export default defineEvalGroup({
-  sandboxReuse: true,
-  sandbox: sandboxLayer().setup(installDependencies),
+  sandbox: sandboxLayer().setup(installNodeRuntime),
   evals: [commit5578052, commitF63f6af, pr408],
 });

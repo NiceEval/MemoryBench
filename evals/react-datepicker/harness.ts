@@ -6,7 +6,7 @@ export const prepareRepo = (baseCommit: string) =>
   defineSandboxCommand(
     {
       id: "memorybench.react-datepicker.checkout",
-      revision: "1",
+      revision: "2",
       inputs: { baseCommit },
     },
     async (sandbox, ctx) => {
@@ -31,6 +31,13 @@ export const prepareRepo = (baseCommit: string) =>
       if (cloned.exitCode !== 0) {
         throw new Error(
           `react-datepicker checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
+        );
+      }
+      ctx.progress({ message: "installing react-datepicker dependencies" });
+      const installed = await sandbox.runShell("yarn install --immutable");
+      if (installed.exitCode !== 0) {
+        throw new Error(
+          `react-datepicker dependency install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
         );
       }
     },

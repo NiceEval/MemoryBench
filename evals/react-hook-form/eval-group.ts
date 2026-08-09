@@ -11,11 +11,10 @@ import pr13599 from "./pr-13599/eval.ts";
 import pr13603 from "./pr-13603/eval.ts";
 
 const PNPM_VERSION = "10.34.5";
-const installDependencies: SandboxHook = async (sandbox, ctx) => {
-  ctx.progress({ message: `installing pnpm ${PNPM_VERSION} + dependencies` });
+const installPnpm: SandboxHook = async (sandbox, ctx) => {
+  ctx.progress({ message: `installing pnpm ${PNPM_VERSION} for the Eval Group` });
   const installed = await sandbox.runShell(
-    `npm install -g --force --prefix /usr/local pnpm@${PNPM_VERSION} && ` +
-      "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+    `npm install -g --force --prefix /usr/local pnpm@${PNPM_VERSION}`,
   );
   if (installed.exitCode !== 0) {
     throw new Error(
@@ -25,9 +24,8 @@ const installDependencies: SandboxHook = async (sandbox, ctx) => {
 };
 
 export default defineEvalGroup({
-  sandboxReuse: true,
-  // Eval Group 本身就是复用边界：成员 prepare 先建立首题 checkout，group setup
-  // 再安装依赖一次；后续成员从这份基线继续，只重建各自的 commit 专属 checkout。
-  sandbox: sandboxLayer().setup(installDependencies),
+  // Group setup 只安装不依赖题目 checkout 的全局工具链；每条成员 prepare 在 clone 后
+  // 重放项目依赖安装，符合 setup → reset anchor → per-Attempt prepare 的生命周期。
+  sandbox: sandboxLayer().setup(installPnpm),
   evals: [pr13476, pr13512, pr13515, pr13566, pr13579, pr13594, pr13599, pr13603],
 });

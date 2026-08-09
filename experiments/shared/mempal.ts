@@ -3,11 +3,9 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SkillSpec } from "niceeval/adapter";
-import { createCheckpoint, restoreCheckpoint } from "niceeval/sandbox";
+import { createCheckpoint, restoreCheckpoint, shell } from "niceeval/sandbox";
 import type {
   SandboxCommand,
-  SandboxCommandContext,
-  SandboxCommandTarget,
   SandboxHook,
 } from "niceeval/sandbox";
 import {
@@ -73,37 +71,16 @@ function statePathFor(experimentId: string, evalGroupId: string): string {
   return statePath;
 }
 
-function commandFailure(label: string, result: { exitCode: number; stdout: string; stderr: string }): Error {
-  const tail = (result.stderr || result.stdout).trim().slice(-500) || "no output";
-  return new Error(`[mempal] ${label} failed (exit ${result.exitCode}): ${tail}`);
-}
-
-async function requireCommand(sb: SandboxCommandTarget, label: string, script: string): Promise<void> {
-  const result = await sb.runShell(script);
-  if (result.exitCode !== 0) throw commandFailure(label, result);
-}
-
-function commandLog(ctx: SandboxCommandContext, message: string): void {
-  ctx.progress({ message });
-}
-
 /** 每条 Attempt 重放的薄 prepare：只验证不可变模板里的二进制与 embedding cache。 */
 export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
-  return async (sb, ctx) => {
-    const probe = await sb.runShell("command -v mempal");
-    if (probe.exitCode !== 0) {
-      throw new Error(
-        `[mempal] template does not contain mempal. Build ${mempalTemplate(tool)} with ` +
-          `\`pnpm template:mempal ${tool}\`, then use that template.`,
-      );
-    }
-    await requireCommand(
-      sb,
-      "embedding cache probe",
-      'test -n "$(find "$HOME/.cache/huggingface" -name "*.safetensors" -print -quit 2>/dev/null)"',
-    );
-    commandLog(ctx, "[mempal] template probe passed: binary and embedding cache");
-  };
+  const missingTemplate =
+    `[mempal] template does not contain mempal. Build ${mempalTemplate(tool)} with ` +
+    `pnpm template:mempal ${tool}, then use that template.`;
+  return shell([
+    "set -eu",
+    `command -v mempal >/dev/null 2>&1 || { printf '%s\\n' ${JSON.stringify(missingTemplate)} >&2; exit 1; }`,
+    'test -n "$(find "$HOME/.cache/huggingface" -name "*.safetensors" -print -quit 2>/dev/null)" || { printf \'%s\\n\' \'[mempal] embedding cache probe failed\' >&2; exit 1; }',
+  ].join("\n"));
 }
 
 /** 每台物理 Sandbox 建成时恢复一次；reuse 时 Attempt 间直接保留 `$HOME/.mempal`。 */

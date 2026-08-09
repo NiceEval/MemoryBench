@@ -19,17 +19,17 @@ import type {
  * 端到端探活),Agent `preTeardown` 再用 `nowledgeVerifyRemoteAlive` 核对同一个 URL 仍存活。
  *
  * 这与 mempal 的差异是形态本质:mempal 状态是文件(checkpoint 每 attempt 恢复/回存),
- * nowledge 状态在中心化 server 上跨 attempt / 跨实验 / 跨 run 天然共享持续积累。
+ * nowledge 状态在中心化 server 上按 Eval Group Space 隔离；同一 Group 内跨 attempt / 跨实验 /
+ * 跨 run 持续积累，不同 Group 不共享日常读写面。
  * 由此的两条纪律:
- * - **可并发**:中心化 server 自己处理并发读写,并行 attempt 不会互相踩坏对方的写入,
- *   所以 nowledge 实验不需要 mempal 那种 maxConcurrency: 1。代价是跨 eval 的记忆可见顺序
- *   不确定(eval N 不保证读得到 eval N-1 刚写的)——链式题要的是「上一轮写过」而不是
- *   「紧邻上一条写过」,这个粒度的乱序可以接受。
+ * - **Group 间可并发**:中心化 server 自己处理不同 Space 的并发读写；同一 Group 由
+ *   `defineEvalGroup()` 队列严格串行，成员 N 能读取成员 N-1 已写入的记忆。
  * - **每个逻辑评测流有一个 cohort 标签**:用非秘密 `NOWLEDGE_COHORT` 区分结果批次；它进入
  *   flags / fingerprint，但不参与服务端连接。未显式设置时使用本轮直连标签。
  *
  * URL 是连接坐标而不是实验身份，也绝不进入 flags、facts 或进度文本。写路径是否可用由
- * 每条 Attempt 的 prepare 与 preTeardown 探针验证，避免把连接坐标复制到终端记录。
+ * 每条 Attempt 的 prepare 与 preTeardown 探针验证，Space 名作为非秘密运行事实记录，连接坐标
+ * 不复制到终端记录。
  */
 
 export interface NowledgeEnv {
@@ -140,9 +140,12 @@ async function requireCommand(
   sb: SandboxCommandTarget,
   label: string,
   script: string,
-  opts: { shared?: boolean } = {},
+  opts: {
+    shared?: boolean;
+    env?: Readonly<Record<string, string>>;
+  } = {},
 ): Promise<void> {
-  const result = await sb.runShell(script);
+  const result = await sb.runShell(script, opts.env === undefined ? undefined : { env: opts.env });
   if (result.exitCode !== 0) {
     const tail = redactNowledgeConnection((result.stderr || result.stdout).trim().slice(-500)) || "no output";
     const message = `[nowledge] ${label} failed (exit ${result.exitCode}): ${tail}`;
@@ -157,8 +160,82 @@ async function requireCommand(
  */
 const attemptConditions = new WeakMap<
   object,
-  { cohort: string; serverVersion: string }
+  { cohort: string; serverVersion: string; space: string }
 >();
+
+function evalGroupSpace(ctx: SandboxCommandContext): string {
+  if (ctx.evalGroup === undefined) {
+    throw new Error("[nowledge] Eval Group context is required to isolate the Nowledge Space.");
+  }
+  return ctx.evalGroup.id;
+}
+
+function nowledgeEnv(space: string): Readonly<Record<string, string>> {
+  return Object.freeze({ NMEM_SPACE: space });
+}
+
+async function ensureNowledgeSpace(
+  sb: SandboxCommandTarget,
+  space: string,
+): Promise<void> {
+  const env = nowledgeEnv(space);
+  const show = await sb.runCommand("nmem", ["--json", "spaces", "show", space], { env });
+  if (show.exitCode === 0) return;
+  const create = await sb.runCommand(
+    "nmem",
+    ["--json", "spaces", "create", space, "--retrieval-mode", "strict"],
+    { env },
+  );
+  if (create.exitCode === 0) return;
+  // 两个 Invocation 同时第一次命中同一 Group 时，另一边可能刚创建成功。回读一次再判失败。
+  const raced = await sb.runCommand("nmem", ["--json", "spaces", "show", space], { env });
+  if (raced.exitCode === 0) return;
+  const tail = redactNowledgeConnection(
+    (create.stderr || create.stdout || raced.stderr || raced.stdout).trim().slice(-500),
+  ) || "no output";
+  throw new ExperimentFatalError(`[nowledge] cannot create or resolve Space ${JSON.stringify(space)}: ${tail}`);
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+/** 让整个 Agent CLI 进程及其 hooks、MCP env_http_headers 与 nmem 子进程使用当前 Group Space。 */
+function bindAgentToNowledgeSpace(binName: "codex" | "claude"): SandboxCommand {
+  return async (sb, ctx) => {
+    const space = evalGroupSpace(ctx);
+    const resolved = await sb.runShell(
+      `if [ -x "$HOME/.local/bin/${binName}" ]; then printf '%s' "$HOME/.local/bin/${binName}"; else command -v ${binName}; fi`,
+    );
+    const bin = resolved.stdout.trim();
+    if (resolved.exitCode !== 0 || !bin) {
+      throw new Error(`[nowledge] cannot resolve ${binName} binary for Space binding`);
+    }
+    const real = `${bin}.niceeval-nowledge-real`;
+    const marker = await sb.runCommand("grep", ["-q", "NICEEVAL_NOWLEDGE_SPACE_WRAPPER", bin]);
+    if (marker.exitCode !== 0) {
+      const moved = await sb.runCommand("mv", ["-f", bin, real]);
+      if (moved.exitCode !== 0) {
+        throw new Error(
+          `[nowledge] cannot preserve real ${binName} binary: ${(moved.stderr || moved.stdout).trim().slice(-500)}`,
+        );
+      }
+    }
+    await sb.writeText(
+      bin,
+      [
+        "#!/bin/sh",
+        "# NICEEVAL_NOWLEDGE_SPACE_WRAPPER",
+        `export NMEM_SPACE=${shellQuote(space)}`,
+        `exec ${shellQuote(real)} "$@"`,
+        "",
+      ].join("\n"),
+    );
+    await requireCommand(sb, `${binName} Space wrapper executable`, `chmod 755 ${shellQuote(bin)}`);
+    ctx.facts("nowledge.space", space);
+    commandLog(ctx, `[nowledge] ${binName} bound to Space ${space}`);
+  };
+}
 
 /**
  * Experiment layer prepare command(每 Attempt 一次):装 nmem CLI 并把 client 指向固定远程实例,跑在 Agent postSetup 之前,
@@ -168,10 +245,12 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
   return async (sb, ctx) => {
     const cohort = nowledgeCohort();
     const serverVersion = requireNowledgeServerVersion();
+    const space = evalGroupSpace(ctx);
     const conn = endpoint();
-    attemptConditions.set(sb, { cohort, serverVersion });
+    attemptConditions.set(sb, { cohort, serverVersion, space });
     ctx.facts("nowledge.cohort", cohort);
     ctx.facts("nowledge.server-version", serverVersion);
+    ctx.facts("nowledge.space", space);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
     await requireCommand(sb, "python3 probe", "command -v python3", { shared: true });
@@ -200,15 +279,16 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
       `${home}/.nowledge-mem/config.json`,
       `${JSON.stringify({ apiUrl: conn.url, apiKey: conn.apiKey }, null, 2)}\n`,
     );
+    await ensureNowledgeSpace(sb, space);
     // 端到端探活:隧道挂了在这里死,不浪费 agent.setup 和模型调用。远程实例是全实验共享的
     // 单点,它挂了整批必死——声明 shared 让止损闸停掉余量,而不是 36 条 attempt 一条条撞。
     await requireCommand(
       sb,
       "nowledge server probe",
       "nmem --json status",
-      { shared: true },
+      { shared: true, env: nowledgeEnv(space) },
     );
-    commandLog(ctx, `[nowledge] nmem ${serverVersion} client ready for cohort ${cohort}`);
+    commandLog(ctx, `[nowledge] nmem ${serverVersion} client ready for cohort ${cohort}, Space ${space}`);
   };
 }
 
@@ -233,7 +313,7 @@ export function nowledgeVerifyRemoteAlive(): SandboxCommand {
     // prepare 没走到:没有可核对的基准,不额外报错
     if (!condition) return;
 
-    const result = await sb.runShell("nmem --json status");
+    const result = await sb.runShell("nmem --json status", { env: nowledgeEnv(condition.space) });
     if (result.exitCode !== 0) {
       const tail = redactNowledgeConnection((result.stderr || result.stdout).trim().slice(-300)) || "no output";
       throw new Error(
@@ -244,7 +324,7 @@ export function nowledgeVerifyRemoteAlive(): SandboxCommand {
     }
     commandLog(
       ctx,
-      `[nowledge] cohort ${condition.cohort} (server ${condition.serverVersion}) still reachable at preTeardown`,
+      `[nowledge] cohort ${condition.cohort}, Space ${condition.space} (server ${condition.serverVersion}) still reachable at preTeardown`,
     );
   };
 }
@@ -266,13 +346,14 @@ export const nowledgePlugin: CodexPluginSpec = {
  */
 export function nowledgePostSetup(): SandboxCommand {
   return async (sb, ctx) => {
+    const space = evalGroupSpace(ctx);
     const locate = await sb.runShell(
       'find "${CODEX_HOME:-$HOME/.codex}" -type f -name install_hooks.py -path "*nowledge-mem*" 2>/dev/null | head -1',
     );
     const script = locate.stdout.trim();
     if (!script) throw new Error("[nowledge] 找不到插件的 install_hooks.py——plugin 安装产物不在预期位置");
 
-    await requireCommand(sb, "install_hooks.py", `python3 '${script}'`);
+    await requireCommand(sb, "install_hooks.py", `python3 '${script}'`, { env: nowledgeEnv(space) });
 
     // nowledge 文档的可选步骤「插件 AGENTS.md 合并进项目根」——对 benchmark 是行为组成部分,
     // 缺了会静默削弱读路径,按硬依赖处理。appendProjectInstruction 只在 AGENTS.md 是
@@ -299,8 +380,8 @@ export function nowledgePostSetup(): SandboxCommand {
 }
 
 /**
- * 连接由 prepare 写入的 nmem client config 提供；插件、Session hooks 与 agent 内 nmem CLI
- * 都使用服务端 default Space。
+ * 连接由 prepare 写入的 nmem client config 提供；Agent 进程、Session hooks、MCP 动态 header
+ * 与 agent 内 nmem CLI 都使用当前 Eval Group 对应的 Space。
  */
 export function nowledgeCodexConfig(): Pick<
   CodexConfig,
@@ -311,7 +392,7 @@ export function nowledgeCodexConfig(): Pick<
     plugins: [nowledgePlugin],
     // [features] plugins = true 必须在 codex plugin add 之前落盘(adapter 先写 configFile 再装 plugin)
     configFile: "configs/codex/nowledge.toml",
-    postSetup: [nowledgePostSetup()],
+    postSetup: [nowledgePostSetup(), bindAgentToNowledgeSpace("codex")],
     preTeardown: [nowledgeVerifyRemoteAlive()],
   };
 }
@@ -378,7 +459,7 @@ export function nowledgeCodexCliOnlyConfig(): Pick<
     env: {},
     plugins: [nowledgePlugin],
     configFile: "configs/codex/nowledge.toml",
-    postSetup: [nowledgePostSetup(), nowledgeCliOnlyPostSetup()],
+    postSetup: [nowledgePostSetup(), nowledgeCliOnlyPostSetup(), bindAgentToNowledgeSpace("codex")],
     preTeardown: [nowledgeVerifyRemoteAlive()],
   };
 }
@@ -407,9 +488,10 @@ export const nowledgeClaudePlugin: ClaudeCodePluginSpec = {
 };
 
 /** claudeCodeAgent(...) 的 Nowledge Mem 配置增量;apiKey/baseUrl 等由实验文件自带,这里只叠插件。 */
-export function nowledgeClaudeConfig(): Pick<ClaudeCodeConfig, "plugins" | "preTeardown"> {
+export function nowledgeClaudeConfig(): Pick<ClaudeCodeConfig, "plugins" | "postSetup" | "preTeardown"> {
   return {
     plugins: [nowledgeClaudePlugin],
+    postSetup: [bindAgentToNowledgeSpace("claude")],
     preTeardown: [nowledgeVerifyRemoteAlive()],
   };
 }

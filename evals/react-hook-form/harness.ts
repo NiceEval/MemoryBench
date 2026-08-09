@@ -6,7 +6,7 @@ export const prepareRepo = (baseCommit: string) =>
   defineSandboxCommand(
     {
       id: "memorybench.react-hook-form.checkout",
-      revision: "1",
+      revision: "2",
       inputs: { baseCommit },
     },
     async (sandbox, ctx) => {
@@ -32,6 +32,15 @@ export const prepareRepo = (baseCommit: string) =>
       if (cloned.exitCode !== 0) {
         throw new Error(
           `react-hook-form checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
+        );
+      }
+      ctx.progress({ message: "installing react-hook-form dependencies" });
+      const installed = await sandbox.runShell(
+        "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+      );
+      if (installed.exitCode !== 0) {
+        throw new Error(
+          `react-hook-form dependency install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
         );
       }
     },

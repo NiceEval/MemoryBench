@@ -9,7 +9,6 @@ import entryInvoiceMonthly from "./06-entry-invoice-monthly/eval.ts";
 import { installRustToolchain } from "./harness.ts";
 
 export default defineEvalGroup({
-  sandboxReuse: true,
   sandbox: sandboxLayer().setup(installRustToolchain),
   evals: [entryStats, entryBill, entryBillWeekly, billingDoc, entryInvoice, entryInvoiceMonthly],
 });

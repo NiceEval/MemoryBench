@@ -28,7 +28,6 @@ const prepareStarter = defineSandboxCommand(
 );
 
 export default defineEvalGroup({
-  sandboxReuse: true,
   sandbox: sandboxLayer().prepare(prepareStarter),
   evals: [
     orionDeadline,

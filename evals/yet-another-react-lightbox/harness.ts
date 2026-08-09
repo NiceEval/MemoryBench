@@ -6,7 +6,7 @@ export const prepareRepo = (baseCommit: string) =>
   defineSandboxCommand(
     {
       id: "memorybench.yet-another-react-lightbox.checkout",
-      revision: "1",
+      revision: "2",
       inputs: { baseCommit },
     },
     async (sandbox, ctx) => {
@@ -32,6 +32,13 @@ export const prepareRepo = (baseCommit: string) =>
       if (cloned.exitCode !== 0) {
         throw new Error(
           `yet-another-react-lightbox checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
+        );
+      }
+      ctx.progress({ message: "installing yet-another-react-lightbox dependencies" });
+      const installed = await sandbox.runShell("npm install");
+      if (installed.exitCode !== 0) {
+        throw new Error(
+          `yet-another-react-lightbox dependency install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
         );
       }
     },

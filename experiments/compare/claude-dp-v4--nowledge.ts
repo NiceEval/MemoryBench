@@ -15,12 +15,12 @@ import {
 // 已冒烟跑通(probe 实锤 Stop hook 落 thread 到服务端)。
 //
 // mem 服务端是长期运行的固定远程实例(连接坐标在 .env,见 shared/nowledge.ts 文件头):
-// niceeval 侧无任何生命周期,沙箱钩子只做接线,记忆跨 run / 跨实验持续积累,与 mempal
-// 「状态跨 run 存续」对齐。同批的 codex-gpt-5.6-luna--nowledge 共用同一个库;正式对比要说清
-// 起点库状态。license 在服务端侧一次性激活(device 固定,seat 稳定占一个,不再随 run 增长);
+// niceeval 侧不管理服务端生命周期，Sandbox prepare 只做接线。每个 Eval Group 使用同名
+// Nowledge Space；同一 Group 的状态跨 run / 跨实验持续积累，与 mempal 的持久状态语义对齐。
+// 同批 Codex / Claude 变体按 Group 共用 Space，正式对比要说清起点状态。license 在服务端侧
+// 一次性激活(device 固定,seat 稳定占一个,不再随 run 增长);
 // free tier memory 上限 50,持久积累库容易撞上限,正式跑前确认服务端是 pro。
-// 隔离:中心化 server 下并行 attempt 共享同一记忆库,故 maxConcurrency:1 串行 —— 让跨 eval 的记忆
-// 累积顺序确定(eval N 读得到 eval N-1 写的),与 mempal 条件语义对齐。
+// Group 内由 Eval Group 队列串行，让成员 N 读得到成员 N-1 的写入；Group 间仍可并行。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "claude-code · deepseek-v4-flash · Nowledge Mem",

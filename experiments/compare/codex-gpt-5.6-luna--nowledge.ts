@@ -15,8 +15,8 @@ import {
 // 对照 codex-gpt-5.6-luna.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。
 //
 // mem 服务端是长期运行的固定远程实例(连接坐标在 .env,见 shared/nowledge.ts 文件头):
-// niceeval 侧不管服务端生命周期,沙箱钩子负责接线与收尾核对，并始终使用服务端 default Space。
-// 本实验内记忆按串行顺序持续积累。
+// niceeval 侧不管服务端生命周期,沙箱生命周期 Hook 负责接线与收尾核对。每个 Eval Group
+// 使用同名 Nowledge Space；Group 内记忆按成员顺序持续积累，Group 间隔离并行。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · Nowledge Mem",

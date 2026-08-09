@@ -6,7 +6,7 @@ export const prepareRepo = (baseCommit: string) =>
   defineSandboxCommand(
     {
       id: "memorybench.downshift.checkout",
-      revision: "1",
+      revision: "2",
       inputs: { baseCommit },
     },
     async (sandbox, ctx) => {
@@ -31,6 +31,21 @@ export const prepareRepo = (baseCommit: string) =>
       if (cloned.exitCode !== 0) {
         throw new Error(
           `downshift checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
+        );
+      }
+      ctx.progress({ message: "installing downshift dependencies" });
+      const installed = await sandbox.runShell(
+        [
+          "set -euo pipefail",
+          "CYPRESS_INSTALL_BINARY=0 npm install --legacy-peer-deps --ignore-scripts",
+          "npm install --no-save --save-exact --legacy-peer-deps --ignore-scripts " +
+            "@babel/plugin-proposal-private-property-in-object@7.21.11 " +
+            "@babel/plugin-proposal-private-methods@7.18.6",
+        ].join("\n"),
+      );
+      if (installed.exitCode !== 0) {
+        throw new Error(
+          `downshift dependency install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
         );
       }
     },
