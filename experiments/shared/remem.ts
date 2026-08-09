@@ -59,6 +59,16 @@ import type {
  * (实测都在 900ms 上下),光看 postSetup 的执行时长完全看不出区别,这也是这个问题直到跑
  * 链式题才暴露的原因。
  *
+ * **2026-08-09 两题复测发现第二层故障。**补 `USER node` 后的复用已实锤生效:第 03 题的
+ * `remem install` 报 key/db `existing`,而不是重新 `created`;但第 02 题 teardown 的
+ * `remem status --json` 显示 `captured=2`、`extract_todo=1`、`memories=0`、
+ * `worker_daemon.health=missing`,到 4 分钟后的第 03 题 teardown 仍是
+ * `extract_todo=2`、`memories=0`、`relevance_state=unavailable`。因此物理状态已经跨题保留,
+ * 但负责把 Stop hook 原始捕获蒸馏成可检索记忆的 worker daemon 没有运行;第 03 题仍以
+ * 1800/1860 失败。MCP 配置存在不等于有记忆可查——当前缺的是 extraction worker 的生命周期
+ * 接线,不是 agent 的普通工具调用能力(第 03 题实际有 35 次 tool call)。修复 worker 生命周期前
+ * 不应扩大重跑。
+ *
  * **因此这批 `compare/codex-gpt-5.6-luna--remem` 结果不能读成"remem 记忆条件的真实效果"**,
  * 只能读成"remem 装对了、hook/MCP 真实生效,但当时派生镜像没声明非 root 身份,导致
  * sandboxReuse 从未真正复用过物理容器,退化成了事实上的 no-memory baseline"。总通过率

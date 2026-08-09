@@ -231,7 +231,7 @@
     "reasoningTokens": 3518,
     "requests": 2
   },
-  "estimatedCostUSD": 0.5394616,
+  "estimatedCostUSD": 0.10789232000000001,
   "evidenceCoverage": {
     "events": {
       "status": "complete"

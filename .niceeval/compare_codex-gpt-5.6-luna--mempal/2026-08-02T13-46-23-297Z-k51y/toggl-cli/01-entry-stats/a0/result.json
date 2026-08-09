@@ -38,7 +38,7 @@
     "reasoningTokens": 1361,
     "requests": 1
   },
-  "estimatedCostUSD": 0.3247696,
+  "estimatedCostUSD": 0.06495392000000001,
   "error": {
     "code": "agent-send-failed",
     "message": "2: [unknown] fetch failed",

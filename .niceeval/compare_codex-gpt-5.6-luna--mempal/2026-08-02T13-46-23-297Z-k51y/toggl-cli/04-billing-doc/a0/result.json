@@ -67,7 +67,7 @@
     "cacheReadTokens": 66176,
     "requests": 1
   },
-  "estimatedCostUSD": 0.0243086,
+  "estimatedCostUSD": 0.004861719999999999,
   "evidenceCoverage": {
     "events": {
       "status": "complete"

@@ -38,7 +38,7 @@
     "reasoningTokens": 1622,
     "requests": 1
   },
-  "estimatedCostUSD": 0.14231639999999998,
+  "estimatedCostUSD": 0.02846328,
   "error": {
     "code": "agent-send-failed",
     "message": "agent run exited with code 1 · last error: unexpected status 503 Service Unavailable: Service temporarily unavailable, url: https://x1api.top/v1/responses, cf-ray: a24e6d0d1e9df01b-SEA, request id: 42674bcb-08a2-4359-aade-35da38a78806\noutput tail:\n{\"type\":\"error\",\"message\":\"Reconnecting... 2/5 (unexpected status 503 Service Unavailable: Service temporarily unavailable, url: https://x1api.top/v1/responses, cf-ray: a24e6c82cace7634-SEA, request id: 67802163-7a41-4ea4-aee6-51964d2ad19e)\"}\n{\"type\":\"error\",\"message\":\"Reconnecting... 3/5 (unexpected status 502 Bad Gateway: error code: 502, url: https://x1api.top/v1/responses, cf-ray: a24e6c9d2be80917-SEA)\"}\n{\"type\":\"error\",\"message\":\"Reconnecting... 4/5 (unexpected status 503 Service Unavailable: Service temporarily unavailable, url: https://x1api.top/v1/responses, cf-ray: a24e6cc0ac08a37d-SE",
