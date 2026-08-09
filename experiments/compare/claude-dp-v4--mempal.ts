@@ -26,14 +26,13 @@ export default defineExperiment({
   }),
   flags: { ...mempalFlags() },
   model: "deepseek-v4-flash",
-  sandbox: e2bSandbox({ template: mempalTemplate("claude") })
+  sandbox: e2bSandbox({ template: mempalTemplate("claude"), lifetimeMs: 60 * 60_000 })
     .prepare(mempalPrepare("claude"))
     .setup(mempalLoadState)
     .teardown(mempalSaveState),
   attempts: 1,
   earlyExit: true,
-  // 串行跑(niceeval ≥0.4.5 按实验限流,不影响同批基线):attempt 的
-  // [载入记忆态 … 回存] 是临界区,声明式串行取代 helper 手写锁。
-  maxConcurrency: 1,
+  // Group 内串行，Group 间并行；checkpoint 路径带 Group ID，不会互相覆盖。
+  maxConcurrency: 4,
   timeoutMs: 1200000,
 });

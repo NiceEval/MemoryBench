@@ -58,9 +58,9 @@ export const mempalSkill: SkillSpec = {
   name: "mempal-memory",
 };
 
-function statePathFor(experimentId: string): string {
+function statePathFor(experimentId: string, evalGroupId: string): string {
   const cohortRoot = resolve(STATE_DIR, mempalFlags().mempalCohort);
-  const statePath = resolve(cohortRoot, `${experimentId}.tgz`);
+  const statePath = resolve(cohortRoot, experimentId, `${evalGroupId}.tgz`);
   const insideCohort = relative(cohortRoot, statePath);
   if (
     insideCohort === "" ||
@@ -108,7 +108,10 @@ export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
 
 /** 每台物理 Sandbox 建成时恢复一次；reuse 时 Attempt 间直接保留 `$HOME/.mempal`。 */
 export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
-  const statePath = statePathFor(ctx.experimentId);
+  if (ctx.evalGroup === undefined) {
+    throw new Error("[mempal] Eval Group context is required to isolate parallel checkpoints.");
+  }
+  const statePath = statePathFor(ctx.experimentId, ctx.evalGroup.id);
   let state: Buffer | undefined;
   try {
     state = readFileSync(statePath);
@@ -129,7 +132,10 @@ export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
 /** 每台物理 Sandbox 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
 export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
   try {
-    const statePath = statePathFor(ctx.experimentId);
+    if (ctx.evalGroup === undefined) {
+      throw new Error("[mempal] Eval Group context is required to isolate parallel checkpoints.");
+    }
+    const statePath = statePathFor(ctx.experimentId, ctx.evalGroup.id);
     const home = (await sandbox.runShellOrThrow('printf "%s" "$HOME"')).stdout.trim();
     await sandbox.runShellOrThrow(`test -d '${home}/.mempal'`);
 
@@ -148,6 +154,7 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
       `${JSON.stringify(
         {
           experimentId: ctx.experimentId,
+          evalGroupId: ctx.evalGroup.id,
           cohort: mempalFlags().mempalCohort,
           mempalVersion: MEMPAL_VERSION,
           sha256: createHash("sha256").update(data).digest("hex"),

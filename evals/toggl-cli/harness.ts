@@ -6,7 +6,7 @@
 
 import { commandSucceeded } from "niceeval/expect";
 import type { TestContext } from "niceeval";
-import type { SandboxCommand, SandboxCommandContext } from "niceeval/sandbox";
+import type { SandboxCommand, SandboxCommandContext, SandboxHook } from "niceeval/sandbox";
 
 const REPO_URL = "https://github.com/CorrectRoadH/toggl-cli.git";
 
@@ -136,15 +136,14 @@ export const today = () => new Date().toISOString().slice(0, 10);
  * 里有记)。工具链装到 /usr/local/{rustup,cargo} 而不是某个用户 home,这样 agent 开的每个 shell、
  * 以及判分用的 shell,看到的都是同一个 cargo,不管它是不是 source 过 ~/.profile 的登录 shell。
  *
- * 这段必须幂等重放:sandboxReuse 下同一个沙箱要依次承接多道题,本函数每题都重跑一遍。
- * 曾经的写法是「探测到 cargo 就整块跳过」,而 RUSTUP_HOME 只在被跳过的那个分支里导出,于是
- * 第二题起 rustup 去找空的 ~/.rustup,`cargo --version` 报 "could not choose a version of
- * cargo ... no default is configured",每条泳道除首题外全 errored(2026-07-29 e2b 复用实测)。
- * 现在按 niceeval docs「幂等是硬要求」重写:探测只护住「下载安装 rustup 本体」这一步(装二进制
- * 没法声明式表达),工具链状态一律交给无条件的 `rustup default stable` 收敛,环境变量在脚本顶层
- * 无条件导出、并写进 /etc/profile.d 供后续 shell 用。
+ * 这段由 toggl-cli Eval Group 的 setup 执行一次；Sandbox 到期后创建替代实例时会重新执行，因此
+ * 仍必须幂等。曾经的写法是「探测到 cargo 就整块跳过」，而 RUSTUP_HOME 只在被跳过的分支里
+ * 导出，于是复用时 rustup 会退回空的 ~/.rustup，`cargo --version` 报 "could not choose a
+ * version of cargo ... no default is configured"（2026-07-29 e2b 复用实测）。现在按 niceeval
+ * lifecycle 的幂等要求重写：探测只护住「下载安装 rustup 本体」这一步，工具链状态交给无条件的
+ * `rustup default stable` 收敛，环境变量在脚本顶层无条件导出并写进 /etc/profile.d。
  */
-export const installRustToolchain: SandboxCommand = async (sandbox, ctx) => {
+export const installRustToolchain: SandboxHook = async (sandbox, ctx) => {
   ctx.progress({ message: "installing build deps + rust toolchain" });
   const script = [
     "set -euo pipefail",

@@ -2,7 +2,7 @@ import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
+import { orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
 
 // 链的第 2 题。引入这家店的计费口径。
 //
@@ -46,7 +46,7 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
+  sandbox: sandboxLayer().prepare(prepareRepo),
   async test(t) {
     await t
       .send(

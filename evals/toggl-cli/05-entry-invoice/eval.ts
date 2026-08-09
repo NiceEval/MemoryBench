@@ -2,7 +2,7 @@ import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
+import { orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
 
 // 链的第 5 题。开票口径:在计费取整之上再加一条最低计费额。
 //
@@ -43,7 +43,7 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
+  sandbox: sandboxLayer().prepare(prepareRepo),
   async test(t) {
     await t
       .send(

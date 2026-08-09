@@ -2,7 +2,7 @@ import { defineEval } from "niceeval";
 import { commandSucceeded, equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, prepareRepo, runProbe, orderedLines, type ProbeCase } from "../harness.ts";
+import { prepareRepo, runProbe, orderedLines, type ProbeCase } from "../harness.ts";
 
 // 链的第 1 题。三轮对话用大白话说清一组项目级约定,这些约定从 checkout 里推不出来。
 //
@@ -52,7 +52,7 @@ export default defineEval({
     // 或增量产物落进 diff 分类账。
     ignore: ["target", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
+  sandbox: sandboxLayer().prepare(prepareRepo),
   async test(t) {
     await t
       .send(
