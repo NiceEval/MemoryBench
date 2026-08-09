@@ -57,7 +57,9 @@ export default defineEval({
     }
 
     ctx.progress({ message: "installing dependencies" });
-    const installed = await sandbox.runShell("npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts");
+    const installed = await sandbox.runShell(
+      "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+    );
     if (installed.exitCode !== 0) {
       throw new Error(`pnpm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
     }

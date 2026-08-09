@@ -30,8 +30,8 @@ import { commandSucceeded } from "niceeval/expect";
 // 已批准状态。加 `--ignore-scripts` 让安装结果不再依赖 store 是否曾被批准过:本地验证过
 // @swc/core 的原生绑定来自平台 optionalDependency 预编译包而非 postinstall 构建,jest(经
 // @swc/jest 转译)在 --ignore-scripts 下跑同一份 base_sha 源码结果不变(20/20 通过);husky 的
-// prepare 钩子也一并跳过,sandbox 里不需要 git hooks。兄弟 react-hook-form eval(pr-13476/
-// 13515/13566/13599/13603)目前仍是朴素 `pnpm install`,建议一并回补这个 flag。
+// prepare 钩子也一并跳过,sandbox 里不需要 git hooks。react-hook-form 题组现已统一使用
+// `--ignore-scripts`;pnpm CLI 本身由 eval group 的公共 Sandbox prepare 安装一次。
 
 const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "bb2ce17575bd410cae6859e2878f9108a93bd6bc";
@@ -76,7 +76,7 @@ export default defineEval({
     // 退出码 1 失败;跳过脚本本地验证过不影响 jest 结果,且顺带跳过不需要的 husky prepare 钩子。
     t.progress({ message: "installing dependencies" });
     const installed = await t.sandbox.runShell(
-      "npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
+      "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
     );
     if (installed.exitCode !== 0) {
       throw new Error(`pnpm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
