@@ -19,11 +19,14 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
+      - name: Configure Git default branch
+        run: git config --global init.defaultBranch main
+
       # tag push 事件默认检出 tag 指向的 commit，不需要额外指定 ref。
       - uses: actions/checkout@v5
 
       - name: Install Vercel CLI
-        run: npm i -g vercel@latest
+        run: npm i -g --loglevel=error --no-audit --no-fund vercel@latest
 
       # 不用 --prebuilt：GHA 本地 build 出的 site/ 含 attempt+artifact，体积可达数百 MB，
       # `vercel deploy --prebuilt` 上传极易 Upload aborted。改为把源码（含 .niceeval/）
