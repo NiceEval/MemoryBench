@@ -3,6 +3,11 @@ import { codexAgent } from "niceeval/adapter";
 import { dockerImageSandbox } from "niceeval/sandbox";
 import { REMEM_DOCKER_IMAGE, rememCodexConfig, rememFlags, rememPrepare } from "../shared/remem.ts";
 
+const MODEL = "gpt-5.6-luna";
+// Remem 没有跨物理容器 checkpoint。最大 Group 有 8 个 member，每条最多 30 分钟；
+// Docker TTL 又不能续期，所以要覆盖整条 lane，而不只是单条 Attempt。
+const STATEFUL_GROUP_LIFETIME_MS = 5 * 60 * 60_000;
+
 // codex-gpt-5.6-luna 的 remem 变体:同模型,只多一层 remem 记忆条件——官方 codex 集成
 // (SessionStart/Stop hook 读写 + `remem mcp` server),二进制烘进本地派生镜像
 // experiments/shared/docker/codex-remem.Dockerfile(为什么要派生、embedding 降级到
@@ -13,25 +18,22 @@ import { REMEM_DOCKER_IMAGE, rememCodexConfig, rememFlags, rememPrepare } from "
 // 跨 run 的 checkpoint 回存(与 mempal/nowledge 都不同,见 shared/remem.ts)。要看"从空库
 // 开始"的干净对照,直接开一次新 run 即可,不需要像 mempal 那样手动清理 host 侧状态目录。
 //
-// **重要 caveat(2026-08-04 实测,详见 shared/remem.ts「拓扑与记忆态语义」一节)**:上面这
-// 段"跨 Attempt 积累"是设计意图,不是已验证行为。实测 toggl-cli 链式题显示,dockerImageSandbox
-// + sandboxReuse 下 Agent 级 postSetup 对 `$HOME` 的写入不会存活到下一条 Attempt——接线
-// (hooks/MCP)本身没问题,但记忆内容没有真正跨题积累,当前这批结果应读作"remem 装对了但
-// 退化成 no-memory baseline",不是 remem 记忆条件的真实效果对照。
+// 2026-08-09 已用 Docker events 和跨题 captured_events 双重验证 Group 容器复用与
+// `$HOME` 持久化。Remem 后台 Codex 的 provider 隔离、显式 memory model 与 extraction
+// drain 契约由 shared/remem.ts 统一实现；管线未实际产生 memory-AI call 时实验会明确报错。
+// 单独六段链通过 5/6：03、04 首次通过，06 因最低计费规则被错误概括而失败；两路全量
+// 随后又暴露 60 分钟 TTL 会在后段正常换容器，故下方寿命现按整条 stateful Group 预算。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · remem",
   labels: { line: "codex" }, // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  agent: codexAgent(rememCodexConfig()),
-  flags: { ...rememFlags() },
-  model: "gpt-5.6-luna",
-  // dockerImageSandbox({ image }) 不声明 lifetimeMs 也能构造,但复用机制的这条校验只在真实
-  // 创建沙箱时跑,--dry 不会报——2026-08-04 冒烟实测过(react-tooltip/ 6 条全部
-  // errored: "the docker sandbox needs lifetimeMs when sandboxReuse is enabled")。
-  // 本地 Docker 容器没有 e2b 那种账号级硬寿命上限,这个值纯粹满足复用机制的通用要求,
-  // 不代表容器真的会在 1 小时被回收;与 mempal/nowledge 两个 e2b 记忆条件写同一个数字
-  // 只是巧合对齐,不是同一层含义。
-  sandbox: dockerImageSandbox({ image: REMEM_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 }).prepare(
+  agent: codexAgent(rememCodexConfig(MODEL)),
+  flags: { ...rememFlags(MODEL) },
+  model: MODEL,
+  // 每次借出前，NiceEval 要求剩余 TTL 足以覆盖本条 Attempt 的 30 分钟上限和 cleanup；
+  // Docker TTL 不可续期。1 小时配置在两路全量跑的 05→06 之间触发了正常轮换，导致
+  // raw_messages 从 63 回到 14。5 小时覆盖 8 × 30 分钟的最长 Group 和收尾余量。
+  sandbox: dockerImageSandbox({ image: REMEM_DOCKER_IMAGE, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS }).prepare(
     rememPrepare(),
   ),
   sandboxReuse: true,

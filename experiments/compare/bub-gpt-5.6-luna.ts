@@ -1,7 +1,6 @@
 import { defineExperiment } from "niceeval";
-import { e2bSandbox } from "niceeval/sandbox";
+import { dockerImageSandbox, NICEEVAL_BUB_DOCKER_IMAGE } from "niceeval/sandbox";
 import { bubAgent } from "niceeval/adapter";
-import { NICEEVAL_BUB_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
 
 // 文件夹 compare = 唯一一组【可对比】的实验:同一批记忆 eval、同一个模型(gpt-5.6-luna)。
 // 文件名 = <agent>-<model>。`niceeval exp compare` 跑整组。
@@ -25,11 +24,12 @@ export default defineExperiment({
   flags: { memory: "baseline" },
   model: "gpt-5.6-luna", // 两边钉同一个模型,差异才归因到 agent / 记忆机制
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
-  sandbox: e2bSandbox({ template: NICEEVAL_BUB_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 }),
+  // Eval Group 拥有复用边界；Bub 使用 NiceEval 公开、版本钉死的 Docker 基底。
+  sandbox: dockerImageSandbox({ image: NICEEVAL_BUB_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 }),
   // 注:workspace(starter repo)上传 + 装依赖不在这儿 —— 那属于「eval 在什么上面干活」,
   // 写在各 eval 的 test(t) 里(t.sandbox.uploadDirectory + runCommand)。experiment 只管怎么跑。
   earlyExit: false, // 要完整通过率分布,以便报 pass^k
-  // 4 = x1api 代理**账号级**并发的实际可用值(约 5 路,超出的连接挂 30 秒再拒),不是 e2b 配额;
+  // 4 = x1api 代理**账号级**并发的实际可用值(约 5 路,超出的连接挂 30 秒再拒),与 Docker 容量无关;
   // .env 写明 bub 与 codex 共用同一把 key、同一个代理,所以照抄 codex baseline 的 4。
   // 不声明就吃全局的 8,会重演 2026-07-28 那次(attempt 死于代理并发 + judge 预检 20s 被饿死,
   // 本批的 toggl-cli/04-billing-doc 正好走 judge)。详见 niceeval.config.ts 里那段实测。

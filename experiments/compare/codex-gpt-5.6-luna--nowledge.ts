@@ -1,7 +1,6 @@
 import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
-import { e2bSandbox } from "niceeval/sandbox";
-import { NICEEVAL_CODEX_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
+import { dockerImageSandbox, NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
 import {
   nowledgeCodexConfig,
   nowledgeFlags,
@@ -24,10 +23,8 @@ export default defineExperiment({
   agent: codexAgent(nowledgeCodexConfig()),
   flags: { ...nowledgeFlags() },
   model: "gpt-5.6-luna",
-  // 复用下 provider 必须能声明实例寿命,不声明会在第一条 attempt 派发前硬失败。1 小时是 e2b
-  // 账号档位硬上限,但它不是整次 run 的总预算:每次派发前 runner 都会 ensureLifetime 续到完整 lifetimeMs,
-  // 所以同一物理 Sandbox 可以持续复用,只要单条 Attempt 装得下 1 小时(详见 codex-gpt-5.6-luna--mempal.ts)。
-  sandbox: e2bSandbox({ template: NICEEVAL_CODEX_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 })
+  // Eval Group 管理 Docker 复用；lifetimeMs 为物理容器声明长 Attempt 的寿命预算，不是云配额。
+  sandbox: dockerImageSandbox({ image: NICEEVAL_CODEX_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 })
     .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   // 复用 + 串行,与 mempal 组逐字对齐。插件安装不是阻碍:niceeval 的 codex adapter 在每条 attempt

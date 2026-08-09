@@ -12,7 +12,7 @@ import type {
 /**
  * Nowledge Mem 记忆条件:固定远程实例。
  *
- * 拓扑:mem 服务端在外部长期运行，并以可从 E2B 访问的 URL 暴露；连接坐标
+ * 拓扑:mem 服务端在外部长期运行，并以可从 Docker Sandbox 访问的 URL 暴露；连接坐标
  * (NMEM_API_URL / NMEM_API_KEY)只放在 gitignored 的仓库 `.env` 或当前进程环境中，niceeval
  * 侧**不管服务端的生命周期**——不 up、不 down、无实验级启停钩子。
  * Experiment layer 的 `nowledgeAttachRemote` 每条 Attempt 接线(装 nmem CLI、把 client 指向远程、
@@ -131,7 +131,7 @@ function redactNowledgeConnection(value: string): string {
 }
 
 /**
- * `shared: true` 声明这条探针的死因对全实验共享——远程实例挂了、模板缺依赖,不是这一条
+ * `shared: true` 声明这条探针的死因对全实验共享——远程实例挂了、Docker 镜像缺依赖,不是这一条
  * attempt 的运气问题,剩下的 attempt 撞上去只会同因同死。抛 `ExperimentFatalError` 让 niceeval
  * 落实验级止损闸:第一条照常 errored,余量计 unstarted、完成状态 incomplete,不再一条条烧沙箱。
  * 装包一类可能被网络抖动搞挂的步骤不带这个声明——那种失败不可证明为兄弟共享,重跑就好。
@@ -252,7 +252,7 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
     ctx.facts("nowledge.server-version", serverVersion);
     ctx.facts("nowledge.space", space);
 
-    // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。模板里没有就是全实验没有。
+    // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。Docker 镜像里没有就是全实验没有。
     await requireCommand(sb, "python3 probe", "command -v python3", { shared: true });
 
     // nmem-cli 是 ~12MB 的单二进制 wheel,attempt 级安装可接受。它与 server/flags 同版本钉住，

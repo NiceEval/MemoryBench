@@ -1,12 +1,12 @@
 import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
-import { e2bSandbox } from "niceeval/sandbox";
+import { dockerImageSandbox } from "niceeval/sandbox";
 import {
   mempalFlags,
   mempalLoadState,
   mempalPrepare,
   mempalSaveState,
-  mempalTemplate,
+  MEMPAL_CODEX_DOCKER_IMAGE,
 } from "../../shared/mempal.ts";
 
 const signalboxMemorySkill = {
@@ -22,7 +22,8 @@ export default defineExperiment({
   agent: codexAgent({ skills: [signalboxMemorySkill] }),
   flags: { ...mempalFlags(), trajectory: "signalbox-v1" },
   model: "gpt-5.6-luna",
-  sandbox: e2bSandbox({ template: mempalTemplate("codex"), lifetimeMs: 60 * 60_000 })
+  // Signalbox 的单一 Eval Group 维持它自己的串行、可复用 Docker lane；共享 checkpoint 不新增第二层复用。
+  sandbox: dockerImageSandbox({ image: MEMPAL_CODEX_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 })
     .prepare(mempalPrepare("codex"))
     .setup(mempalLoadState)
     .teardown(mempalSaveState),

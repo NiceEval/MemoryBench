@@ -7,7 +7,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "smoke": "niceeval exp dev memory/agent-029-use-cache-directive",
-    "template:mempal": "tsx scripts/build-mempal-e2b-template.ts",
+    "docker:mempal": "tsx scripts/build-mempal-docker-image.ts",
     "docker:obelisk": "bash scripts/build-obelisk-docker-image.sh",
     "docker:remem": "bash scripts/build-codex-remem-docker-image.sh"
   },
@@ -16,7 +16,6 @@
     "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",
     "dockerode": "^5.0.1",
-    "e2b": "^2.31.0",
     "niceeval": "^0.8.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

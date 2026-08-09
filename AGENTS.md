@@ -229,7 +229,7 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 - **attempt 被超时杀掉时，看不出是哪一层的 timeoutMs 生效**：`--timing` 只在被杀的那条命令后面打一个 ✗，
   不显示这条命令拿到的 deadline 是多少、来自哪一层（flag / experiment / eval / config / provider SDK 默认）。
   2026-07-30 靠它暴露出一个**真 bug**（已修，见 memory: agent-command-killed-at-600s）：`sandboxReuse` 的建实例
-  路径从不把 attempt deadline 递给沙箱，于是复用泳道上每条命令都吃 e2b SDK 默认的 60 秒，实验声明的
+  路径从不把 attempt deadline 递给沙箱，于是复用泳道上每条命令都吃历史 E2B SDK 默认的 60 秒，实验声明的
   `timeoutMs: 1200000` 形同虚设。**当时能确诊全靠人肉发现「✗ 的命令停在整 1m 0s」这个整数关口**——
   CLI 一个字都没提这条线是谁给的。呈现缺口本身仍在：期望 `--timing` 每条命令标出 `deadline=…(来源层)`，
   超时错误里写明是沙箱 per-command 超时。教训：看到 `deadline_exceeded` 先看被 ✗ 的命令时长**是不是卡在

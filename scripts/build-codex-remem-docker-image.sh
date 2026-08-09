@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 从官方 niceeval/codex:0.144.1-r4 派生一份烘了 remem 二进制、去掉预装 Yarn、声明非 root
-# 执行身份的本地镜像，给 experiments/shared/remem.ts 的 REMEM_DOCKER_IMAGE 用。背景与决策见
+# 从 NiceEval 导出的公开、版本钉死 Codex Docker 镜像派生一份烘了 remem 二进制、去掉预装 Yarn、
+# 声明非 root 执行身份的本地镜像，给 experiments/shared/remem.ts 的 REMEM_DOCKER_IMAGE 用。背景与决策见
 # experiments/shared/docker/codex-remem.Dockerfile 文件头注释：remem 官方预编译二进制要求
 # glibc >= 2.39，与本仓库这个 Debian bookworm(glibc 2.36)基础镜像不兼容；从源码编译能绕开，
 # 但每条物理 Sandbox 装一遍 Rust 工具链要 5-6 分钟，派生镜像把这笔成本收到构建期一次性付清。
@@ -10,7 +10,7 @@ set -euo pipefail
 # 镜像工具链基线的差异（Yarn：2026-08-04 由 obelisk 记忆条件的冒烟测试撞出来，obelisk 自己
 # 另建了不含 remem 的 memorybench-codex-obelisk 镜像，两边互不依赖；python3：同一天全量跑
 # 本实验时撞出，toggl-cli/ 的 Rust 工具链安装步骤要用它）。r3 曾在派生层末尾自补 `USER node`：
-# niceeval/codex:0.144.1-r3 不声明 USER 时默认 root，sandboxReuse 复用安全检查会拒绝 root
+# niceeval/codex:0.144.1-r3 不声明 USER 时默认 root，Docker provider 的复用安全检查会拒绝 root
 # 复用、静默退休物理沙箱、给下一条 Attempt 开全新容器——这才是 remem.ts 记录的“postSetup 写入
 # 不存活到下一条 Attempt”的真实根因，不是 niceeval 违反了 $HOME 跨题存活的文档承诺。r4
 # （2026-08-04，NiceEval commit cbac5659）把 `USER node` 收进了基底本身，派生 Dockerfile 改为
@@ -19,15 +19,16 @@ set -euo pipefail
 #
 # Tag 把 base 镜像版本号、remem 版本号、Dockerfile 配方版本号都编进去
 # （memorybench-codex-remem:<base>-<remem>-<recipe>）：任一个换版本，手动同步改这里、
-# Dockerfile 的 ARG 默认值/头部注释、以及 remem.ts 里的常量，旧 tag 不会被新构建覆盖，
+# Dockerfile 配方修订、以及 remem.ts 里的常量，旧 tag 不会被新构建覆盖，
 # 避免历史结果静默错配到内容已变的新镜像上。只在本机可见，不 push 到任何 registry。
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_DIR="${SCRIPT_DIR}/../experiments/shared/docker"
-BASE_IMAGE="niceeval/codex:0.144.1-r4"
+BASE_IMAGE="$(pnpm --silent exec tsx -e 'import { NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox"; process.stdout.write(NICEEVAL_CODEX_DOCKER_IMAGE);')"
+BASE_TAG="${BASE_IMAGE##*:}"
 REMEM_VERSION="0.6.47"
-DOCKERFILE_REVISION="r6"
-IMAGE_TAG="memorybench-codex-remem:0.144.1-r4-${REMEM_VERSION}-${DOCKERFILE_REVISION}"
+DOCKERFILE_REVISION="r7"
+IMAGE_TAG="memorybench-codex-remem:${BASE_TAG}-${REMEM_VERSION}-${DOCKERFILE_REVISION}"
 
 echo "==> pulling base image ${BASE_IMAGE}"
 docker pull "${BASE_IMAGE}"

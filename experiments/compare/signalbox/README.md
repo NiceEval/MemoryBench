@@ -4,10 +4,11 @@
 Codex no-memory 与 Mempal；两者同模型、同顺序、同 attempt timeout。
 
 两组的差异只有是否安装 Signalbox 的 Mempal 记忆协议：baseline 每题都从零开始；Mempal 每题开始先从专属 checkpoint
-恢复并检索产品历史，结束前只保存产品规则及其新增、替代、撤销关系。两组每题都使用全新 sandbox 和同一份 starter，
-上一题代码和其它环境状态不会残留。
+恢复并检索产品历史，结束前只保存产品规则及其新增、替代、撤销关系。每个 condition 的 `signalbox` Eval Group
+各自复用一座 Docker sandbox；成员间会重置 workdir 并重新放入同一份 starter，但 `$HOME` 等 sandbox 状态会保留。
+baseline 使用相同的分组、调度和复用拓扑，避免把容器生命周期差异混入记忆效果。
 
-运行前先用 `pnpm --silent niceeval exp compare/signalbox --dry` 核对计划。正式运行会产生模型与 E2B 费用，必须先取得
+运行前先用 `pnpm --silent niceeval exp compare/signalbox --dry` 核对计划。正式运行会产生模型与本机 Docker 资源成本，必须先取得
 用户批准。结果应重点逐题比较 02、05、07、09 四个 checkpoint；01、03、04、06、08 是编码能力控制题。
 
 正式运行 Mempal 前设置一个从未使用过的 `MEMPAL_COHORT`，并从 01 开始跑完整目录。不要把一次中断后

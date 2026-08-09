@@ -1,7 +1,6 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
-import { e2bSandbox } from "niceeval/sandbox";
-import { NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
+import { dockerImageSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
 import {
   nowledgeClaudeConfig,
   nowledgeFlags,
@@ -32,7 +31,7 @@ export default defineExperiment({
   }),
   flags: { ...nowledgeFlags() },
   model: "deepseek-v4-flash",
-  sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE, lifetimeMs: 60 * 60_000 })
+  sandbox: dockerImageSandbox({ image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 })
     .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   attempts: 1,
