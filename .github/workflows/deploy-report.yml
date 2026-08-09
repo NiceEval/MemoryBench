@@ -18,6 +18,8 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_CLI_VERSION: 58.9.0
+      VERCEL_CLI_SHA512: 9ea905854ff39a7bc27d6e73b40fa3dd228050d226d29cae57d038bd123965789e8148e36513d253e62e07f5eb93af95d996b90ca7a61dbabbb00147ef3d90bc
     steps:
       - name: Configure Git default branch
         run: git config --global init.defaultBranch main
@@ -25,8 +27,20 @@ jobs:
       # tag push 事件默认检出 tag 指向的 commit，不需要额外指定 ref。
       - uses: actions/checkout@v5
 
-      - name: Install Vercel CLI
-        run: npm i -g --loglevel=error --no-audit --no-fund vercel@latest
+      - name: Install native Vercel CLI
+        run: |
+          archive="$RUNNER_TEMP/vercel-native.tgz"
+          extract_dir="$RUNNER_TEMP/vercel-native"
+          bin_dir="$RUNNER_TEMP/vercel-bin"
+          curl --fail --silent --show-error --location \
+            "https://registry.npmjs.org/@vercel/vc-native-linux-x64/-/vc-native-linux-x64-${VERCEL_CLI_VERSION}.tgz" \
+            --output "$archive"
+          printf '%s  %s\n' "$VERCEL_CLI_SHA512" "$archive" | sha512sum --check
+          mkdir -p "$extract_dir" "$bin_dir"
+          tar -xzf "$archive" -C "$extract_dir"
+          install -m 0755 "$extract_dir/package/bin/vercel" "$bin_dir/vercel"
+          echo "$bin_dir" >> "$GITHUB_PATH"
+          "$bin_dir/vercel" --version
 
       # 不用 --prebuilt：GHA 本地 build 出的 site/ 含 attempt+artifact，体积可达数百 MB，
       # `vercel deploy --prebuilt` 上传极易 Upload aborted。改为把源码（含 .niceeval/）
