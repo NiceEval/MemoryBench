@@ -1,6 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
+import { prepareRepo } from "../harness.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13476(不让被测 agent 看到 PR 号/commit/URL):
 // 当 field array 的 resolver 同一轮校验里既报了 root 级错误又报了带数字 index 的嵌套错误时
@@ -17,53 +18,13 @@ import { commandSucceeded } from "niceeval/expect";
 // 是这个具体用例没有覆盖到的另一序列(先出现混合错误、后续 trigger 又只报 root-only 错误);
 // 只是提醒:通过本 eval 不严格证明 agent 复刻了上游两处改动的完整语义。
 
-const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "889c7523d6c5c68bfc3c78142782cb0a3310729d";
 
 export default defineEval({
   description:
     "react-hook-form pr-13476: trigger() after a field-array remove() can wipe out nested per-index errors when a mixed root+nested error object is present (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
-  // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
-  // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过 test(t) 里的 t.send() 传给 agent。
-    ctx.progress({ message: "cloning react-hook-form @ base commit" });
-    const cloned = await sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`react-hook-form checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    ctx.progress({ message: "installing dependencies" });
-    const installed = await sandbox.runShell(
-      "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
-    );
-    if (installed.exitCode !== 0) {
-      throw new Error(`pnpm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-  }),
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
 
   async test(t) {
     await t

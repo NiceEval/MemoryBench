@@ -1,6 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
+import { prepareRepo } from "../harness.ts";
 
 // real fix: react-tooltip PR #970. This PR was landed as a linear sequence of 4 commits
 // fast-forwarded onto main (no distinct 2-parent merge commit was created), so gh's
@@ -14,7 +15,6 @@ import { commandSucceeded } from "niceeval/expect";
 // in), but it only used that information to compute inline pixel styles -- it never
 // returned the actual placement value, so nothing downstream (including the rendered
 // tooltip element) had access to it.
-const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "92bed214767a1110d5b6abd43643e73437833261";
 const FIX_COMMIT = "f4d97476635cdc76bd86f22302e73131fa58f55d";
 void FIX_COMMIT; // documents provenance of the hidden test fixture; not used at runtime
@@ -29,52 +29,7 @@ export default defineEval({
     // 这是 install 步骤本身的副作用,不是 agent 的改动。
     ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
-  // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
-  // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过 test(t) 里的 t.send() 传给 agent。
-    ctx.progress({ message: "cloning react-tooltip @ base commit" });
-    const cloned = await sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`react-tooltip checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    // No packageManager field pinned in this repo's package.json, so corepack is unsafe
-    // on the sandbox's Node 20.9.0 (crashes with ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING
-    // when invoking an unpinned package manager). Install yarn classic v1 explicitly
-    // instead; its engines range (node >=4.0.0) comfortably covers Node 20.9.0.
-    // --ignore-scripts skips native-module postinstall builds that are not needed to
-    // run Jest and are not guaranteed to build on every host.
-    ctx.progress({ message: "installing deps (yarn classic v1)" });
-    const installed = await sandbox.runShell(
-      "npm install -g --prefix /usr/local yarn@1.22.22 && yarn install --ignore-scripts --ignore-engines",
-    );
-    if (installed.exitCode !== 0) {
-      throw new Error(`yarn install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-  }),
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
 
   async test(t) {
     await t

@@ -1,12 +1,13 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
+import { prepareRepo } from "../harness.ts";
 
 // real fix: downshift PR #1587 (merge 87a8137e6c69d4d0086bd2a2b333367762ce477a),
 // which lands on top of BASE_COMMIT (its first parent). Bug: getHighlightedIndexOnOpen()
 // in src/hooks/utils.js picks initialHighlightedIndex / defaultHighlightedIndex without
 // ever checking isItemDisabled(), so opening useCombobox/useSelect can initially highlight
 // a disabled item.
-const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "57981b297cfab75e0b11c8685195ad17cbf928d5";
 
 export default defineEval({
@@ -19,49 +20,8 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
   async test(t) {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
-    t.progress({ message: "cloning downshift @ base commit" });
-    const cloned = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`downshift checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    t.progress({ message: "installing deps (npm)" });
-    // CYPRESS_INSTALL_BINARY=0 + --ignore-scripts: repo has cypress as a devDependency
-    // purely for its own e2e/docs scripts (test:cypress); without this its postinstall
-    // cold-downloads a multi-hundred-MB binary that the scoped jest run never touches.
-    // --ignore-scripts additionally skips every other lifecycle script so there is no
-    // local-cache-vs-sandbox-cold-fetch divergence for any other package either (mirrors
-    // the same flag in the react-hook-form template).
-    const installed = await t.sandbox.runShell(
-      "CYPRESS_INSTALL_BINARY=0 npm install --legacy-peer-deps --ignore-scripts",
-    );
-    if (installed.exitCode !== 0) {
-      throw new Error(`npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-
     await t
       .send(
         "Your working directory is a checkout of the real downshift repository at the commit where the bug below " +

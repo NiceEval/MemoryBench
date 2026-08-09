@@ -1,5 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
+import { prepareRepo } from "../harness.ts";
 
 // 挖自真实合入 PR Hacker0x01/react-datepicker#6073(不让被测 agent 看到 PR 号/commit)。merge
 // commit 649af62fee622afbda7db7ec3f935efbf6fd9676 提供隐藏测试的权威 post-fix 内容。Bug:范围选择、
@@ -9,7 +11,6 @@ import { commandSucceeded } from "niceeval/expect";
 // 新导出)。隐藏测试是 day_test.test.tsx 里新增的行为用例,断言只查渲染 DOM 的 class(class 名是测试
 // 文件内的字符串字面量,不 import 任何新符号),base_sha 下必失败(3 failed / 103 passed),打上真实
 // 修复后 106 全绿——本地 Node 20.9.0 双向验证过。
-const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 const BASE_COMMIT = "4f3d75298c20884f5c5634ff04971260233af7c5";
 
 export default defineEval({
@@ -21,42 +22,8 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
   async test(t) {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
-    t.progress({ message: "cloning react-datepicker @ base commit" });
-    const cloned = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`react-datepicker checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    // 依赖在 agent 接手前就装好——纯 JS/TS 包管理器安装,不是任务本身要考察的能力。
-    t.progress({ message: "installing dependencies (corepack + yarn immutable)" });
-    const installed = await t.sandbox.runShell("corepack enable && yarn install --immutable");
-    if (installed.exitCode !== 0) {
-      throw new Error(`yarn install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-
     await t
       .send(
         "Your working directory is a checkout of the real react-datepicker repository (a React date-picker " +

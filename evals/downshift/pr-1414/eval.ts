@@ -1,6 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
+import { prepareRepo } from "../harness.ts";
 
 // real fix: downshift PR #1414 (squash-merge 6bd18eb8e4a2f3003bd49a14eb0791b2370ba36c, a
 // single-parent commit whose parent equals BASE_COMMIT below). Bug: in useCombobox, clicking
@@ -12,7 +13,6 @@ import { commandSucceeded } from "niceeval/expect";
 // and preventDownshiftDefault still work), suppressing the blur. Hidden test = the merged
 // getItemProps.test.js; base_sha 下必失败(2 failed / 19 passed),打上真实修复后 21 全绿——
 // 本地 Node 20.9.0 双向验证过。
-const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "78ce9e994e2d7056ce70bab83083bc1c9f805e3e";
 
 export default defineEval({
@@ -28,54 +28,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、装依赖。作为无 template 的 Eval
-  // Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
-  // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过 test(t) 里的 t.send() 传给 agent。
-    ctx.progress({ message: "cloning downshift @ base commit" });
-    const cloned = await sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`downshift checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    ctx.progress({ message: "installing deps (npm + babel proposal plugins)" });
-    const installed = await sandbox.runShell(
-      [
-        "set -euo pipefail",
-        "CYPRESS_INSTALL_BINARY=0 npm install",
-        // work around the npm flat-tree resolution that leaves the two legacy babel proposal
-        // plugins (referenced by this repo's own babel.config.js) as non-functional placeholders
-        "npm install --no-save --save-exact " +
-          "@babel/plugin-proposal-private-property-in-object@7.21.11 " +
-          "@babel/plugin-proposal-private-methods@7.18.6",
-      ].join("\n"),
-    );
-    if (installed.exitCode !== 0) {
-      throw new Error(`npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-  }),
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
 
   async test(t) {
     await t

@@ -1,5 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
+import { prepareRepo } from "../harness.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13512(不让被测 agent 看到 PR 号/commit/URL):
 // validateField.ts 里给 shouldUseNativeValidation 用的 setCustomValidity 闭包只对
@@ -33,7 +35,6 @@ import { commandSucceeded } from "niceeval/expect";
 // prepare 钩子也一并跳过,sandbox 里不需要 git hooks。react-hook-form 题组现已统一使用
 // `--ignore-scripts`;pnpm CLI 本身由 eval group 的公共 Sandbox prepare 安装一次。
 
-const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "bb2ce17575bd410cae6859e2878f9108a93bd6bc";
 
 export default defineEval({
@@ -42,46 +43,8 @@ export default defineEval({
     "call for a multi-ref field (radio group) only ever lands on the first ref, leaving the browser's native " +
     "validation bubble anchored to a single radio button instead of the whole group (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
   async test(t) {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
-    t.progress({ message: "cloning react-hook-form @ base commit" });
-    const cloned = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`react-hook-form checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    // --ignore-scripts: 见文件顶部 gotcha 注释——真正第一次跑的 pnpm store 会因为
-    // @swc/core/cypress/unrs-resolver 的未批准 postinstall 脚本以 ERR_PNPM_IGNORED_BUILDS
-    // 退出码 1 失败;跳过脚本本地验证过不影响 jest 结果,且顺带跳过不需要的 husky prepare 钩子。
-    t.progress({ message: "installing dependencies" });
-    const installed = await t.sandbox.runShell(
-      "CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts",
-    );
-    if (installed.exitCode !== 0) {
-      throw new Error(`pnpm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-
     await t
       .send(
         "Your working directory is a checkout of the real react-hook-form repository at the commit where the bug " +

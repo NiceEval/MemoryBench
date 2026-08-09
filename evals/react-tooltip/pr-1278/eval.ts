@@ -1,5 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
+import { prepareRepo } from "../harness.ts";
 
 // 挖自真实合入 PR ReactTooltip/react-tooltip#1278(不让被测 agent 看到 PR 号/commit)。merge commit
 // a12511545da3789511a78bdd555bb0061c119acd 提供隐藏测试的权威 post-fix 内容。Bug:tooltip 用文档级
@@ -10,7 +12,6 @@ import { commandSucceeded } from "niceeval/expect";
 // 用例(断言 dispatch 到 document 的 mouseover 不抛错、且不误挂 tooltip),断言全在可观察行为上、不
 // import 任何新符号,base_sha 下必失败(1 failed / 9 passed),打上真实修复后 10 全绿——本地 Node
 // 20.9.0 双向验证过。
-const REPO_URL = "https://github.com/ReactTooltip/react-tooltip.git";
 const BASE_COMMIT = "af0a01aa326d04cf3330423a41acfe62e725f9bb";
 
 export default defineEval({
@@ -25,47 +26,8 @@ export default defineEval({
     // 这是 install 步骤本身的副作用,不是 agent 的改动。
     ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
+  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
   async test(t) {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
-    t.progress({ message: "cloning react-tooltip @ base commit" });
-    const cloned = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(`react-tooltip checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-    }
-
-    // No packageManager field pinned, so corepack is unsafe on the sandbox's Node 20.9.0.
-    // Install yarn classic v1 explicitly. --ignore-engines covers Node 20.9.0 against
-    // devDependencies that declare stricter ranges; --ignore-scripts skips native-module
-    // postinstall builds (e.g. an old brotli addon) that are not needed to run Jest.
-    t.progress({ message: "installing deps (yarn classic v1)" });
-    const installed = await t.sandbox.runShell(
-      "npm install -g --prefix /usr/local yarn@1.22.22 && yarn install --ignore-scripts --ignore-engines",
-    );
-    if (installed.exitCode !== 0) {
-      throw new Error(`yarn install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-
     await t
       .send(
         "Your working directory is a checkout of the real react-tooltip repository at the commit where the bug " +
