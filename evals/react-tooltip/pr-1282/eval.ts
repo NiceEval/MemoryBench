@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 import { prepareRepo } from "../fixture.ts";
 
 // real fix: react-tooltip PR #1282 (merge 5bc1fe6ad7a42defa1a5ae05b953641f5b2dc227),
@@ -24,7 +23,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(

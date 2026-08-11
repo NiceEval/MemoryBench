@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded, equals, isTrue } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
 import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
@@ -45,7 +44,7 @@ export default defineEval({
     // 或增量产物落进 diff 分类账。
     ignore: ["target", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo),
+  plugins: prepareRepo,
   async test(t) {
     await t
       .send(

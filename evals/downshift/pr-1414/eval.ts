@@ -1,5 +1,4 @@
 import { defineEval } from "niceeval";
-import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
 import { prepareRepo } from "../fixture.ts";
 
@@ -28,7 +27,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
 
   async test(t) {
     await t

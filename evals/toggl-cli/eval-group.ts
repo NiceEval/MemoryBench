@@ -8,6 +8,7 @@ import entryInvoice from "./05-entry-invoice/eval.ts";
 import entryInvoiceMonthly from "./06-entry-invoice-monthly/eval.ts";
 
 export default defineEvalGroup({
+  onUnavailable: "stop-group",
   sandbox: sandboxLayer().setup(async (sandbox, ctx) => {
     ctx.progress({ message: "installing build deps + rust toolchain" });
     const script = [

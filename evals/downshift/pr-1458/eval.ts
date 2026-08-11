@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift-js/downshift, commit d1a7f67977e207a1f489af964c707a73e0763dc1
@@ -21,7 +20,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(

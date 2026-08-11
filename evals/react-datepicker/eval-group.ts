@@ -20,6 +20,7 @@ const enableCorepack: SandboxHook = async (sandbox, ctx) => {
 };
 
 export default defineEvalGroup({
+  onUnavailable: "stop-group",
   sandbox: sandboxLayer().setup(enableCorepack),
   evals: [pr6058, pr6073, pr6092, pr6167, pr6168, pr6172, pr6206],
 });

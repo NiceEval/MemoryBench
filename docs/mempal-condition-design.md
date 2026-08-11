@@ -35,7 +35,7 @@ warmup 的数据库随后删除，因此每条 Attempt 仍从它自己的恢复 
 
 ## 生命周期、复用与并发
 
-评估组拥有物理 Sandbox 的复用边界；Mempal Experiment 不声明第二层复用开关。每个 Group 的真实 Attempt 串行使用自己的 Docker Sandbox，不同 Group 则继续由 Experiment 的 `maxConcurrency` 并行调度。普通 compare 条件保留四条 Docker lane；Signalbox 维持其既有的单 Group、`maxConcurrency: 1` 轨迹契约。
+Eval Group 拥有物理 Sandbox 的复用边界；Mempal Experiment 不声明第二层复用开关。每个 Group 的真实 Attempt 串行使用自己的 Docker Sandbox，不同 Group 则继续由 Experiment 的 `maxConcurrency` 并行调度。普通 compare 条件保留四条 Docker lane；Signalbox 保持单 Group、`maxConcurrency: 1`，但当前 Group 不提供业务顺序契约，因此还不能把它解释成正式纵向轨迹。
 
 ```text
 NiceEval Docker Agent 基底

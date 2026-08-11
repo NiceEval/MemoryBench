@@ -1,6 +1,6 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
-import { dockerImageSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
+import { dockerSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
 
 // Claude Code Docker 组：CLI 接 deepseek 代理(ANTHROPIC_BASE_URL 覆盖),模型 deepseek-v4-flash。
 // 使用 NiceEval release-pinned 公共 Claude Code Docker 镜像；环境变量可切换到项目派生版本。
@@ -14,7 +14,7 @@ export default defineExperiment({
   }),
   flags: { memory: "baseline" },
   model: "deepseek-v4-flash",
-  sandbox: dockerImageSandbox({ image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 }),
+  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
   attempts: 1,
   earlyExit: true,
   timeoutMs: 1200000,

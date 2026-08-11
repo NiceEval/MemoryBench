@@ -1,4 +1,9 @@
 import type { SkillSpec } from "niceeval/adapter";
+import {
+  codexAgentExtension,
+  definePlugin,
+  type PluginInstance,
+} from "niceeval/plugin";
 import { NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
 import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
 
@@ -21,8 +26,9 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
  * 拆除留到那次验证之后。`preTeardown` 把每条 Attempt 写下的会话搬进 `/opt` 下这个 codex 不会
  * 碰的目录，下一条 Attempt 的 `postSetup` 再搬回新 `~/.codex/sessions`。本条件**不做跨 run
  * 回存**——每次全新 Invocation 从零开始，归档目录本身也在物理沙箱销毁时一并消失，没有
- * mempal 那种 host 侧 checkpoint tgz，也没有 nowledge 那种远程库；Eval Group 自己的 Docker
- * 串行 lane 保证同一 Group 内题目严格按声明顺序运行，归档到的会话历史顺序即真实作答顺序。
+ * mempal 那种 host 侧 checkpoint tgz，也没有 nowledge 那种远程库；Eval Group 的 Docker
+ * lane 只保证组内串行共享物理 Sandbox。当前没有业务顺序 API，归档只能代表实际发生过的
+ * Attempt 历史，不能把 `evals` 数组位置当成声明顺序。
  *
  * 2026-08-04 手工验证（`docker run niceeval/codex:0.144.1-r3`，全局装
  * `@obelisk-apps/cli@0.2.2`）确认的行为，供后续排障参考：
@@ -265,4 +271,27 @@ export function obeliskProbe(): SandboxHook {
     );
     commandLog(ctx, `[obelisk] image probe passed: obelisk-cli ${OBELISK_VERSION}`);
   };
+}
+
+const obeliskCondition = definePlugin<Record<never, never>>({
+  name: "memorybench.obelisk",
+  behaviorRevision: "1",
+  instanceKey: () => OBELISK_VERSION,
+  experiment: () => ({
+    identity: {
+      memory: "obelisk",
+      obeliskVersion: OBELISK_VERSION,
+    },
+    flags: obeliskFlags(),
+    agentExtensions: [codexAgentExtension({
+      skills: [obeliskSkill],
+      postSetup: [obeliskRestoreSessions()],
+      preTeardown: [obeliskArchiveSessions()],
+    })],
+  }),
+});
+
+/** Complete Obelisk condition; the physical image probe remains on the author Sandbox. */
+export function obeliskPlugin(): PluginInstance<"experiment"> {
+  return obeliskCondition({});
 }

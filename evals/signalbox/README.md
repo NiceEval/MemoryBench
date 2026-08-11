@@ -68,6 +68,8 @@ prompt 已公开的文件名、函数名、字段和规则。
 - attribution：按 metadata 分别看 retrieval、interference、update/scope、forgetting。
 - efficiency：wall time、turns、token/cost、重复失败命令和 retry。
 
-有记忆条件的实验必须 `maxConcurrency: 1`，使用独立、干净的 cohort 从 01 顺序重放；不能单跑某个
-checkpoint 后把失败归因给记忆。正式比较应同时运行 `experiments/compare/signalbox/` 下的 baseline 和 Mempal，
-并比较同一检查点，而不是只看总平均分。自造题没有上游官方 patch，判据变更仍需 RED、参考实现 GREEN、不同结构 ALT。
+当前 Eval Group 只负责共享 Sandbox，不提供业务顺序；`maxConcurrency: 1` 也不能把文件名或数组位置升级成
+正式顺序契约。因此显式 Eval 排序能力落地前，不得把这组结果解释成纵向 checkpoint survival。届时有记忆
+条件仍须使用独立、干净的 cohort 从 01 完整重放，不能单跑某个 checkpoint 后把失败归因给记忆；正式比较
+同时运行 baseline 与 Mempal，并比较同一检查点，而不是只看总平均分。自造题没有上游官方 patch，判据变更
+仍需 RED、参考实现 GREEN、不同结构 ALT。

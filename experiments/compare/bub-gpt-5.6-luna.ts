@@ -1,5 +1,5 @@
 import { defineExperiment } from "niceeval";
-import { dockerImageSandbox, NICEEVAL_BUB_DOCKER_IMAGE } from "niceeval/sandbox";
+import { dockerSandbox, NICEEVAL_BUB_DOCKER_IMAGE } from "niceeval/sandbox";
 import { bubAgent } from "niceeval/adapter";
 
 // 文件夹 compare = 唯一一组【可对比】的实验:同一批记忆 eval、同一个模型(gpt-5.6-luna)。
@@ -25,7 +25,7 @@ export default defineExperiment({
   model: "gpt-5.6-luna", // 两边钉同一个模型,差异才归因到 agent / 记忆机制
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   // Eval Group 拥有复用边界；Bub 使用 NiceEval 公开、版本钉死的 Docker 基底。
-  sandbox: dockerImageSandbox({ image: NICEEVAL_BUB_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 }),
+  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_BUB_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
   // 注:workspace(starter repo)上传 + 装依赖不在这儿 —— 那属于「eval 在什么上面干活」,
   // 写在各 eval 的 test(t) 里(t.sandbox.uploadDirectory + runCommand)。experiment 只管怎么跑。
   earlyExit: false, // 要完整通过率分布,以便报 pass^k

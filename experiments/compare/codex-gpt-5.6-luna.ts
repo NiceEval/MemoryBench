@@ -1,5 +1,5 @@
 import { defineExperiment } from "niceeval";
-import { dockerImageSandbox, NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
+import { dockerSandbox, NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
 import { codexAgent } from "niceeval/adapter";
 
 // compare 组的另一半:同模型(gpt-5.6-luna)下的 codex,作为「没有 tape 那套记忆机制」的对照。
@@ -12,7 +12,7 @@ export default defineExperiment({
   flags: { memory: "baseline" },
   model: "gpt-5.6-luna", // → ctx.model → niceeval codex adapter 写进 config.toml 的 model 行
   // Eval Group 拥有复用边界；公开、版本钉死的 Codex Docker 镜像只提供 Agent 环境。
-  sandbox: dockerImageSandbox({ image: NICEEVAL_CODEX_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 }),
+  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CODEX_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
   // 代理(base_url + key)走 .env,由 niceeval codex adapter 配成自定义 model_provider(wire_api=responses)
   earlyExit: false,
   // 每个 Eval Group 内串行复用一台 Sandbox，不同 Group 并行；4 是代理账号级实测上限。

@@ -7,5 +7,6 @@ import pr1587 from "./pr-1587/eval.ts";
 import pr1603 from "./pr-1603/eval.ts";
 
 export default defineEvalGroup({
+  onUnavailable: "stop-group",
   evals: [pr1414, pr1456, pr1458, pr1484, pr1587, pr1603],
 });

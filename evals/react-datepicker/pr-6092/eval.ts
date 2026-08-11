@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 import { prepareRepo } from "../fixture.ts";
 
 // 挖自 react-datepicker PR #6092(feat/month-header-placement),base commit 是该 PR 的
@@ -18,7 +17,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(

@@ -1,10 +1,8 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
-import { dockerImageSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
+import { dockerSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
 import {
-  nowledgeClaudeConfig,
-  nowledgeFlags,
-  nowledgeAttachRemote,
+  nowledgeConditionPlugin,
 } from "../shared/nowledge.ts";
 
 // claude-dp-v4 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -19,7 +17,8 @@ import {
 // 同批 Codex / Claude 变体按 Group 共用 Space，正式对比要说清起点状态。license 在服务端侧
 // 一次性激活(device 固定,seat 稳定占一个,不再随 run 增长);
 // free tier memory 上限 50,持久积累库容易撞上限,正式跑前确认服务端是 pro。
-// Group 内由 Eval Group 队列串行，让成员 N 读得到成员 N-1 的写入；Group 间仍可并行。
+// Eval Group 只保证组内共享一条串行 lane、Group 间可并行；当前尚无业务顺序契约，
+// 不能把 `evals` 数组位置解释成 N 必然读取 N-1。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "claude-code · deepseek-v4-flash · Nowledge Mem",
@@ -27,16 +26,14 @@ export default defineExperiment({
   agent: claudeCodeAgent({
     apiKey: process.env.DEEPSEEK_API_KEY,
     baseUrl: process.env.DEEPSEEK_BASE_URL,
-    ...nowledgeClaudeConfig(),
   }),
-  flags: { ...nowledgeFlags() },
+  plugins: [nowledgeConditionPlugin("claude-code")],
   model: "deepseek-v4-flash",
-  sandbox: dockerImageSandbox({ image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE, lifetimeMs: 60 * 60_000 })
-    .prepare(nowledgeAttachRemote()),
+  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   attempts: 1,
   earlyExit: true,
-  // Group 内顺序确定，不同 Group 由中心化服务并发处理。
+  // Group 内共享一条 lane；不同 Group 由中心化服务并发处理。
   maxConcurrency: 4,
   timeoutMs: 1200000,
 });

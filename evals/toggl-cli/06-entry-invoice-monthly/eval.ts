@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
 import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
@@ -36,7 +35,7 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  sandbox: sandboxLayer().prepare(prepareRepo),
+  plugins: prepareRepo,
   async test(t) {
     await t
       .send(

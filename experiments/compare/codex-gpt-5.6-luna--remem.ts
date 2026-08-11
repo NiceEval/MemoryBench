@@ -1,7 +1,7 @@
 import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
-import { dockerImageSandbox } from "niceeval/sandbox";
-import { REMEM_DOCKER_IMAGE, rememCodexConfig, rememFlags, rememPrepare } from "../shared/remem.ts";
+import { dockerSandbox } from "niceeval/sandbox";
+import { REMEM_DOCKER_IMAGE, rememPlugin } from "../shared/remem.ts";
 
 const MODEL = "gpt-5.6-luna";
 // Remem 没有跨物理容器 checkpoint。最大 Group 有 8 个 member，每条最多 30 分钟；
@@ -27,21 +27,19 @@ export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · remem",
   labels: { line: "codex" }, // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  agent: codexAgent(rememCodexConfig(MODEL)),
-  flags: { ...rememFlags(MODEL) },
+  agent: codexAgent(),
+  plugins: [rememPlugin(MODEL)],
   model: MODEL,
   // 每次借出前，NiceEval 要求剩余 TTL 足以覆盖本条 Attempt 的 30 分钟上限和 cleanup；
   // Docker TTL 不可续期。1 小时配置在两路全量跑的 05→06 之间触发了正常轮换，导致
   // raw_messages 从 63 回到 14。5 小时覆盖 8 × 30 分钟的最长 Group 和收尾余量。
-  sandbox: dockerImageSandbox({ image: REMEM_DOCKER_IMAGE, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS }).prepare(
-    rememPrepare(),
-  ),
-  sandboxReuse: true,
+  sandbox: dockerSandbox({ source: { type: "image", image: REMEM_DOCKER_IMAGE }, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS }),
   // 复用:remem 二进制已烘进镜像,sandbox 级只有 rememPrepare 这层薄探测,省的是 codex CLI
   // 安装 + 公共依赖每题重付一次。postSetup 的 `remem install --target codex` 在残留 $HOME
   // 上幂等重放(2026-08-04 手工验证过两遍:key/db 显示 existing、mcp_servers.remem 不重复写)。
   earlyExit: false,
-  // Group 内按声明顺序积累本地状态；不同仓库家族使用独立 Sandbox 并行推进。
+  // Group 内沿实际执行历史积累本地状态；不同仓库家族使用独立 Sandbox 并行推进。
+  // 当前 Eval Group 不把数组位置解释成业务顺序。
   maxConcurrency: 4,
   // 与 codex baseline/mempal/nowledge 对齐;toggl-cli 链式题需要 30 分钟的 agent deadline,
   // 实验上限保持一致不截断它的单题超时。

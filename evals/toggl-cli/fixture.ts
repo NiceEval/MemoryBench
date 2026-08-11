@@ -1,9 +1,19 @@
 // toggl-cli 链中每道代码题共用的单题 Fixture。
 // 每道题都从同一个 base commit 开始，不继承前一题的代码改动。
 
-import type { SandboxCommand, SandboxCommandContext } from "niceeval/sandbox";
+import {
+  defineSandboxCommand,
+  type SandboxCommandContext,
+} from "niceeval/sandbox";
+import { dependencyInstall } from "../../plugins/dependency-install.ts";
+import { gitRepository } from "../../plugins/git-checkout.ts";
 
 const REPO_URL = "https://github.com/CorrectRoadH/toggl-cli.git";
+
+const repository = gitRepository({
+  repository: REPO_URL,
+  instanceKey: "toggl-cli",
+});
 
 /** toggl-cli @ 8646f29 —— 写这些 eval 时的仓库 tip。 */
 export const BASE_COMMIT = "8646f29c87242b06eab974793a999d35b5a85b5e";
@@ -120,50 +130,46 @@ export const reportSandboxDiskCheck = (
 /** UTC 当天（YYYY-MM-DD）。Verifier 把 TZ 钉成 UTC，好让 CLI 跟我们对齐。 */
 export const today = () => new Date().toISOString().slice(0, 10);
 
-/** 把真实仓库在 BASE_COMMIT clone 到 workdir 根目录，并预热构建缓存。 */
-export const prepareRepo: SandboxCommand = async (sandbox, ctx) => {
-  ctx.progress({ message: "cloning toggl-cli @ base commit" });
-  const cloned = await sandbox.runShell(
-    [
-      "set -euo pipefail",
-      "rm -rf .git .niceeval-clone",
-      `git clone -q -o origin ${REPO_URL} .niceeval-clone`,
-      "mv .niceeval-clone/.git .git",
-      "rm -rf .niceeval-clone",
-      `git reset -q --hard ${BASE_COMMIT}`,
-      "git remote remove origin",
-      "git tag -l | xargs -r git tag -d >/dev/null",
-      "git reflog expire --expire=now --all",
-      "git gc -q --prune=now",
-      `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-      'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-      '[ "$COUNT" -eq 1 ]',
-    ].join("\n"),
-  );
-  if (cloned.exitCode !== 0) {
-    throw new Error(`toggl-cli checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
-  }
+const warmDependencies = defineSandboxCommand(
+  {
+    id: "memorybench.toggl-cli.dependencies",
+    revision: "1",
+    inputs: { baseCommit: BASE_COMMIT },
+  },
+  async (sandbox, ctx) => {
+    ctx.progress({ message: "warming cargo build cache (cold dependency build)" });
+    const built = await sandbox.runShell(
+      [
+        "export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo",
+        'export PATH="/usr/local/cargo/bin:$PATH"',
+        "cargo build --tests --quiet",
+      ].join("\n"),
+    );
+    if (built.exitCode !== 0) {
+      throw new Error(`baseline cargo build failed: ${(built.stderr || built.stdout).trim().slice(-800)}`);
+    }
 
-  ctx.progress({ message: "warming cargo build cache (cold dependency build)" });
-  const built = await sandbox.runShell(
-    [
-      "export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo",
-      'export PATH="/usr/local/cargo/bin:$PATH"',
-      "cargo build --tests --quiet",
-    ].join("\n"),
-  );
-  if (built.exitCode !== 0) {
-    throw new Error(`baseline cargo build failed: ${(built.stderr || built.stdout).trim().slice(-800)}`);
-  }
+    try {
+      const disk = await sandbox.runShell(SANDBOX_DISK_CHECK_COMMAND);
+      reportSandboxDiskCheck(ctx, disk);
+    } catch (error) {
+      reportSandboxDiskCheck(ctx, {
+        exitCode: null,
+        stdout: "",
+        stderr: error instanceof Error ? error.message : String(error),
+      });
+    }
+  },
+);
 
-  try {
-    const disk = await sandbox.runShell(SANDBOX_DISK_CHECK_COMMAND);
-    reportSandboxDiskCheck(ctx, disk);
-  } catch (error) {
-    reportSandboxDiskCheck(ctx, {
-      exitCode: null,
-      stdout: "",
-      stderr: error instanceof Error ? error.message : String(error),
-    });
-  }
-};
+const installDependencies = dependencyInstall({
+  name: "toggl-cli",
+  revision: "1",
+  commands: [warmDependencies],
+});
+
+/** Check out the common base through the shared Git resource, then warm Cargo per Attempt. */
+export const prepareRepo = [
+  repository.checkout({ commit: BASE_COMMIT, acceptCohortObjectVisibility: true }),
+  installDependencies,
+] as const;

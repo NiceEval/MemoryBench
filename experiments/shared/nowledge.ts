@@ -3,6 +3,13 @@ import { fileURLToPath } from "node:url";
 import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
 import type { ClaudeCodeConfig, ClaudeCodePluginSpec, CodexConfig, CodexPluginSpec } from "niceeval/adapter";
+import {
+  claudeCodeAgentExtension,
+  codexAgentExtension,
+  definePlugin,
+  type PluginInstance,
+} from "niceeval/plugin";
+import { sandboxLayer } from "niceeval/sandbox";
 import type {
   SandboxCommand,
   SandboxCommandContext,
@@ -22,8 +29,9 @@ import type {
  * nowledge 状态在中心化 server 上按 Eval Group Space 隔离；同一 Group 内跨 attempt / 跨实验 /
  * 跨 run 持续积累，不同 Group 不共享日常读写面。
  * 由此的两条纪律:
- * - **Group 间可并发**:中心化 server 自己处理不同 Space 的并发读写；同一 Group 由
- *   `defineEvalGroup()` 队列严格串行，成员 N 能读取成员 N-1 已写入的记忆。
+ * - **Group 间可并发**:中心化 server 自己处理不同 Space 的并发读写；同一 Eval Group
+ *   串行共享一条物理运行 lane。当前 Group 不提供业务顺序契约，因此这里只能声称状态在
+ *   已实际执行的成员间持续存在，不能把某个数组位置解释成成员 N 必然读取 N-1。
  * - **每个逻辑评测流有一个 cohort 标签**:用非秘密 `NOWLEDGE_COHORT` 区分结果批次；它进入
  *   flags / fingerprint，但不参与服务端连接。未显式设置时使用本轮直连标签。
  *
@@ -494,4 +502,37 @@ export function nowledgeClaudeConfig(): Pick<ClaudeCodeConfig, "plugins" | "post
     postSetup: [bindAgentToNowledgeSpace("claude")],
     preTeardown: [nowledgeVerifyRemoteAlive()],
   };
+}
+
+type NowledgePluginOptions = {
+  readonly receiver: "claude-code" | "codex";
+};
+
+const nowledgeCondition = definePlugin<NowledgePluginOptions>({
+  name: "memorybench.nowledge",
+  behaviorRevision: "1",
+  instanceKey: ({ receiver }) => {
+    const flags = nowledgeFlags();
+    return `${receiver}:${flags.nowledgeVersion}:${flags.nowledgeCohort}`;
+  },
+  experiment: ({ receiver }) => ({
+    identity: {
+      ...nowledgeFlags(),
+      receiver,
+    },
+    flags: nowledgeFlags(),
+    sandbox: sandboxLayer().prepare(nowledgeAttachRemote()),
+    agentExtensions: [
+      receiver === "codex"
+        ? codexAgentExtension(nowledgeCodexConfig())
+        : claudeCodeAgentExtension(nowledgeClaudeConfig()),
+    ],
+  }),
+});
+
+/** Complete Nowledge client/install/Agent condition for one built-in adapter receiver. */
+export function nowledgeConditionPlugin(
+  receiver: "claude-code" | "codex",
+): PluginInstance<"experiment"> {
+  return nowledgeCondition({ receiver });
 }

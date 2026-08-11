@@ -3,6 +3,11 @@ import { fileURLToPath } from "node:url";
 import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
 import type { CodexConfig, CodexPluginSpec, McpServer, SkillSpec } from "niceeval/adapter";
+import {
+  codexAgentExtension,
+  definePlugin,
+  type PluginInstance,
+} from "niceeval/plugin";
 import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
 
 /**
@@ -315,4 +320,29 @@ export function mem0CodexConfig(
     configFile: "configs/codex/mem0.toml",
     postSetup: [mem0PostSetup(endpoint)],
   };
+}
+
+type Mem0PluginOptions = {
+  readonly endpoint: () => Mem0Env;
+};
+
+const mem0Condition = definePlugin<Mem0PluginOptions>({
+  name: "memorybench.mem0",
+  behaviorRevision: "1",
+  instanceKey: () => {
+    const flags = mem0Flags();
+    return `${flags.mem0Version}:${flags.mem0UserId}`;
+  },
+  experiment: ({ endpoint }) => ({
+    identity: mem0Flags(),
+    flags: mem0Flags(),
+    agentExtensions: [codexAgentExtension(mem0CodexConfig(endpoint))],
+  }),
+});
+
+/** Mem0 install/Agent condition; remote reachability remains an author-owned physical hook. */
+export function mem0ConditionPlugin(
+  endpoint: () => Mem0Env = mem0Endpoint,
+): PluginInstance<"experiment"> {
+  return mem0Condition({ endpoint });
 }

@@ -41,6 +41,7 @@ const installNodeRuntime: SandboxHook = async (sandbox, ctx) => {
 };
 
 export default defineEvalGroup({
+  onUnavailable: "stop-group",
   sandbox: sandboxLayer().setup(installNodeRuntime),
   evals: [commit5578052, commitF63f6af, pr408],
 });

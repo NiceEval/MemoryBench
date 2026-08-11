@@ -1,45 +1,19 @@
-import { defineSandboxCommand } from "niceeval/sandbox";
+import { shell } from "niceeval/sandbox";
+import { dependencyInstall } from "../../plugins/dependency-install.ts";
+import { gitRepository } from "../../plugins/git-checkout.ts";
 
-const REPO_URL = "https://github.com/igordanchenko/yet-another-react-lightbox.git";
+const repository = gitRepository({
+  repository: "https://github.com/igordanchenko/yet-another-react-lightbox.git",
+  instanceKey: "yet-another-react-lightbox",
+});
 
-export const prepareRepo = (baseCommit: string) =>
-  defineSandboxCommand(
-    {
-      id: "memorybench.yet-another-react-lightbox.checkout",
-      revision: "2",
-      inputs: { baseCommit },
-    },
-    async (sandbox, ctx) => {
-      ctx.progress({ message: "cloning yet-another-react-lightbox @ base commit" });
-      const cloned = await sandbox.runShell(
-        [
-          "set -euo pipefail",
-          // .git 不由题间 workdir reset 恢复；每题重新建立只含目标 base 的历史。
-          "rm -rf .git .niceeval-clone",
-          `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-          "mv .niceeval-clone/.git .git",
-          "rm -rf .niceeval-clone",
-          `git reset -q --hard ${baseCommit}`,
-          "git remote remove origin",
-          "git tag -l | xargs -r git tag -d >/dev/null",
-          "git reflog expire --expire=now --all",
-          "git gc -q --prune=now",
-          `TS=$(git show -s --format=%ci ${baseCommit})`,
-          'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-          '[ "$COUNT" -eq 1 ]',
-        ].join("\n"),
-      );
-      if (cloned.exitCode !== 0) {
-        throw new Error(
-          `yet-another-react-lightbox checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
-        );
-      }
-      ctx.progress({ message: "installing yet-another-react-lightbox dependencies" });
-      const installed = await sandbox.runShell("npm install");
-      if (installed.exitCode !== 0) {
-        throw new Error(
-          `yet-another-react-lightbox dependency install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
-        );
-      }
-    },
-  );
+const installDependencies = dependencyInstall({
+  name: "yet-another-react-lightbox",
+  revision: "1",
+  commands: [shell("npm install")],
+});
+
+export const prepareRepo = (baseCommit: string) => [
+  repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }),
+  installDependencies,
+] as const;

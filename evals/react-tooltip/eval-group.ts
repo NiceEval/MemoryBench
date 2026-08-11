@@ -22,6 +22,7 @@ const installYarn: SandboxHook = async (sandbox, ctx) => {
 };
 
 export default defineEvalGroup({
+  onUnavailable: "stop-group",
   sandbox: sandboxLayer().setup(installYarn),
   evals: [pr970, pr1269, pr1271, pr1275, pr1278, pr1282],
 });

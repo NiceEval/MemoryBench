@@ -1,6 +1,11 @@
 import { setTimeout as delay } from "node:timers/promises";
 import type { CodexConfig } from "niceeval/adapter";
-import { command, NICEEVAL_CODEX_DOCKER_IMAGE, shell } from "niceeval/sandbox";
+import {
+  codexAgentExtension,
+  definePlugin,
+  type PluginInstance,
+} from "niceeval/plugin";
+import { command, NICEEVAL_CODEX_DOCKER_IMAGE, sandboxLayer, shell } from "niceeval/sandbox";
 import type {
   SandboxCommand,
   SandboxCommandTarget,
@@ -447,4 +452,25 @@ export function rememCodexConfig(
       ),
     ],
   };
+}
+
+const rememCondition = definePlugin<{ readonly memoryModel: string }>({
+  name: "memorybench.remem",
+  behaviorRevision: "1",
+  instanceKey: ({ memoryModel }) => memoryModel,
+  experiment: ({ memoryModel }) => ({
+    identity: {
+      memory: "remem",
+      memoryModel,
+      rememVersion: REMEM_VERSION,
+    },
+    flags: rememFlags(memoryModel),
+    sandbox: sandboxLayer().prepare(rememPrepare()),
+    agentExtensions: [codexAgentExtension(rememCodexConfig(memoryModel))],
+  }),
+});
+
+/** Complete Remem condition: flags, image probe and Codex integration. */
+export function rememPlugin(memoryModel: string): PluginInstance<"experiment"> {
+  return rememCondition({ memoryModel });
 }

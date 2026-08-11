@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 import { prepareRepo } from "../fixture.ts";
 
 // PR #6167, merge commit 6667a40d339d8fb5a6c02263b08d366cf2cfc449. gh's reported
@@ -18,7 +17,7 @@ export default defineEval({
     // 副作用,不是 agent 的改动;修复只在 src/index.tsx,agent 不需要碰 package.json。
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(

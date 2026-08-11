@@ -24,6 +24,7 @@ const installPnpm: SandboxHook = async (sandbox, ctx) => {
 };
 
 export default defineEvalGroup({
+  onUnavailable: "stop-group",
   // Group setup 只安装不依赖题目 checkout 的全局工具链；每条成员 prepare 在 clone 后
   // 重放项目依赖安装，符合 setup → reset anchor → per-Attempt prepare 的生命周期。
   sandbox: sandboxLayer().setup(installPnpm),

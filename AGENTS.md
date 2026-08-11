@@ -145,19 +145,19 @@ Additional source assertions are fine when they are part of the task's functiona
 `judge precheck failed` 先分清 404(模型下架 → 一条 curl 探活换名字)和 timed out(代理并发占满),
 两者报错都指向 baseUrl,极易误诊。见 memory: x1api-gpt-5.4-mini-unavailable、proxy-account-concurrency-cap。
 
-### 记忆条件的 callback 默认允许结果沿用
+### 记忆条件的 Plugin 默认允许结果沿用
 
-`sandboxReuse: true` 本身不禁结果沿用；上游对复用与普通 Experiment 使用同一套 carry 门。mempal / nowledge
-使用的直接 lifecycle / prepare callback 不提供额外 identity，但不再阻断跨 Run carry。其它指纹输入相同时，终态结果
+Eval Group 的物理复用本身不禁结果沿用；上游对 Group 与普通 Experiment 使用同一套 carry 门。记忆条件应把
+lifecycle、Agent extension 与 Sandbox prepare 收进有版本 identity 的 Plugin。其它指纹输入相同时，终态结果
 默认沿用，避免声明遗漏让昂贵评测永久重跑。
 
 这不表示 Runner 能识别 callback 的语义变化。实现变化应改用 `defineSandboxCommand()` 并提高 `revision`；动态输入
 进入 `inputs`。已经在旧 identity 下产生结果时，修正声明后对受影响选择执行 `--rerun all`。
 
 中断后的“全量重跑”也不等于状态自动干净。mempal checkpoint 与 Nowledge 远端库可能已经收到中断 Attempt 的
-半次写入；正式对比应改用新的 `MEMPAL_COHORT` / `NOWLEDGE_COHORT`，从头重建该条件的顺序轨迹。沿用旧 cohort
-继续跑只用于调试，不与完整批次混作同一比较样本。直接 callback 不再是 carry blocker；真正无法固定的 Provider
-环境身份仍会以 `carry-disabled` 阻断沿用。
+半次写入；正式对比应改用新的 `MEMPAL_COHORT` / `NOWLEDGE_COHORT`。当前 Eval Group 尚无业务顺序 API，
+不得把数组位置解释成完整记忆轨迹；需要前缀顺序的实验等显式排序契约落地后再正式采集。沿用旧 cohort 继续跑只用于
+调试，不与完整批次混作同一比较样本。真正无法固定的 Provider 环境身份仍会以 `carry-disabled` 阻断沿用。
 
 ## Reporting
 
@@ -210,8 +210,8 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
   **可靠视图只有两个：`show --exp <id> --history`（单实验全史）与 `show --stats`（36 题 × 全实验矩阵）**；
   报告站点读快照,在上游修复前站点显示的就是残缺切片,不是数据丢了。期望：快照按「每题最新终态」组合,
   或至少把 carried/accepted 与 fresh 一视同仁。
-- **sandboxReuse 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
-  `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 sandboxReuse 提速测量时只能靠 `--timing` 里
+- **Eval Group 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
+  `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 Group 提速测量时只能靠 `--timing` 里
   install 耗时的阶梯反推是不是同一条 lane，很别扭。
 - ~~裸 `show @<locator>` 在本仓库根本用不了~~ **已修复，且它是排查 errored 的首选切片**（2026-08-04 复测）：
   此前报 "the built-in report has no attempt-input page"，现在直接给出**阶段名 + 完整错误正文**

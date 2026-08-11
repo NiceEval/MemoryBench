@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 import { prepareRepo } from "../fixture.ts";
 
 // PR #6172 (fix/restore-native-date-fallback-6164), merge commit 75a4ed1fd2d45f4af5cbb2c9e533ae7c0a793c34.
@@ -17,7 +16,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(

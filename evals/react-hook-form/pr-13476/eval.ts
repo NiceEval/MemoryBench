@@ -1,5 +1,4 @@
 import { defineEval } from "niceeval";
-import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
 import { prepareRepo } from "../fixture.ts";
 
@@ -24,7 +23,7 @@ export default defineEval({
   description:
     "react-hook-form pr-13476: trigger() after a field-array remove() can wipe out nested per-index errors when a mixed root+nested error object is present (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
-  sandbox: sandboxLayer().prepare(prepareRepo(BASE_COMMIT)),
+  plugins: prepareRepo(BASE_COMMIT),
 
   async test(t) {
     await t
