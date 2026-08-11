@@ -341,7 +341,7 @@ const mem0Condition = definePlugin<Mem0PluginOptions>({
 });
 
 /** Mem0 install/Agent condition; remote reachability remains an author-owned physical hook. */
-export function mem0ConditionPlugin(
+export function mem0(
   endpoint: () => Mem0Env = mem0Endpoint,
 ): PluginInstance<"experiment"> {
   return mem0Condition({ endpoint });

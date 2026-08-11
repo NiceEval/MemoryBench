@@ -200,7 +200,7 @@ const mempalCondition = definePlugin<MempalPluginOptions>({
 });
 
 /** Complete Mempal install/Agent condition; checkpoint setup/teardown stays physical. */
-export function mempalPlugin(
+export function mempal(
   tool: "claude" | "codex",
   skill: SkillSpec = mempalSkill,
 ): PluginInstance<"experiment"> {

@@ -2,7 +2,7 @@ import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
 import { dockerSandbox, NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
 import {
-  nowledgeConditionPlugin,
+  nowledge,
 } from "../shared/nowledge.ts";
 
 // codex-gpt-5.6-luna 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -20,7 +20,7 @@ export default defineExperiment({
   description: "codex · gpt-5.6-luna · Nowledge Mem",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: codexAgent(),
-  plugins: [nowledgeConditionPlugin("codex")],
+  plugins: [nowledge("codex")],
   model: "gpt-5.6-luna",
   // Eval Group 管理 Docker 复用；lifetimeMs 为物理容器声明长 Attempt 的寿命预算，不是云配额。
   sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CODEX_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),

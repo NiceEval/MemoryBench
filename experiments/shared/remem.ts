@@ -471,6 +471,6 @@ const rememCondition = definePlugin<{ readonly memoryModel: string }>({
 });
 
 /** Complete Remem condition: flags, image probe and Codex integration. */
-export function rememPlugin(memoryModel: string): PluginInstance<"experiment"> {
+export function remem(memoryModel: string): PluginInstance<"experiment"> {
   return rememCondition({ memoryModel });
 }

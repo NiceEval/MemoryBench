@@ -292,6 +292,6 @@ const obeliskCondition = definePlugin<Record<never, never>>({
 });
 
 /** Complete Obelisk condition; the physical image probe remains on the author Sandbox. */
-export function obeliskPlugin(): PluginInstance<"experiment"> {
+export function obelisk(): PluginInstance<"experiment"> {
   return obeliskCondition({});
 }

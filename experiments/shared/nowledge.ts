@@ -531,7 +531,7 @@ const nowledgeCondition = definePlugin<NowledgePluginOptions>({
 });
 
 /** Complete Nowledge client/install/Agent condition for one built-in adapter receiver. */
-export function nowledgeConditionPlugin(
+export function nowledge(
   receiver: "claude-code" | "codex",
 ): PluginInstance<"experiment"> {
   return nowledgeCondition({ receiver });

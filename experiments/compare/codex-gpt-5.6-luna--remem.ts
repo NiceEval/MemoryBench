@@ -1,7 +1,7 @@
 import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
 import { dockerSandbox } from "niceeval/sandbox";
-import { REMEM_DOCKER_IMAGE, rememPlugin } from "../shared/remem.ts";
+import { REMEM_DOCKER_IMAGE, remem } from "../shared/remem.ts";
 
 const MODEL = "gpt-5.6-luna";
 // Remem 没有跨物理容器 checkpoint。最大 Group 有 8 个 member，每条最多 30 分钟；
@@ -28,7 +28,7 @@ export default defineExperiment({
   description: "codex · gpt-5.6-luna · remem",
   labels: { line: "codex" }, // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: codexAgent(),
-  plugins: [rememPlugin(MODEL)],
+  plugins: [remem(MODEL)],
   model: MODEL,
   // 每次借出前，NiceEval 要求剩余 TTL 足以覆盖本条 Attempt 的 30 分钟上限和 cleanup；
   // Docker TTL 不可续期。1 小时配置在两路全量跑的 05→06 之间触发了正常轮换，导致
