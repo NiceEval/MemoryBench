@@ -2,7 +2,8 @@ import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
-import { orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
+import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 5 题。开票口径:在计费取整之上再加一条最低计费额。
 //
@@ -25,11 +26,11 @@ const ENTRIES = [
   { id: 5, description: "running", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
 
-const asJson = (probeCase: ProbeCase): any => {
+const asJson = (verifierCase: VerifierCase): any => {
   try {
-    return JSON.parse(probeCase.stdout.trim());
+    return JSON.parse(verifierCase.stdout.trim());
   } catch {
-    return { parseError: probeCase.stdout };
+    return { parseError: verifierCase.stdout };
   }
 };
 
@@ -70,7 +71,7 @@ export default defineEval({
       )
       .then((turn) => turn.succeeded().stopOnFailure());
 
-    const probe = await runProbe(t, {
+    const verifierPlan: VerifierPlan = {
       windows: [{ contains: `start_date=${DAY}`, entries: ENTRIES }],
       default_entries: [],
       cases: [
@@ -78,21 +79,32 @@ export default defineEval({
         { name: "json", args: ["entry", "invoice", "--since", DAY, "--until", DAY, "--json"] },
         { name: "empty", args: ["entry", "invoice", "--since", "2026-01-01", "--until", "2026-01-01"] },
       ],
-    });
+    };
+
+    await t.sandbox.uploadFile(
+      new URL("../_support/verifier.py", import.meta.url),
+      "tests/verifier.py",
+    );
+    await t.sandbox.uploadFile(
+      new URL("../_support/run-verifier.sh", import.meta.url),
+      "tests/run-verifier.sh",
+    );
+    await t.sandbox.writeText("tests/verifier-plan.json", JSON.stringify(verifierPlan, null, 2));
+    const verification = await runVerifier(t);
 
     await t.group("命令存在,取整 + 30 分钟最低额都应用后按项目汇总", () => {
-      t.check(probe.human.exit, equals(0));
-      t.check(billSummary(asJson(probe.json)), equals([
+      t.check(verification.human.exit, equals(0));
+      t.check(billSummary(asJson(verification.json)), equals([
         ["Alpha", 4500],
         ["Beta", 2700],
       ]));
-      t.check(asJson(probe.json)?.total_billable_seconds, equals(7200));
+      t.check(asJson(verification.json)?.total_billable_seconds, equals(7200));
     });
 
     await t.group("空窗口打印 (no data) 并 exit 0", () => {
-      const lines = orderedLines(probe.empty, ["(no data)"]);
+      const lines = orderedLines(verification.empty, ["(no data)"]);
       t.check(lines.ok, isTrue(lines.message));
-      t.check(probe.empty.exit, equals(0));
+      t.check(verification.empty.exit, equals(0));
     });
   },
 });

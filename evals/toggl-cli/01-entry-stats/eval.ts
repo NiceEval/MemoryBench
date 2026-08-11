@@ -2,7 +2,8 @@ import { defineEval } from "niceeval";
 import { commandSucceeded, equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
-import { prepareRepo, runProbe, orderedLines, type ProbeCase } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
+import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 1 题。三轮对话用大白话说清一组项目级约定,这些约定从 checkout 里推不出来。
 //
@@ -31,11 +32,11 @@ const ENTRIES = [
   { id: 5, description: "still going", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: false, workspace_id: 1, project_id: 11 },
 ];
 
-const asJson = (probeCase: ProbeCase): unknown => {
+const asJson = (verifierCase: VerifierCase): unknown => {
   try {
-    return JSON.parse(probeCase.stdout.trim());
+    return JSON.parse(verifierCase.stdout.trim());
   } catch {
-    return { parseError: probeCase.stdout };
+    return { parseError: verifierCase.stdout };
   }
 };
 
@@ -109,7 +110,7 @@ export default defineEval({
       )
       .then((turn) => turn.succeeded().stopOnFailure());
 
-    const probe = await runProbe(t, {
+    const verifierPlan: VerifierPlan = {
       windows: [{ contains: `start_date=${DAY}`, entries: ENTRIES }],
       default_entries: [],
       cases: [
@@ -118,13 +119,24 @@ export default defineEval({
         { name: "empty", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01"] },
         { name: "empty-json", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01", "--json"] },
       ],
-    });
+    };
+
+    await t.sandbox.uploadFile(
+      new URL("../_support/verifier.py", import.meta.url),
+      "tests/verifier.py",
+    );
+    await t.sandbox.uploadFile(
+      new URL("../_support/run-verifier.sh", import.meta.url),
+      "tests/run-verifier.sh",
+    );
+    await t.sandbox.writeText("tests/verifier-plan.json", JSON.stringify(verifierPlan, null, 2));
+    const verification = await runVerifier(t);
 
     const dependenciesUntouched = await t.sandbox.runShell("git diff --quiet -- Cargo.toml Cargo.lock");
 
     await t.group("the command exists and aggregates per project", () => {
-      t.check(probe.human.exit, equals(0));
-      t.check(asJson(probe.json), equals({
+      t.check(verification.human.exit, equals(0));
+      t.check(asJson(verification.json), equals({
         groups: [
           { project: "Alpha", seconds: 5400 },
           { project: "Beta", seconds: 3720 },
@@ -135,7 +147,7 @@ export default defineEval({
     });
 
     await t.group("compact duration style (1h 02m / 45m)", () => {
-      const lines1 = orderedLines(probe.human, ["1h 30m Alpha", "1h 02m Beta", "45m No Project", "3h 17m Total"]);
+      const lines1 = orderedLines(verification.human, ["1h 30m Alpha", "1h 02m Beta", "45m No Project", "3h 17m Total"]);
       t.check(lines1.ok, isTrue(lines1.message));
     });
 
@@ -144,10 +156,10 @@ export default defineEval({
     });
 
     await t.group("empty window prints (no data) and exits 0", () => {
-      const lines2 = orderedLines(probe.empty, ["(no data)"]);
+      const lines2 = orderedLines(verification.empty, ["(no data)"]);
       t.check(lines2.ok, isTrue(lines2.message));
-      t.check(probe.empty.exit, equals(0));
-      t.check(asJson(probe["empty-json"]), equals({ groups: [], total_seconds: 0 }));
+      t.check(verification.empty.exit, equals(0));
+      t.check(asJson(verification["empty-json"]), equals({ groups: [], total_seconds: 0 }));
     });
   },
 });

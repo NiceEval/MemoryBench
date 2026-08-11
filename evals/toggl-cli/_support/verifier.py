@@ -22,7 +22,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 DEFAULT_USER = {
-    "api_token": "probe-token",
+    "api_token": "verifier-token",
     "email": "tester@example.com",
     "fullname": "Tester",
     "timezone": "UTC",
@@ -114,7 +114,7 @@ def main():
     env = dict(os.environ)
     env.update(
         {
-            "TOGGL_API_TOKEN": "probe-token",
+            "TOGGL_API_TOKEN": "verifier-token",
             "TOGGL_API_URL": f"http://127.0.0.1:{port}",
             # Responses are per-case; the on-disk HTTP cache would leak one case into the next.
             "TOGGL_DISABLE_HTTP_CACHE": "1",
@@ -139,7 +139,7 @@ def main():
             )
             exit_code, stdout, stderr = completed.returncode, completed.stdout, completed.stderr
         except subprocess.TimeoutExpired:
-            exit_code, stdout, stderr = None, "", "probe: command timed out after 60s"
+            exit_code, stdout, stderr = None, "", "verifier: command timed out after 60s"
 
         results.append(
             {

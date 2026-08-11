@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  reportSandboxDiskProbe,
+  reportSandboxDiskCheck,
   SANDBOX_DISK_LOW_THRESHOLD_KB,
-  SANDBOX_DISK_PROBE_COMMAND,
-  type SandboxDiskProbeResult,
-} from "./harness.ts";
+  SANDBOX_DISK_CHECK_COMMAND,
+  type SandboxDiskCheckResult,
+} from "./fixture.ts";
 
-const probeOutput = (free_kb: number, total_kb: number, build_tree_kb: number) =>
+const checkOutput = (free_kb: number, total_kb: number, build_tree_kb: number) =>
   [
     "Filesystem 1024-blocks Used Available Capacity Mounted on",
     `overlay ${total_kb} ${total_kb - free_kb} ${free_kb} 10% /`,
@@ -32,7 +32,7 @@ const fakeContext = () => {
   };
 };
 
-const result = (stdout: string, exitCode = 0): SandboxDiskProbeResult => ({
+const result = (stdout: string, exitCode = 0): SandboxDiskCheckResult => ({
   exitCode,
   stdout,
 });
@@ -40,9 +40,9 @@ const result = (stdout: string, exitCode = 0): SandboxDiskProbeResult => ({
 test("正常空间只记录三个数值 facts，不发 warning", () => {
   const { ctx, facts, diagnostics } = fakeContext();
 
-  reportSandboxDiskProbe(
+  reportSandboxDiskCheck(
     ctx,
-    result(probeOutput(SANDBOX_DISK_LOW_THRESHOLD_KB, SANDBOX_DISK_LOW_THRESHOLD_KB * 2, 1_000_000)),
+    result(checkOutput(SANDBOX_DISK_LOW_THRESHOLD_KB, SANDBOX_DISK_LOW_THRESHOLD_KB * 2, 1_000_000)),
   );
 
   assert.deepEqual(Object.fromEntries(facts), {
@@ -59,7 +59,7 @@ test("低于阈值时保留 facts 并发真实风险 warning", () => {
   const total_kb = SANDBOX_DISK_LOW_THRESHOLD_KB * 2;
   const build_tree_kb = 1_048_576;
 
-  reportSandboxDiskProbe(ctx, result(probeOutput(free_kb, total_kb, build_tree_kb)));
+  reportSandboxDiskCheck(ctx, result(checkOutput(free_kb, total_kb, build_tree_kb)));
 
   assert.equal(facts.get("sandbox.disk.free_kb"), free_kb);
   assert.equal(facts.get("sandbox.disk.total_kb"), total_kb);
@@ -80,29 +80,29 @@ test("低于阈值时保留 facts 并发真实风险 warning", () => {
   });
 });
 
-test("探针命令失败时只报告观测退化，不伪造 facts", () => {
+test("检查命令失败时只报告观测退化，不伪造 facts", () => {
   const { ctx, facts, diagnostics } = fakeContext();
 
-  reportSandboxDiskProbe(ctx, { exitCode: 1, stdout: "", stderr: "df failed" });
+  reportSandboxDiskCheck(ctx, { exitCode: 1, stdout: "", stderr: "df failed" });
 
   assert.deepEqual(Object.fromEntries(facts), {});
   assert.equal(diagnostics.length, 1);
-  assert.equal((diagnostics[0] as { code: string }).code, "sandbox-space-probe-failed");
+  assert.equal((diagnostics[0] as { code: string }).code, "sandbox-space-check-failed");
   assert.match((diagnostics[0] as { message: string }).message, /退出码 1/);
 });
 
-test("探针输出畸形时只报告观测退化，不伪造 facts", () => {
+test("检查输出畸形时只报告观测退化，不伪造 facts", () => {
   const { ctx, facts, diagnostics } = fakeContext();
 
-  reportSandboxDiskProbe(ctx, result("not df or du output"));
+  reportSandboxDiskCheck(ctx, result("not df or du output"));
 
   assert.deepEqual(Object.fromEntries(facts), {});
   assert.equal(diagnostics.length, 1);
-  assert.equal((diagnostics[0] as { code: string }).code, "sandbox-space-probe-failed");
+  assert.equal((diagnostics[0] as { code: string }).code, "sandbox-space-check-failed");
   assert.match((diagnostics[0] as { message: string }).message, /格式无法解析/);
 });
 
-test("探针只查询根文件系统一次，不对 /opt 重复跑 df", () => {
-  assert.equal((SANDBOX_DISK_PROBE_COMMAND.match(/^df -Pk \/ /gm) ?? []).length, 1);
-  assert.equal((SANDBOX_DISK_PROBE_COMMAND.match(/^df -Pk \/opt/gm) ?? []).length, 0);
+test("检查只查询根文件系统一次，不对 /opt 重复跑 df", () => {
+  assert.equal((SANDBOX_DISK_CHECK_COMMAND.match(/^df -Pk \/ /gm) ?? []).length, 1);
+  assert.equal((SANDBOX_DISK_CHECK_COMMAND.match(/^df -Pk \/opt/gm) ?? []).length, 0);
 });
