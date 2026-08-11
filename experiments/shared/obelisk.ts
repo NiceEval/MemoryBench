@@ -127,6 +127,7 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
 
 /** npm registry 上 `@obelisk-apps/cli` 当前最新版本；建镜像安装步骤与结果 flags 共用这一处。 */
 export const OBELISK_VERSION = "0.2.2";
+const OBELISK_SKILL_REVISION = "f618952b1e366a2cc7b86525347fafd654091854";
 
 /**
  * 本地派生镜像：`scripts/obelisk-docker/Dockerfile` 从官方 `niceeval/codex:0.144.1-r4`
@@ -159,15 +160,14 @@ const OBELISK_BASE_TAG = OBELISK_BASE_IMAGE.slice(OBELISK_BASE_IMAGE.lastIndexOf
 export const OBELISK_DOCKER_IMAGE = `memorybench-codex-obelisk:${OBELISK_BASE_TAG}-${OBELISK_VERSION}-${OBELISK_DOCKERFILE_REVISION}`;
 
 /**
- * 教 agent 用 `obelisk --search` / `--query` 检索历史会话的官方 Skill。仓库是
- * tommy0103/obelisk 的 docs-only skill 制品自动发布出来的多 Skill 仓库
- * （`skills/obelisk/SKILL.md`），`ref` 钉死其 `main` 分支当时的 HEAD commit。
+ * 教 agent 用 `obelisk --search` / `--query` 检索历史会话的官方 Skill。内容从
+ * tommy0103/obelisk-skill 的固定 commit 原样 vendored（见目录内 UPSTREAM.md）；使用
+ * local SkillSpec 让每条 Attempt 直接上传同一份不可变制品，不再重复 clone 远端仓库。
  */
 export const obeliskSkill: SkillSpec = {
-  kind: "repo",
-  source: "tommy0103/obelisk-skill",
-  ref: "f618952b1e366a2cc7b86525347fafd654091854",
-  skills: ["obelisk"],
+  kind: "local",
+  path: "experiments/shared/obelisk-skill",
+  name: "obelisk",
 };
 
 /** 记忆条件的实验事实：换 `obeliskVersion` 就是换了被测条件，历史结果不应混入。 */
@@ -275,12 +275,13 @@ export function obeliskProbe(): SandboxHook {
 
 const obeliskCondition = definePlugin<Record<never, never>>({
   name: "memorybench.obelisk",
-  behaviorRevision: "1",
-  instanceKey: () => OBELISK_VERSION,
+  behaviorRevision: "2",
+  instanceKey: () => `${OBELISK_VERSION}@${OBELISK_SKILL_REVISION}`,
   experiment: () => ({
     identity: {
       memory: "obelisk",
       obeliskVersion: OBELISK_VERSION,
+      obeliskSkillRevision: OBELISK_SKILL_REVISION,
     },
     flags: obeliskFlags(),
     agentExtensions: [codexAgentExtension({

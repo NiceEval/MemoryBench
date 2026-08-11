@@ -25,7 +25,6 @@ interface Seed {
 }
 
 interface GitCheckoutHandle {
-  readonly root: string;
   readonly seeds: ReadonlyMap<string, Seed>;
 }
 
@@ -172,7 +171,7 @@ async function materializeRepository(
 
 const gitCheckoutResource = defineSandboxResource<"docker", GitCheckoutDemand, GitCheckoutHandle>({
   receiver: "docker",
-  behaviorRevision: "1",
+  behaviorRevision: "2",
   demand: ({ repository, commit, into, acceptCohortObjectVisibility }) => ({
     repository,
     commit,
@@ -202,7 +201,7 @@ const gitCheckoutResource = defineSandboxResource<"docker", GitCheckoutDemand, G
     context.fact("git.seed.repository_count", seeds.size);
     context.fact("git.seed.revision_count", revisionCount);
     context.fact("git.seed.fetch_count", seeds.size);
-    return Object.freeze({ root, seeds });
+    return Object.freeze({ seeds });
   }),
   prepare: (handle, demand, context) => fromPromise(async () => {
     const seed = handle.seeds.get(demand.repository);
@@ -290,9 +289,6 @@ const gitCheckoutResource = defineSandboxResource<"docker", GitCheckoutDemand, G
       label: demand.commit.slice(0, 12),
       durationMs: Date.now() - startedAt,
     });
-  }),
-  release: (handle, context) => fromPromise(async () => {
-    await context.sandbox.runCommandOrThrow("rm", ["-rf", "--", handle.root], { signal: context.signal });
   }),
 });
 
