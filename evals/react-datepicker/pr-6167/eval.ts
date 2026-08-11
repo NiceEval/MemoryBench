@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // PR #6167, merge commit 6667a40d339d8fb5a6c02263b08d366cf2cfc449. gh's reported
 // baseRefOid matches BASE_COMMIT exactly, and the merge commit's first parent is also

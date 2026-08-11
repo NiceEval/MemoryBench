@@ -3,7 +3,7 @@ import { commandSucceeded, equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
-import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
+import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 1 题。三轮对话用大白话说清一组项目级约定,这些约定从 checkout 里推不出来。
 //
@@ -31,14 +31,6 @@ const ENTRIES = [
   { id: 4, description: "inbox", start: `${DAY}T15:00:00Z`, stop: `${DAY}T15:45:00Z`, duration: 2700, billable: false, workspace_id: 1 },
   { id: 5, description: "still going", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: false, workspace_id: 1, project_id: 11 },
 ];
-
-const asJson = (verifierCase: VerifierCase): unknown => {
-  try {
-    return JSON.parse(verifierCase.stdout.trim());
-  } catch {
-    return { parseError: verifierCase.stdout };
-  }
-};
 
 export default defineEval({
   description:
@@ -136,7 +128,7 @@ export default defineEval({
 
     await t.group("the command exists and aggregates per project", () => {
       t.check(verification.human.exit, equals(0));
-      t.check(asJson(verification.json), equals({
+      t.check(parseJsonOutput(verification.json), equals({
         groups: [
           { project: "Alpha", seconds: 5400 },
           { project: "Beta", seconds: 3720 },
@@ -159,7 +151,7 @@ export default defineEval({
       const lines2 = orderedLines(verification.empty, ["(no data)"]);
       t.check(lines2.ok, isTrue(lines2.message));
       t.check(verification.empty.exit, equals(0));
-      t.check(asJson(verification["empty-json"]), equals({ groups: [], total_seconds: 0 }));
+      t.check(parseJsonOutput(verification["empty-json"]), equals({ groups: [], total_seconds: 0 }));
     });
   },
 });

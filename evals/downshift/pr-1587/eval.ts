@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift PR #1587 (merge 87a8137e6c69d4d0086bd2a2b333367762ce477a),
 // which lands on top of BASE_COMMIT (its first parent). Bug: getHighlightedIndexOnOpen()

@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // PR #6172 (fix/restore-native-date-fallback-6164), merge commit 75a4ed1fd2d45f4af5cbb2c9e533ae7c0a793c34.
 // gh's reported baseRefOid (df8a91d9) is 13 commits behind this — that's just the branch point at

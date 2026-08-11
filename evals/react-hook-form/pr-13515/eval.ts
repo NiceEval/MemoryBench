@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13515(不让被测 agent 看到 PR 号/commit/URL):
 // deepEqual() 的循环引用防护把「已访问过的对象」全塞进一个共享 WeakSet,只要本次比较里任何一侧

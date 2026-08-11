@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13512(不让被测 agent 看到 PR 号/commit/URL):
 // validateField.ts 里给 shouldUseNativeValidation 用的 setCustomValidity 闭包只对

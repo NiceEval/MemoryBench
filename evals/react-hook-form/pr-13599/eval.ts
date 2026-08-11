@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13599(不让被测 agent 看到 PR 号/commit/URL):
 // 内部 _setValid() 是 fire-and-forget(9 处调用点都不 await),对乱序完成毫无防护——如果一次更早

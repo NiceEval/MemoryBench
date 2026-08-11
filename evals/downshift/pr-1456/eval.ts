@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift-js/downshift, commit d822530f6b3eebe34c3dc8249353b61dd237d78b
 // ("feat(useSelect): improve highlight by character keys algorithm (#1456)"), which

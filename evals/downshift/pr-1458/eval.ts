@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift-js/downshift, commit d1a7f67977e207a1f489af964c707a73e0763dc1
 // ("fix(useMultipleSelection): prevent adding items on Backspace/Delete without

@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: yet-another-react-lightbox PR #408 (squash-merged as
 // 2861732969a182075ba19d3a001b34c3a38a3081), which lands on top of BASE_COMMIT (its first

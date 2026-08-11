@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: react-tooltip PR #970. This PR was landed as a linear sequence of 4 commits
 // fast-forwarded onto main (no distinct 2-parent merge commit was created), so gh's

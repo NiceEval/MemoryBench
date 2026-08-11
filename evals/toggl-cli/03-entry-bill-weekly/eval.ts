@@ -3,7 +3,7 @@ import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
-import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
+import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 3 题。按周汇总的计费视图。
 //
@@ -27,14 +27,6 @@ const ENTRIES = [
   { id: 4, description: "internal", start: `${W1}T13:00:00Z`, stop: `${W1}T14:00:00Z`, duration: 3600, billable: false, workspace_id: 1, project_id: 11 },
   { id: 5, description: "running", start: `${W2}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
-
-const asJson = (verifierCase: VerifierCase): any => {
-  try {
-    return JSON.parse(verifierCase.stdout.trim());
-  } catch {
-    return { parseError: verifierCase.stdout };
-  }
-};
 
 const weekSummary = (payload: any) =>
   Array.isArray(payload?.weeks) ? payload.weeks.map((w: any) => [w?.week, w?.billable_seconds]) : payload;
@@ -96,7 +88,7 @@ export default defineEval({
     // --- 功能形状:分桶、键、排序,都在本题 prompt 里说清 ---
     await t.group("命令存在,按周分桶、周一为键、旧的在前", () => {
       t.check(verification.human.exit, equals(0));
-      const weeks = weekSummary(asJson(verification.json));
+      const weeks = weekSummary(parseJsonOutput(verification.json));
       t.check(Array.isArray(weeks) ? weeks.map((w: any[]) => w[0]) : weeks, equals([W1, W2]));
     });
 
@@ -108,11 +100,11 @@ export default defineEval({
 
     // --- 计费口径:本题 prompt 未重述,规则见 R-round(第 2 题) ---
     await t.group("计费金额体现 15 分钟向上取整(只能从第 2 题的规则回忆)", () => {
-      t.check(weekSummary(asJson(verification.json)), equals([
+      t.check(weekSummary(parseJsonOutput(verification.json)), equals([
         [W1, 2700],
         [W2, 2700],
       ]));
-      t.check(asJson(verification.json)?.total_billable_seconds, equals(5400));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(5400));
     });
   },
 });

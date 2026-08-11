@@ -3,7 +3,7 @@ import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
-import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
+import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 5 题。开票口径:在计费取整之上再加一条最低计费额。
 //
@@ -25,14 +25,6 @@ const ENTRIES = [
   { id: 4, description: "internal", start: `${DAY}T13:00:00Z`, stop: `${DAY}T14:00:00Z`, duration: 3600, billable: false, workspace_id: 1, project_id: 11 },
   { id: 5, description: "running", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
-
-const asJson = (verifierCase: VerifierCase): any => {
-  try {
-    return JSON.parse(verifierCase.stdout.trim());
-  } catch {
-    return { parseError: verifierCase.stdout };
-  }
-};
 
 const billSummary = (payload: any) =>
   Array.isArray(payload?.projects) ? payload.projects.map((p: any) => [p?.project, p?.billable_seconds]) : payload;
@@ -94,11 +86,11 @@ export default defineEval({
 
     await t.group("命令存在,取整 + 30 分钟最低额都应用后按项目汇总", () => {
       t.check(verification.human.exit, equals(0));
-      t.check(billSummary(asJson(verification.json)), equals([
+      t.check(billSummary(parseJsonOutput(verification.json)), equals([
         ["Alpha", 4500],
         ["Beta", 2700],
       ]));
-      t.check(asJson(verification.json)?.total_billable_seconds, equals(7200));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(7200));
     });
 
     await t.group("空窗口打印 (no data) 并 exit 0", () => {

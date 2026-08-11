@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // react-datepicker#6168 (https://github.com/Hacker0x01/react-datepicker/pull/6168):
 // Safari's page auto-translate feature mutates the DOM of the open calendar popup,

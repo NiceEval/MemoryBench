@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift PR #1484 (squash-merge 4ff13853df24803e9d07b0c90438e28b7c00a778,
 // a single-parent commit whose parent equals BASE_COMMIT below, which also matches gh's

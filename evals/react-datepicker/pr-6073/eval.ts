@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR Hacker0x01/react-datepicker#6073(不让被测 agent 看到 PR 号/commit)。merge
 // commit 649af62fee622afbda7db7ec3f935efbf6fd9676 提供隐藏测试的权威 post-fix 内容。Bug:范围选择、

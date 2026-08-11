@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift PR #1414 (squash-merge 6bd18eb8e4a2f3003bd49a14eb0791b2370ba36c, a
 // single-parent commit whose parent equals BASE_COMMIT below). Bug: in useCombobox, clicking

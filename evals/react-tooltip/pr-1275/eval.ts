@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR ReactTooltip/react-tooltip#1275(不让被测 agent 看到 PR 号/commit)。merge commit
 // cd6a0ff20864264de012460f7f5cfacf6c259850 提供隐藏测试的权威 post-fix 内容。Bug:openOnClick 下点击

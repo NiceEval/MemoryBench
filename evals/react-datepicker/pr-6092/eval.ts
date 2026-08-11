@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自 react-datepicker PR #6092(feat/month-header-placement),base commit 是该 PR 的
 // baseRefOid,与 merge commit 0e13929b428fdeb989a0886279a60f69dab0978e 的第一父提交精确

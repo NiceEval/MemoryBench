@@ -3,7 +3,7 @@ import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
-import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
+import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 2 题。引入这家店的计费口径。
 //
@@ -28,14 +28,6 @@ const ENTRIES = [
   { id: 4, description: "internal", start: `${DAY}T13:00:00Z`, stop: `${DAY}T14:00:00Z`, duration: 3600, billable: false, workspace_id: 1, project_id: 11 },
   { id: 5, description: "running", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
-
-const asJson = (verifierCase: VerifierCase): any => {
-  try {
-    return JSON.parse(verifierCase.stdout.trim());
-  } catch {
-    return { parseError: verifierCase.stdout };
-  }
-};
 
 const billSummary = (payload: any) =>
   Array.isArray(payload?.projects) ? payload.projects.map((p: any) => [p?.project, p?.billable_seconds]) : payload;
@@ -100,16 +92,16 @@ export default defineEval({
 
     await t.group("命令存在,且按 15 分钟向上取整后汇总可计费时长", () => {
       t.check(verification.human.exit, equals(0));
-      t.check(billSummary(asJson(verification.json)), equals([
+      t.check(billSummary(parseJsonOutput(verification.json)), equals([
         ["Alpha", 2700],
         ["Beta", 2700],
       ]));
-      t.check(asJson(verification.json)?.total_billable_seconds, equals(5400));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(5400));
     });
 
     await t.group("只算 billable、忽略非计费与运行中(总计不含那 3600s)", () => {
       // 精确求和 3660 或含非计费 7260 都不等于 5400,这条把「没按规则算」区分出来
-      t.check(asJson(verification.json)?.total_billable_seconds, equals(5400));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(5400));
     });
 
     await t.group("空窗口打印 (no data) 并 exit 0", () => {

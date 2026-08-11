@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: direct commit 557805264799d436f8dae40414faf3318b468954 to
 // igordanchenko/yet-another-react-lightbox main (no associated PR — confirmed via

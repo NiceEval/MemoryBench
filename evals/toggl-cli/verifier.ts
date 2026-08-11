@@ -23,6 +23,15 @@ export interface VerifierCase {
   requests: string[];
 }
 
+/** 解析 verifier 用例的 JSON 标准输出；失败时保留原文，供断言报告展示。 */
+export const parseJsonOutput = (verifierCase: VerifierCase): any => {
+  try {
+    return JSON.parse(verifierCase.stdout.trim());
+  } catch {
+    return { parseError: verifierCase.stdout };
+  }
+};
+
 export const orderedLines = (verifierCase: VerifierCase, expected: string[]) => {
   let cursor = 0;
   for (const line of verifierCase.lines) {

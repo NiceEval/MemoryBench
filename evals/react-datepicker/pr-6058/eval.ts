@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // PR #6058 (Hacker0x01/react-datepicker), merged as 928b2cf5b7fb2ed70798dc280568c22de040fbd4;
 // base_sha below == that merge commit's first parent (verified: `git merge-base --is-ancestor`

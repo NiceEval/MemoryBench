@@ -3,7 +3,7 @@ import { equals, isTrue } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
 
 import { prepareRepo } from "../fixture.ts";
-import { orderedLines, runVerifier, type VerifierCase, type VerifierPlan } from "../verifier.ts";
+import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 6 题。按月汇总的开票视图。
 //
@@ -25,14 +25,6 @@ const ENTRIES = [
   { id: 3, description: "internal", start: `${M1}T13:00:00Z`, stop: `${M1}T14:00:00Z`, duration: 3600, billable: false, workspace_id: 1, project_id: 11 },
   { id: 4, description: "running", start: `${M2}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
-
-const asJson = (verifierCase: VerifierCase): any => {
-  try {
-    return JSON.parse(verifierCase.stdout.trim());
-  } catch {
-    return { parseError: verifierCase.stdout };
-  }
-};
 
 const monthSummary = (payload: any) =>
   Array.isArray(payload?.months) ? payload.months.map((m: any) => [m?.month, m?.billable_seconds]) : payload;
@@ -92,7 +84,7 @@ export default defineEval({
 
     await t.group("命令存在,按月分桶、旧的在前", () => {
       t.check(verification.human.exit, equals(0));
-      const months = monthSummary(asJson(verification.json));
+      const months = monthSummary(parseJsonOutput(verification.json));
       t.check(Array.isArray(months) ? months.map((m: any[]) => m[0]) : months, equals(["2026-01", "2026-02"]));
     });
 
@@ -104,11 +96,11 @@ export default defineEval({
 
     // --- 计费口径:本题 prompt 未重述,规则见 R-round(第 2 题)+ R-min(第 5 题) ---
     await t.group("金额体现取整+最低额(两条规则分属第 2、5 题,都靠记忆)", () => {
-      t.check(monthSummary(asJson(verification.json)), equals([
+      t.check(monthSummary(parseJsonOutput(verification.json)), equals([
         ["2026-01", 1800],
         ["2026-02", 2700],
       ]));
-      t.check(asJson(verification.json)?.total_billable_seconds, equals(4500));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(4500));
     });
   },
 });

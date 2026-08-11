@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13476(不让被测 agent 看到 PR 号/commit/URL):
 // 当 field array 的 resolver 同一轮校验里既报了 root 级错误又报了带数字 index 的嵌套错误时

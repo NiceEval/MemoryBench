@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift PR #1603 (squash-merge ee2a828ac70035c1e6156523b72c11abae4c07e4,
 // a single-parent commit whose parent equals BASE_COMMIT below). Bug: getItemProps() in

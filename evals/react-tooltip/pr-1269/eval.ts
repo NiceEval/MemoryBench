@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
 import { sandboxLayer } from "niceeval/sandbox";
-import { prepareRepo } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: react-tooltip PR #1269 (merge 42251977e06f81cb1f467b89cb51bf11b1794e6d),
 // which lands on top of BASE_COMMIT (its first parent; matches gh's reported baseRefOid
