@@ -52,7 +52,7 @@ import type {
  * **历史（2026-08-04）：以下是旧派生镜像为 root 时的第一层故障，已由
  * 非 root 镜像修复；2026-08-09 的容器事件已证明当前复用成立。**
  * niceeval 文档写"题间 reset 不是整台 Sandbox 归零……`$HOME` 等 workdir 外状态会保留",实测
- * 在由 Eval Group 复用的 `dockerImageSandbox` 中,codexAgent 的
+ * 在由 Eval Group 复用的 `dockerSandbox` 中,codexAgent 的
  * postSetup/preTeardown(Agent 级 Hook,每条 Attempt 一次)对 `$HOME` 的写入确实**不会
  * 存活到下一条 Attempt**——但**根因已定案:本仓库这份派生镜像当时没有声明 `USER`,
  * `docker run` 默认以 root 执行,而 niceeval Docker Sandbox 的文档化契约是「非 root 是
