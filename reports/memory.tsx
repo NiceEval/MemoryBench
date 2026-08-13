@@ -1,70 +1,35 @@
+import { Either } from "effect";
 import {
-  Col,
-  ExperimentScatter,
-  ExperimentTable,
-  RunNotices,
-  SampleNotices,
-  SampleSummary,
+  definePage,
   defineReport,
+  reportComponentId,
+  reportDocument,
+  reportId,
+  reportMetric,
+  reportRoute,
 } from "niceeval/report";
-import { Leaderboard } from "./components/leaderboard.tsx";
-import { MemoryBenchHero } from "./components/memorybench-hero.tsx";
 
-// MemoryBench 只发布自己的报告页；ExperimentTable 的 Attempt 下钻由 view
-// 自动接到官方 AttemptDetails，不要求业务报告复制 standard pages。
+/**
+ * 当前报告 API 只接受声明式 projection/calculation/page 图，而不再接收 React 组件或
+ * Record reader。详细 attempt、断言与时序由 NiceEval 内建页面提供；本页保留
+ * MemoryBench 的入口说明，避免复制另一套结果读取路径。
+ */
+const overview = definePage({
+  id: Either.getOrThrow(reportComponentId("memorybench-overview")),
+  route: Either.getOrThrow(reportRoute("/")),
+  render: () =>
+    reportDocument({
+      title: "MemoryBench",
+      children: [
+        reportMetric({
+          label: "Benchmark focus",
+          value: "Coding-agent task completion under comparable memory conditions",
+        }),
+      ],
+    }),
+});
+
 export default defineReport({
-  pages: [
-    {
-      id: "report",
-      title: { en: "Report", "zh-CN": "报告" },
-      render: () => (
-        <Col>
-          <MemoryBenchHero />
-          <SampleSummary />
-          <Leaderboard />
-          <ExperimentScatter />
-          <ExperimentTable />
-        </Col>
-      ),
-    },
-  ],
-  title: { en: "MemoryBench", "zh-CN": "MemoryBench" },
-  // GA4:官方 snippet 直译成 head 声明(niceeval ≥0.8 的结构化 head 通道)。
-  // react-grab 只在本地 `niceeval view` 时注入,线上构建由 vercel-build.sh 设置 VERCEL=1 挡掉。
-  head: [
-    {
-      tag: "meta",
-      attrs: {
-        name: "description",
-        content: "MemoryBench evaluates whether memory helps coding agents complete real development tasks.",
-      },
-    },
-    ...(process.env.VERCEL
-      ? []
-      : [
-          {
-            tag: "script" as const,
-            attrs: { src: "https://unpkg.com/react-grab/dist/index.global.js", crossorigin: "anonymous" },
-          },
-        ]),
-    { tag: "script", attrs: { async: true, src: "https://www.googletagmanager.com/gtag/js?id=G-Q30H5WX93X" } },
-    {
-      tag: "script",
-      children: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag("js", new Date());
-        gtag("config", "G-Q30H5WX93X");
-      `,
-    },
-    {
-      tag: "script",
-      attrs: {
-        defer: true,
-        src: "https://vibeloft.ai/telemetry/v1.js",
-        "data-vl-product-id": "b5b155b2-4d7d-426e-89f8-95eaa1f61ba9",
-        "data-vl-auth-key": "vl_web.tNU554AVLZ9teAF7JNdkBIMn7Y38bT0j3Se4mblmnmQ",
-      },
-    },
-  ],
+  id: Either.getOrThrow(reportId("memorybench")),
+  pages: [overview],
 });

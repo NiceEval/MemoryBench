@@ -2,7 +2,9 @@ import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
 import { dockerSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
 import {
-  nowledge,
+  nowledgeAttachRemote,
+  nowledgeClaudeConfig,
+  nowledgeFlags,
 } from "../shared/nowledge.ts";
 
 // claude-dp-v4 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -26,10 +28,12 @@ export default defineExperiment({
   agent: claudeCodeAgent({
     apiKey: process.env.DEEPSEEK_API_KEY,
     baseUrl: process.env.DEEPSEEK_BASE_URL,
+    ...nowledgeClaudeConfig(),
   }),
-  plugins: [nowledge("claude-code")],
+  flags: nowledgeFlags(),
   model: "deepseek-v4-flash",
-  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
+  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 })
+    .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   attempts: 1,
   earlyExit: true,

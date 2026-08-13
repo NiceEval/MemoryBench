@@ -10,7 +10,7 @@ export default defineEval({
   async test(t) {
     await t.send(
       "Vega Support 是另一个独立客户，本次需求不改变任何 Orion 规则。请实现 `src/vega-deadline.js` 并导出 `vegaDeadlineFor(incident)`：open 状态的 P1 事件在 10 分钟后到期，P2 在 45 分钟后到期，P3 在 360 分钟后到期；closed 状态返回 null。结果输出为 UTC ISO-8601 字符串。补充有针对性的公开测试，不要增加依赖，并运行测试套件。",
-    ).then((turn) => turn.succeeded().stopOnFailure());
+    ).then((turn) => turn.succeeded().orStop());
     await t.sandbox.uploadFile(
       new URL("./tests/hidden.test.js", import.meta.url),
       ".niceeval-hidden.test.js",

@@ -3,13 +3,6 @@ import { fileURLToPath } from "node:url";
 import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
 import type { ClaudeCodeConfig, ClaudeCodePluginSpec, CodexConfig, CodexPluginSpec } from "niceeval/adapter";
-import {
-  claudeCodeAgentExtension,
-  codexAgentExtension,
-  definePlugin,
-  type PluginInstance,
-} from "niceeval/plugin";
-import { sandboxLayer } from "niceeval/sandbox";
 import type {
   SandboxCommand,
   SandboxCommandContext,
@@ -502,37 +495,4 @@ export function nowledgeClaudeConfig(): Pick<ClaudeCodeConfig, "plugins" | "post
     postSetup: [bindAgentToNowledgeSpace("claude")],
     preTeardown: [nowledgeVerifyRemoteAlive()],
   };
-}
-
-type NowledgePluginOptions = {
-  readonly receiver: "claude-code" | "codex";
-};
-
-const nowledgeCondition = definePlugin<NowledgePluginOptions>({
-  name: "memorybench.nowledge",
-  behaviorRevision: "1",
-  instanceKey: ({ receiver }) => {
-    const flags = nowledgeFlags();
-    return `${receiver}:${flags.nowledgeVersion}:${flags.nowledgeCohort}`;
-  },
-  experiment: ({ receiver }) => ({
-    identity: {
-      ...nowledgeFlags(),
-      receiver,
-    },
-    flags: nowledgeFlags(),
-    sandbox: sandboxLayer().prepare(nowledgeAttachRemote()),
-    agentExtensions: [
-      receiver === "codex"
-        ? codexAgentExtension(nowledgeCodexConfig())
-        : claudeCodeAgentExtension(nowledgeClaudeConfig()),
-    ],
-  }),
-});
-
-/** Complete Nowledge client/install/Agent condition for one built-in adapter receiver. */
-export function nowledge(
-  receiver: "claude-code" | "codex",
-): PluginInstance<"experiment"> {
-  return nowledgeCondition({ receiver });
 }

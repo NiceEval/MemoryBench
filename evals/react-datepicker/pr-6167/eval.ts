@@ -17,7 +17,7 @@ export default defineEval({
     // 副作用,不是 agent 的改动;修复只在 src/index.tsx,agent 不需要碰 package.json。
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -40,7 +40,7 @@ export default defineEval({
           "tests. Fix the library source (likely in `src/index.tsx`, wherever the portal render branch builds " +
           "its returned JSX); do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

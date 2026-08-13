@@ -2,7 +2,9 @@ import { defineExperiment } from "niceeval";
 import { codexAgent } from "niceeval/adapter";
 import { dockerSandbox, NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
 import {
-  nowledge,
+  nowledgeAttachRemote,
+  nowledgeCodexConfig,
+  nowledgeFlags,
 } from "../shared/nowledge.ts";
 
 // codex-gpt-5.6-luna 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -19,11 +21,12 @@ export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · Nowledge Mem",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  agent: codexAgent(),
-  plugins: [nowledge("codex")],
+  agent: codexAgent(nowledgeCodexConfig()),
+  flags: nowledgeFlags(),
   model: "gpt-5.6-luna",
   // Eval Group 管理 Docker 复用；lifetimeMs 为物理容器声明长 Attempt 的寿命预算，不是云配额。
-  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CODEX_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
+  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CODEX_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 })
+    .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   // 复用 + 串行,与 mempal 组逐字对齐。插件安装不是阻碍:niceeval 的 codex adapter 在每条 attempt
   // 开始前把同名 marketplace 注册与插件安装先摘后装、收敛到声明(niceeval docs/feature/adapters/

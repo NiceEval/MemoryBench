@@ -16,7 +16,7 @@ export default defineEval({
   description:
     "react-hook-form pr-13599: stale out-of-order _setValid() calls can overwrite a newer, correct isValid/isValidating result (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -48,7 +48,7 @@ export default defineEval({
           "./scripts/jest/jest.config.js src/__tests__/useForm/formState.test.tsx`. Fix the library source; do not " +
           "just edit tests.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
     await t.sandbox.uploadFile(

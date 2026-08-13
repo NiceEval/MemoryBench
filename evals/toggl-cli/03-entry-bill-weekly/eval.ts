@@ -37,7 +37,7 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  plugins: prepareRepo,
+  sandbox: prepareRepo,
   async test(t) {
     await t
       .send(
@@ -51,7 +51,7 @@ export default defineEval({
           "- Human output: one line per week `<YYYY-MM-DD>  <seconds>s`, two spaces between columns, then " +
           "`Total  <seconds>s`. Empty window prints `(no data)` on stdout and exits 0. No new dependencies.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t
       .send(
@@ -61,7 +61,7 @@ export default defineEval({
           "Then build and run the existing test suite. (`cargo test` also compiles tests/live_cli.rs, which " +
           "needs real credentials to actually run — compiling is enough.)",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     const verifierPlan: VerifierPlan = {
       windows: [{ contains: `start_date=${W1}`, entries: ENTRIES }],

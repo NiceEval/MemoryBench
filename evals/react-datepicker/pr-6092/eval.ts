@@ -17,7 +17,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -56,7 +56,7 @@ export default defineEval({
           "ever need to). Tests use Jest — run a single file with `node_modules/.bin/jest <path>`. Fix the " +
           "library source under `src/`; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

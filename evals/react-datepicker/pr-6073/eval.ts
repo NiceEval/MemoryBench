@@ -21,7 +21,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -42,7 +42,7 @@ export default defineEval({
           "dependencies are already installed (re-run `corepack enable && yarn install --immutable` if you " +
           "ever need to). Tests use Jest — run a single file with `node_modules/.bin/jest <path>`.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
     await t.sandbox.uploadFile(

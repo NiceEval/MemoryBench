@@ -1,9 +1,5 @@
 import {
-  definePlugin,
-  type PluginInstance,
-} from "niceeval/plugin";
-import {
-  sandboxLayer,
+  defineSandboxCommand,
   type SandboxCommand,
 } from "niceeval/sandbox";
 
@@ -13,27 +9,30 @@ export interface DependencyInstallOptions {
   readonly commands: readonly [SandboxCommand, ...SandboxCommand[]];
 }
 
-const dependencyInstallFamily = definePlugin<DependencyInstallOptions>({
-  name: "memorybench.dependency-install",
-  behaviorRevision: "1",
-  instanceKey: ({ name, revision }) => `${name}@${revision}`,
-  eval: ({ name, revision, commands }) => {
-    if (!/^[a-z0-9][a-z0-9._-]*$/.test(name)) {
-      throw new TypeError("dependency install name must be a stable lowercase identifier");
-    }
-    if (revision.trim() === "") {
-      throw new TypeError("dependency install revision must be non-empty");
-    }
-    let sandbox = sandboxLayer();
-    for (const command of commands) sandbox = sandbox.prepare(command);
-    return {
-      identity: { name, revision },
-      sandbox,
-    };
-  },
-});
+/**
+ * 依赖安装是每条 Attempt 的 Sandbox 准备工作，不是 Plugin。
+ *
+ * Plugin 当前只组合生命周期；命令的稳定身份由 `id`、`revision` 与 `inputs` 提供。
+ */
+export function dependencyInstall({ name, revision, commands }: DependencyInstallOptions): SandboxCommand {
+  if (!/^[a-z0-9][a-z0-9._-]*$/.test(name)) {
+    throw new TypeError("dependency install name must be a stable lowercase identifier");
+  }
+  if (revision.trim() === "") {
+    throw new TypeError("dependency install revision must be non-empty");
+  }
 
-/** Keep dependency work separate from repository materialization and checkout. */
-export function dependencyInstall(options: DependencyInstallOptions): PluginInstance<"eval"> {
-  return dependencyInstallFamily(options);
+  return defineSandboxCommand(
+    {
+      id: "memorybench.dependency-install",
+      revision,
+      inputs: { name },
+    },
+    async (sandbox, ctx) => {
+      ctx.progress({ message: `installing ${name} dependencies` });
+      for (const command of commands) {
+        await command(sandbox, ctx);
+      }
+    },
+  );
 }

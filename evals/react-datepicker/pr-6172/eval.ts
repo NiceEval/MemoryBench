@@ -16,7 +16,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -38,7 +38,7 @@ export default defineEval({
           "`node_modules/.bin/jest src/test/date_utils_test.test.ts` to scope to the date-parsing tests. " +
           "Fix the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

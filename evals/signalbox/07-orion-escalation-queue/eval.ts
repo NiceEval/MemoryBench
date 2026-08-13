@@ -10,7 +10,7 @@ export default defineEval({
   async test(t) {
     await t.send(
       "请实现 `src/orion-queue.js` 并导出 `buildOrionEscalationQueue(incidents)`。使用 Orion 当前的响应规则和仍然有效的例外。返回需要处理的 `{ id, deadline }` 记录，沿用我们约定的时间格式和队列排序。补充有针对性的公开测试，不要增加依赖，并运行测试套件。",
-    ).then((turn) => turn.succeeded().stopOnFailure());
+    ).then((turn) => turn.succeeded().orStop());
     await t.sandbox.uploadFile(
       new URL("./tests/hidden.test.js", import.meta.url),
       ".niceeval-hidden.test.js",

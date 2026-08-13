@@ -1,1 +1,0 @@
-[{"timingNodeId":"n7","phase":"sandbox.prepare.experiment","display":"nmem --json status","exitCode":1,"checked":false,"stdout":"","stderr":"error: connecting to https://mem.350124.xyz: error sending request for url (https://mem.350124.xyz/health): operation timed out\n"}]

@@ -1,15 +1,9 @@
 import { defineConfig } from "niceeval";
-import { basalt, chalk } from "niceeval/report/built-in";
 import memory from "./reports/memory.tsx";
 
 export default defineConfig({
   // 项目默认报告:不带 --report 时 show / view 装载它(见 niceeval defineConfig · report)。
   report: memory,
-
-  // view 的项目默认主题,官方两套切换着看:chalk 浅色圆角,basalt 暗色直角。
-  // basalt 也是不配 theme 时的默认;单次覆盖用 `niceeval view --theme basalt|chalk`。
-  // theme: chalk,
-  theme: basalt,
 
   // LLM-as-judge:**本文件不配 judge,一律配在用到它的那条 eval 上**(`defineEval({ judge })`,
   // 目前只有 evals/toggl-cli/04-billing-doc.eval.ts)。

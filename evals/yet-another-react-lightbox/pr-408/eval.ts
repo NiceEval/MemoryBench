@@ -34,7 +34,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
 
   async test(t) {
     await t
@@ -71,7 +71,7 @@ export default defineEval({
           "suite to whatever file you're iterating on with `npx vitest run <path-to-file>`. Implement the " +
           "feature in the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

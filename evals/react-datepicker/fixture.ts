@@ -1,4 +1,4 @@
-import { shell } from "niceeval/sandbox";
+import { sandboxLayer, shell } from "niceeval/sandbox";
 import { dependencyInstall } from "../../plugins/dependency-install.ts";
 import { gitRepository } from "../../plugins/git-checkout.ts";
 
@@ -13,7 +13,7 @@ const installDependencies = dependencyInstall({
   commands: [shell("yarn install --immutable")],
 });
 
-export const prepareRepo = (baseCommit: string) => [
-  repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }),
-  installDependencies,
-] as const;
+export const prepareRepo = (baseCommit: string) =>
+  sandboxLayer()
+    .prepare(repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }))
+    .prepare(installDependencies);

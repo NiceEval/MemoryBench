@@ -27,7 +27,7 @@ export default defineEval({
     // 这是 install 步骤本身的副作用,不是 agent 的改动。
     ignore: ["coverage", "node_modules", "yarn.lock", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -52,7 +52,7 @@ export default defineEval({
           "Fix the library source (likely in the tooltip component and/or its event-handling hook under " +
           "`src/components/Tooltip/`); do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

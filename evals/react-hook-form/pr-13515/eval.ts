@@ -18,7 +18,7 @@ export default defineEval({
     "react-hook-form pr-13515: deepEqual's circular-reference guard makes equality \"sticky\" across unrelated " +
     "reused object references instead of only guarding genuine cycles (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -55,7 +55,7 @@ export default defineEval({
           "pnpm install --no-frozen-lockfile --ignore-scripts`). Run the relevant tests with `node_modules/.bin/jest --config " +
           "./scripts/jest/jest.config.js <path-to-file>`. Fix the library source; do not just edit tests.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
     await t.sandbox.uploadFile(

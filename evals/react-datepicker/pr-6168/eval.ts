@@ -18,7 +18,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  plugins: prepareRepo(BASE_COMMIT),
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
     await t
       .send(
@@ -43,7 +43,7 @@ export default defineEval({
           "`NODE_ENV=test yarn test` (or `NODE_ENV=test node_modules/.bin/jest` to run the whole suite directly). " +
           "This is a TypeScript + React codebase; the calendar dialog markup lives under `src/`.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

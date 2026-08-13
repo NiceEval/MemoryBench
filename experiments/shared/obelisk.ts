@@ -1,9 +1,4 @@
-import type { SkillSpec } from "niceeval/adapter";
-import {
-  codexAgentExtension,
-  definePlugin,
-  type PluginInstance,
-} from "niceeval/plugin";
+import type { CodexConfig, SkillSpec } from "niceeval/adapter";
 import { NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
 import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
 
@@ -273,26 +268,11 @@ export function obeliskProbe(): SandboxHook {
   };
 }
 
-const obeliskCondition = definePlugin<Record<never, never>>({
-  name: "memorybench.obelisk",
-  behaviorRevision: "2",
-  instanceKey: () => `${OBELISK_VERSION}@${OBELISK_SKILL_REVISION}`,
-  experiment: () => ({
-    identity: {
-      memory: "obelisk",
-      obeliskVersion: OBELISK_VERSION,
-      obeliskSkillRevision: OBELISK_SKILL_REVISION,
-    },
-    flags: obeliskFlags(),
-    agentExtensions: [codexAgentExtension({
-      skills: [obeliskSkill],
-      postSetup: [obeliskRestoreSessions()],
-      preTeardown: [obeliskArchiveSessions()],
-    })],
-  }),
-});
-
-/** Complete Obelisk condition; the physical image probe remains on the author Sandbox. */
-export function obelisk(): PluginInstance<"experiment"> {
-  return obeliskCondition({});
+/** Obelisk 的 Skill 与 session hooks 直接属于官方 Codex Agent factory。 */
+export function obeliskCodexConfig(): Pick<CodexConfig, "skills" | "postSetup" | "preTeardown"> {
+  return {
+    skills: [obeliskSkill],
+    postSetup: [obeliskRestoreSessions()],
+    preTeardown: [obeliskArchiveSessions()],
+  };
 }

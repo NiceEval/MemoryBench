@@ -3,7 +3,8 @@ import { dockerSandbox } from "niceeval/sandbox";
 import { codexAgent } from "niceeval/adapter";
 import {
   OBELISK_DOCKER_IMAGE,
-  obelisk,
+  obeliskCodexConfig,
+  obeliskFlags,
   obeliskProbe,
 } from "../shared/obelisk.ts";
 
@@ -35,9 +36,9 @@ export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · obelisk",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  // Plugin 提供 Skill 与每条 Attempt 的归档/还原，物理镜像探针仍由 Sandbox 明确拥有。
-  agent: codexAgent(),
-  plugins: [obelisk()],
+  // Agent factory 提供 Skill 与每条 Attempt 的归档/还原，物理镜像探针仍由 Sandbox 明确拥有。
+  agent: codexAgent(obeliskCodexConfig()),
+  flags: obeliskFlags(),
   model: "gpt-5.6-luna",
   // Docker TTL 不可续期；5 小时覆盖 8 × 30 分钟的最长 Group 和收尾余量。
   sandbox: dockerSandbox({ source: { type: "image", image: OBELISK_DOCKER_IMAGE }, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS })

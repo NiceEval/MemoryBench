@@ -2,14 +2,8 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { SkillSpec } from "niceeval/adapter";
-import {
-  claudeCodeAgentExtension,
-  codexAgentExtension,
-  definePlugin,
-  type PluginInstance,
-} from "niceeval/plugin";
-import { createCheckpoint, restoreCheckpoint, sandboxLayer, shell } from "niceeval/sandbox";
+import type { ClaudeCodeConfig, CodexConfig, SkillSpec } from "niceeval/adapter";
+import { createCheckpoint, restoreCheckpoint, shell } from "niceeval/sandbox";
 import type {
   SandboxCommand,
   SandboxHook,
@@ -165,44 +159,17 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
   }
 };
 
-type MempalPluginOptions = {
-  readonly tool: "claude" | "codex";
-  readonly skill: SkillSpec;
-};
-
-function mempalSkillIdentity(skill: SkillSpec): Record<string, string> {
-  return skill.kind === "local"
-    ? { kind: "local", path: skill.path, name: skill.name ?? "" }
-    : { kind: "repo", source: skill.source, ref: skill.ref ?? "" };
+/** Mempal 的 Codex 扩展直接属于官方 Agent factory，而不是 Plugin。 */
+export function mempalCodexConfig(skill: SkillSpec = mempalSkill): Pick<CodexConfig, "skills"> {
+  return { skills: [skill] };
 }
 
-const mempalCondition = definePlugin<MempalPluginOptions>({
-  name: "memorybench.mempal",
-  behaviorRevision: "1",
-  instanceKey: ({ tool, skill }) => `${tool}:${JSON.stringify(mempalSkillIdentity(skill))}`,
-  experiment: ({ tool, skill }) => ({
-    identity: {
-      ...mempalFlags(),
-      tool,
-      skill: mempalSkillIdentity(skill),
-    },
-    flags: mempalFlags(),
-    sandbox: sandboxLayer().prepare(mempalPrepare(tool)),
-    agentExtensions: [
-      tool === "codex"
-        ? codexAgentExtension({ skills: [skill] })
-        : claudeCodeAgentExtension({
-            skills: [skill],
-            settingsFile: "configs/claude-code/mempal.json",
-          }),
-    ],
-  }),
-});
-
-/** Complete Mempal install/Agent condition; checkpoint setup/teardown stays physical. */
-export function mempal(
-  tool: "claude" | "codex",
+/** Mempal 的 Claude Code 扩展直接属于官方 Agent factory，而不是 Plugin。 */
+export function mempalClaudeConfig(
   skill: SkillSpec = mempalSkill,
-): PluginInstance<"experiment"> {
-  return mempalCondition({ tool, skill });
+): Pick<ClaudeCodeConfig, "skills" | "settingsFile"> {
+  return {
+    skills: [skill],
+    settingsFile: "configs/claude-code/mempal.json",
+  };
 }

@@ -44,7 +44,7 @@ export default defineEval({
     // 或增量产物落进 diff 分类账。
     ignore: ["target", ".niceeval-clone"],
   },
-  plugins: prepareRepo,
+  sandbox: prepareRepo,
   async test(t) {
     await t
       .send(
@@ -73,7 +73,7 @@ export default defineEval({
           "And no new dependencies: everything you need is already in Cargo.toml. Follow the repo's " +
           "existing structure for adding a command (AGENTS.md describes it).",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t
       .send(
@@ -86,7 +86,7 @@ export default defineEval({
           "a `seconds` key — never a formatted string, formatting is for humans only; the grand total is " +
           "`total_seconds`; and every key is snake_case.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t
       .send(
@@ -99,7 +99,7 @@ export default defineEval({
           "`cargo test` also compiles tests/live_cli.rs, which needs real credentials to actually run — " +
           "compiling it is enough, you don't need those tests to pass.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     const verifierPlan: VerifierPlan = {
       windows: [{ contains: `start_date=${DAY}`, entries: ENTRIES }],

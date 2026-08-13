@@ -50,7 +50,7 @@ export const runVerifier = async (t: TestContext): Promise<Record<string, Verifi
   t.progress({ message: "building the agent's code and running the verifier" });
   const verification = await t.sandbox.runShell("bash tests/run-verifier.sh");
   await t.sandbox.runShell("rm -rf target");
-  await t.require(verification, commandSucceeded());
+  await t.check(verification, commandSucceeded()).orStop();
 
   const parsed = JSON.parse(verification.stdout) as { cases: VerifierCase[] };
   return Object.fromEntries(parsed.cases.map((verifierCase) => [verifierCase.name, verifierCase]));

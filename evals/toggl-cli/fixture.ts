@@ -3,6 +3,7 @@
 
 import {
   defineSandboxCommand,
+  sandboxLayer,
   type SandboxCommandContext,
 } from "niceeval/sandbox";
 import { dependencyInstall } from "../../plugins/dependency-install.ts";
@@ -168,8 +169,7 @@ const installDependencies = dependencyInstall({
   commands: [warmDependencies],
 });
 
-/** Check out the common base through the shared Git resource, then warm Cargo per Attempt. */
-export const prepareRepo = [
-  repository.checkout({ commit: BASE_COMMIT, acceptCohortObjectVisibility: true }),
-  installDependencies,
-] as const;
+/** Check out the common base, then warm Cargo per Attempt. */
+export const prepareRepo = sandboxLayer()
+  .prepare(repository.checkout({ commit: BASE_COMMIT, acceptCohortObjectVisibility: true }))
+  .prepare(installDependencies);

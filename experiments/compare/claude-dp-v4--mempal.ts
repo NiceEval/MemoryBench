@@ -1,7 +1,14 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
 import { dockerSandbox } from "niceeval/sandbox";
-import { MEMPAL_CLAUDE_DOCKER_IMAGE, mempal, mempalLoadState, mempalSaveState } from "../shared/mempal.ts";
+import {
+  MEMPAL_CLAUDE_DOCKER_IMAGE,
+  mempalClaudeConfig,
+  mempalFlags,
+  mempalLoadState,
+  mempalPrepare,
+  mempalSaveState,
+} from "../shared/mempal.ts";
 
 // claude-dp-v4 的 mempal 变体:同模型同沙箱,只多一层 mempal 记忆条件 ——
 // mempal CLI(agent 用自带 shell 跑 `mempal search` / `mempal ingest`,Skill 教它怎么用)+
@@ -20,11 +27,13 @@ export default defineExperiment({
   agent: claudeCodeAgent({
     apiKey: process.env.DEEPSEEK_API_KEY,
     baseUrl: process.env.DEEPSEEK_BASE_URL,
+    ...mempalClaudeConfig(),
   }),
-  plugins: [mempal("claude")],
+  flags: mempalFlags(),
   model: "deepseek-v4-flash",
   // Eval Group 复用边界保持不变；每个 Group 在自己的 Docker lane 内串行，Group 间仍并行。
   sandbox: dockerSandbox({ source: { type: "image", image: MEMPAL_CLAUDE_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 })
+    .prepare(mempalPrepare("claude"))
     .setup(mempalLoadState)
     .teardown(mempalSaveState),
   attempts: 1,
