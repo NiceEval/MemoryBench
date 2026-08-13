@@ -1,5 +1,5 @@
 import { defineConfig } from "niceeval";
-import { basalt, chalk } from "niceeval/report/built-in";
+import { basalt, chalk } from "niceeval/report";
 import memory from "./reports/memory.tsx";
 
 export default defineConfig({
