@@ -29,11 +29,11 @@ export function mempalBaseImage(tool: "claude" | "codex"): string {
   return tool === "claude" ? NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE : NICEEVAL_CODEX_DOCKER_IMAGE;
 }
 
-/** 基底镜像、mempal 版本或 Docker 配方任一变化，都会得到一个新的不可变本地镜像 tag。 */
+/** 基底、mempal 与配方版本都直接写进可读 tag；不再用基底字符串的截断 hash 代替版本。 */
 export function mempalDockerImage(tool: "claude" | "codex"): string {
-  const base = createHash("sha256").update(mempalBaseImage(tool)).digest("hex").slice(0, 12);
-  const mempal = MEMPAL_VERSION.replace(/[^a-z0-9]+/gi, "-");
-  return `memorybench-${tool}-mempal:${base}-${mempal}-${MEMPAL_DOCKERFILE_REVISION}`;
+  const baseImage = mempalBaseImage(tool);
+  const baseVersion = baseImage.slice(baseImage.lastIndexOf(":") + 1);
+  return `memorybench-${tool}-mempal:${baseVersion}-${MEMPAL_VERSION}-${MEMPAL_DOCKERFILE_REVISION}`;
 }
 
 export const MEMPAL_CLAUDE_DOCKER_IMAGE = mempalDockerImage("claude");
