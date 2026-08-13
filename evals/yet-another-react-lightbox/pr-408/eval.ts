@@ -1,6 +1,6 @@
 import { defineEval } from "niceeval";
-import { sandboxLayer } from "niceeval/sandbox";
 import { commandSucceeded } from "niceeval/expect";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: yet-another-react-lightbox PR #408 (squash-merged as
 // 2861732969a182075ba19d3a001b34c3a38a3081), which lands on top of BASE_COMMIT (its first
@@ -12,7 +12,6 @@ import { commandSucceeded } from "niceeval/expect";
 // list (of slide `type` strings) and a `maxZoom` prop (number, or a function of the slide
 // returning a number | undefined, defaulting to 8) to the Zoom plugin's options so custom
 // slide types can opt into the same zoom wrapper/gesture handling that image slides get.
-const REPO_URL = "https://github.com/igordanchenko/yet-another-react-lightbox.git";
 const BASE_COMMIT = "c1c704426607e3eaceb1b1d7794df1235e4adf8a";
 
 // this base commit's dependency tree (vite@^8 / vitest@^4.1 / jsdom@^29) needs Node >= 20.19
@@ -27,9 +26,6 @@ const BASE_COMMIT = "c1c704426607e3eaceb1b1d7794df1235e4adf8a";
 // darwin-arm64, mirroring the same workaround already used by the commit-5578052 eval in this
 // same repo) fails loudly here instead of silently leaving the agent-under-test on 20.9.0,
 // unable to run its own tests.
-const MIN_NODE_MAJOR = 22;
-const MIN_NODE_MINOR = 13;
-
 export default defineEval({
   description:
     "yet-another-react-lightbox pr-408: let the Zoom plugin opt custom slide types into zoom via supports/maxZoom props (real yet-another-react-lightbox issue)",
@@ -38,77 +34,7 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  // 题目 Fixture 的准备:clone 真实 repo 退到 base commit、换 Node runtime、装依赖。作为无 template
-  // 的 Eval Sandbox layer prepare command,写入算 Eval 归因、不进 Agent diff；test(t) 只留任务下发与判分。
-  // command 收到运行中的 Sandbox 与 command ctx(不是 test 的 TestContext)。
-  sandbox: sandboxLayer().prepare(async (sandbox, ctx) => {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过 test(t) 里的 t.send() 传给 agent。
-    ctx.progress({ message: "cloning yet-another-react-lightbox @ base commit" });
-    const cloned = await sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(
-        `yet-another-react-lightbox checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
-      );
-    }
-
-    // this base commit's dependency tree needs Node >= 20.19 / >= 22.12 (see comment above)
-    // -- the sandbox default doesn't satisfy that, so swap the global Node via `n` (a plain
-    // npm package, no corepack involved) before installing dependencies.
-    ctx.progress({ message: "installing Node 22.13 runtime (test tooling needs it, sandbox default is older)" });
-    const nodeSwapped = await sandbox.runShell(
-      ["set -euo pipefail", "npm install -g --prefix /usr/local n@10.2.0", "n 22.13.0"].join("\n"),
-    );
-    if (nodeSwapped.exitCode !== 0) {
-      throw new Error(`Node runtime swap failed: ${(nodeSwapped.stderr || nodeSwapped.stdout).trim().slice(-500)}`);
-    }
-
-    // fail fast in a *separate* shell so a PATH-precedence surprise (old Node still
-    // resolving first) is caught here with a clear message instead of silently leaving the
-    // agent-under-test unable to run its own tests.
-    const nodeChecked = await sandbox.runShell(
-      [
-        "set -euo pipefail",
-        `MAJOR=$(node -p "process.versions.node.split('.')[0]")`,
-        `MINOR=$(node -p "process.versions.node.split('.')[1]")`,
-        `if [ "$MAJOR" -lt ${MIN_NODE_MAJOR} ] || { [ "$MAJOR" -eq ${MIN_NODE_MAJOR} ] && [ "$MINOR" -lt ${MIN_NODE_MINOR} ]; }; then`,
-        `  echo "expected Node >= ${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}, got $(node -p process.version)" >&2`,
-        "  exit 1",
-        "fi",
-      ].join("\n"),
-    );
-    if (nodeChecked.exitCode !== 0) {
-      throw new Error(
-        `Node version check failed after swap: ${(nodeChecked.stderr || nodeChecked.stdout).trim().slice(-500)}`,
-      );
-    }
-
-    ctx.progress({ message: "npm install" });
-    const installed = await sandbox.runShell("npm install");
-    if (installed.exitCode !== 0) {
-      throw new Error(`npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-  }),
+  sandbox: prepareRepo(BASE_COMMIT),
 
   async test(t) {
     await t
@@ -145,7 +71,7 @@ export default defineEval({
           "suite to whatever file you're iterating on with `npx vitest run <path-to-file>`. Implement the " +
           "feature in the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

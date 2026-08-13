@@ -1,6 +1,6 @@
 # remem 记忆条件的派生 Codex 镜像。
 #
-# 为什么要派生(而不是直接用 niceeval/codex:0.144.1-r3):
+# 为什么要派生（而不是直接使用 NiceEval 导出的 Codex Docker 镜像常量）：
 #
 # 1. remem 官方发布的所有 Linux x64/arm64 预编译二进制(GitHub Release、npm 包装、
 #    Homebrew 之外的所有下载渠道)都链接 glibc >= 2.39(实测:最新 v0.6.47 与数月前的
@@ -10,12 +10,12 @@
 # 2. 从源码 `cargo install remem-ai --no-default-features` 能绕开这个问题(见下),但
 #    每条物理 Sandbox 都装一遍 Rust 工具链 + 编译要 5-6 分钟,复用泳道每次轮换物理
 #    Sandbox 都要重付这笔成本。烘进镜像后,sandbox `.setup()` 退化成一次 `command -v remem`
-#    的薄探测,和 mempal 的 e2b 模板同一个思路(见 experiments/shared/mempal.ts)。
+#    的薄探测，和 Mempal 预制 Docker 镜像同一个思路（见 experiments/shared/mempal.ts）。
 # 3. 基础镜像预装了 Yarn(`/usr/local/bin/yarn{,pkg}` 软链到 `/opt/yarn-v1.22.22`,
 #    2026-08-04 由 obelisk 记忆条件的冒烟测试撞出来的),但本仓库这批 eval 的安装步骤
 #    假设环境没有 Yarn(`npm install -g --prefix /usr/local yarn@1.22.22`),装的时候
-#    撞 `npm error EEXIST`。这与记忆条件无关,是 Docker 镜像与 NiceEval 官方 E2B 模板
-#    的工具链基线差异(E2B 的 NICEEVAL_CODEX_E2B_TEMPLATE 没有这个问题)。上游镜像的事
+#    撞 `npm error EEXIST`。这与记忆条件无关，是 Docker 基底与本仓库 fixture 工具链
+#    的差异。上游镜像的事
 #    已统一上报,这里派生时顺手删掉,不留给每条 eval 自己 workaround。
 # 4. 基础镜像同样缺 `python3`(2026-08-04 全量跑 compare/codex-gpt-5.6-luna--remem 时撞出:
 #    toggl-cli/ 6 条里 5 条在 `sandbox.prepare.eval` 阶段死于 `rustup-init.sh` 装完 Rust
@@ -37,14 +37,13 @@
 # - remem 发布 glibc 2.36 兼容的预编译二进制(或本仓库升级到 glibc >= 2.39 的官方镜像)后,
 #   builder stage 与 --no-default-features 都可以去掉,直接在最终 stage 里 `curl | sh` 装
 #   官方二进制,`local-onnx` 也可以正常开启。
-# - niceeval/codex 官方镜像发布不预装 Yarn 的新 revision(或本仓库改用 NICEEVAL_CODEX_E2B_TEMPLATE
-#   等价的 Docker 版本)后,删 Yarn 那一层可以整段删除。
+# - NiceEval Codex 官方镜像发布不预装 Yarn 的新 revision 后，删 Yarn 那一层可以整段删除。
 # - 两件事都修好后,这个派生 Dockerfile 本身可以整体退休,shared/remem.ts 改回直接引用
 #   `niceeval/codex:...` 官方镜像字面量。
 #
 # 5. (2026-08-04,r3→r4)基底镜像收尾声明执行身份——niceeval 的 Docker Sandbox 文档化契约是
 #    「非 root 是预制环境自己的义务,不是 runner 的强加」(niceeval docs「Docker：从官方基线
-#    继续构建」):镜像不声明 USER 就默认 root,sandboxReuse 的复用安全检查在检测到 root 身份
+#    继续构建」):镜像不声明 USER 就默认 root,Docker provider 的复用安全检查在检测到 root 身份
 #    时拒绝复用、静默把物理沙箱退休、给下一条 Attempt 开一个全新容器。`niceeval/codex:0.144.1-r3`
 #    没有声明 USER(默认 root),这份派生 Dockerfile 当时（r3 配方）自己在收尾补了一行 `USER node`
 #    才补上这个契约,真正的后果是 remem.ts 文件头记录的「postSetup 写入不存活到下一条 Attempt」:
@@ -55,12 +54,14 @@
 #    COPY 二进制到 /usr/local/bin)都要求 root,所以派生层必须先显式 `USER root` 切回去做完这些
 #    安装动作,再显式 `USER node` 把身份还原成基底声明的样子——这一行现在的语义是"恢复基底身份",
 #    不再是"这份派生 Dockerfile 自己发明了非 root"。已用同一派生镜像反事实验证:以 uid 1000 跑时
-#    sandboxReuse 的复用检查通过,`$HOME` 标记文件跨题间 reset 存活。
+#    Docker 复用安全检查通过,`$HOME` 标记文件跨题间 reset 存活。
 #
 # 重建:见 scripts/build-codex-remem-docker-image.sh(tag 与 experiments/shared/remem.ts
 # 里的常量手动保持同步,不是自动计算的哈希——两边都要跟着改)。
 
-ARG BASE_IMAGE=niceeval/codex:0.144.1-r4
+# 默认值只让独立 `docker build` 的 FROM 可解析；正式构建脚本总会以
+# `NICEEVAL_CODEX_DOCKER_IMAGE` 公开常量传入 BASE_IMAGE。
+ARG BASE_IMAGE=niceeval/codex:0.144.1-r5
 ARG REMEM_VERSION=0.6.47
 
 # ---- builder stage:与最终 stage 同代 glibc(都基于 Debian bookworm),编译产物直接可跑 ----
@@ -69,7 +70,7 @@ ARG REMEM_VERSION
 RUN cargo install remem-ai --version "${REMEM_VERSION}" --bin remem \
     --no-default-features --locked
 
-# ---- 最终 stage:派生自钉死的 niceeval 官方 Codex 镜像(r4 基底收尾已声明 USER node) ----
+# ---- 最终 stage:派生自构建脚本传入的 NiceEval 公开 Codex Docker 基底 ----
 FROM ${BASE_IMAGE}
 
 # 基底已经是非 root(USER node),但接下来这几步(删系统目录下的 Yarn、apt 装 python3、
@@ -89,14 +90,14 @@ COPY --from=remem-builder /usr/local/cargo/bin/remem /usr/local/bin/remem
 # Node 工具契约第三条:运行期以 node 身份执行 `corepack enable` / `npm install -g` 要写
 # /usr/local/bin 与 /usr/local/lib/node_modules(react-datepicker 等题的安装步骤用 corepack
 # 装 yarn)。基底 r4 没把这两处交给运行用户——root 时代一切畅通,切 USER node 后 2026-08-04
-# 全量实测 corepack enable 直接 EACCES、整批连环 errored。E2B factory 已归一同款契约,
-# Docker 官方配方缺这一半(候选上游缺口,已上报);派生层先补,上游修复后此层可删。
+# 全量实测 corepack enable 直接 EACCES、整批连环 errored。Docker 官方配方缺这一半
+# （候选上游缺口，已上报）；派生层先补，上游修复后此层可删。
 # 范围取整个 /usr/local 而不是契约点名的两个目录(r5→r6):lightbox 两题用 `n` 换全局 Node
 # 运行时,还要写 /usr/local/n、include/node 与 share,只 chown 两个目录时在 eval.run 阶段
 # EACCES(2026-08-04 实测「Node runtime swap failed」)。
 RUN chown -R node:node /usr/local
 
-# 恢复基底声明的非 root 执行身份,让 sandboxReuse 的复用安全检查真正生效——见文件头注释第 5 点。
+# 恢复基底声明的非 root 执行身份,让 Docker provider 的复用安全检查真正生效——见文件头注释第 5 点。
 # 除上面显式交给 node 的 Node 工具安装面外,其余内容仍是 root 属主,`node` 只有执行权限。
 USER node
 RUN remem --version

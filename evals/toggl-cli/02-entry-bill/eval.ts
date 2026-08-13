@@ -1,8 +1,8 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
-import { sandboxLayer } from "niceeval/sandbox";
 
-import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
+import { prepareRepo } from "../fixture.ts";
+import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
 
 // 链的第 2 题。引入这家店的计费口径。
 //
@@ -28,14 +28,6 @@ const ENTRIES = [
   { id: 5, description: "running", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
 
-const asJson = (probeCase: ProbeCase): any => {
-  try {
-    return JSON.parse(probeCase.stdout.trim());
-  } catch {
-    return { parseError: probeCase.stdout };
-  }
-};
-
 const billSummary = (payload: any) =>
   Array.isArray(payload?.projects) ? payload.projects.map((p: any) => [p?.project, p?.billable_seconds]) : payload;
 
@@ -46,7 +38,7 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
+  sandbox: prepareRepo,
   async test(t) {
     await t
       .send(
@@ -63,7 +55,7 @@ export default defineEval({
           "- Human output: one line per project `<seconds>s  <project>`, two spaces between columns, then " +
           "`<seconds>s  Total`. An empty result prints `(no data)` on stdout and exits 0. No new dependencies.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t
       .send(
@@ -74,9 +66,9 @@ export default defineEval({
           "Then build and run the existing test suite. (`cargo test` also compiles tests/live_cli.rs, which " +
           "needs real credentials to actually run — compiling is enough.)",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
-    const probe = await runProbe(t, {
+    const verifierPlan: VerifierPlan = {
       windows: [{ contains: `start_date=${DAY}`, entries: ENTRIES }],
       default_entries: [],
       cases: [
@@ -84,26 +76,37 @@ export default defineEval({
         { name: "json", args: ["entry", "bill", "--since", DAY, "--until", DAY, "--json"] },
         { name: "empty", args: ["entry", "bill", "--since", "2026-01-01", "--until", "2026-01-01"] },
       ],
-    });
+    };
+
+    await t.sandbox.uploadFile(
+      new URL("../_support/verifier.py", import.meta.url),
+      "tests/verifier.py",
+    );
+    await t.sandbox.uploadFile(
+      new URL("../_support/run-verifier.sh", import.meta.url),
+      "tests/run-verifier.sh",
+    );
+    await t.sandbox.writeText("tests/verifier-plan.json", JSON.stringify(verifierPlan, null, 2));
+    const verification = await runVerifier(t);
 
     await t.group("命令存在,且按 15 分钟向上取整后汇总可计费时长", () => {
-      t.check(probe.human.exit, equals(0));
-      t.check(billSummary(asJson(probe.json)), equals([
+      t.check(verification.human.exit, equals(0));
+      t.check(billSummary(parseJsonOutput(verification.json)), equals([
         ["Alpha", 2700],
         ["Beta", 2700],
       ]));
-      t.check(asJson(probe.json)?.total_billable_seconds, equals(5400));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(5400));
     });
 
     await t.group("只算 billable、忽略非计费与运行中(总计不含那 3600s)", () => {
       // 精确求和 3660 或含非计费 7260 都不等于 5400,这条把「没按规则算」区分出来
-      t.check(asJson(probe.json)?.total_billable_seconds, equals(5400));
+      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(5400));
     });
 
     await t.group("空窗口打印 (no data) 并 exit 0", () => {
-      const lines = orderedLines(probe.empty, ["(no data)"]);
+      const lines = orderedLines(verification.empty, ["(no data)"]);
       t.check(lines.ok, isTrue(lines.message));
-      t.check(probe.empty.exit, equals(0));
+      t.check(verification.empty.exit, equals(0));
     });
   },
 });

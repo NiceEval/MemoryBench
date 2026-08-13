@@ -1,46 +1,37 @@
 import { defineExperiment } from "niceeval";
-import { e2bSandbox } from "niceeval/sandbox";
+import { dockerSandbox } from "niceeval/sandbox";
 import { codexAgent } from "niceeval/adapter";
-import { mempalFlags, mempalLoadState, mempalPrepare, mempalSaveState, mempalSkill, mempalTemplate } from "../shared/mempal.ts";
+import {
+  MEMPAL_CODEX_DOCKER_IMAGE,
+  mempalCodexConfig,
+  mempalFlags,
+  mempalLoadState,
+  mempalPrepare,
+  mempalSaveState,
+} from "../shared/mempal.ts";
 
 // codex-gpt-5.6-luna 的 mempal 变体:agent 用自带 shell 跑 mempal CLI(`search` / `ingest`),
 // Skill 教它先搜索、后写入耐久决策。不走 MCP(见 shared/mempal.ts 文件头注)。
 //
-// 前提:先从 NiceEval release-pinned Codex 公共模板构建专用 Mempal 模板。
-// 记忆按 ctx.experimentId(即本实验的路径推导 id `compare/codex-gpt-5.6-luna--mempal`)跨 eval /
-// 跨 run 累积(host 侧 .cache/mempal/state/);做干净对照前先 `rm -rf .cache/mempal/state/`,
-// 并在报告里注明状态起点(空库/带积累)。
+// 前提:先从 NiceEval release-pinned Codex Docker 基底构建专用 Mempal 镜像。
+// host checkpoint 按 cohort × Experiment × Eval Group 隔离并跨 run 累积。正式比较用新的
+// `MEMPAL_COHORT` 从空状态起跑，并把 cohort 记进 flags；不需要删除其它批次的 checkpoint。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · mempal",
   labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
-  agent: codexAgent({ skills: [mempalSkill] }),
-  flags: { ...mempalFlags() },
+  agent: codexAgent(mempalCodexConfig()),
+  flags: mempalFlags(),
   model: "gpt-5.6-luna",
-  // 复用下 provider 必须能声明实例寿命,不声明会在第一条 attempt 派发前硬失败。1 小时是 e2b
-  // 账号档位的硬上限,但它不是整次 run 的总预算:每次派发前 runner 都会 ensureLifetime,不够就续到
-  // 完整 lifetimeMs(e2b 的 setTimeout 是「从此刻起再活这么久」),所以同一物理 Sandbox 可以持续复用,
-  // 只要单条 Attempt 装得下 1 小时。
-  sandbox: e2bSandbox({ template: mempalTemplate("codex"), lifetimeMs: 60 * 60_000 })
+  // Eval Group 自己复用物理 Docker Sandbox；lifetimeMs 是每条长 Attempt 的明确容器寿命预算，
+  // 不是云端账号配额。每个 Group 一条 lane，Group 间仍由 maxConcurrency 并行推进。
+  sandbox: dockerSandbox({ source: { type: "image", image: MEMPAL_CODEX_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 })
     .prepare(mempalPrepare("codex"))
     .setup(mempalLoadState)
     .teardown(mempalSaveState),
-  sandboxReuse: true,
   earlyExit: false,
-  // maxConcurrency: 1 让所有 Attempt 串行承接同一台复用的物理 Sandbox。
-  // 这同时修掉一个一直在丢记忆的 bug:原来写 5 而注释说「串行」,
-  // 5 个并发状态序列各自 restore 同一个 <experimentId>.tgz 又各自写回去,
-  // 后写覆盖先写,跨 eval 的记忆累积大半丢失(claude 那条同名注释配的就是 1)。
-  //
-  // 复用把串行的代价补了回来:prepare 每条 Attempt 做模板实况检查，lifecycle load/save 每台物理 Sandbox 一次，
-  // 记忆态直接留在沙箱 $HOME/.mempal 里跨题存活,不再每题 restore/回存一遍 tgz;
-  // 沙箱创建 + 依赖安装也从每题一次降到每台物理 Sandbox 一次。
-  //
-  // 代价要记住:① 当前 setup/teardown 是 opaque lifecycle callback,所以 carry 被禁用、中断后计划内题目
-  // 全量重跑；这不是 sandboxReuse 本身的规则。中断 Attempt 可能已污染旧 checkpoint,正式比较要换新
-  // MEMPAL_COHORT 从头重建。② host 侧 tgz 只在物理 Sandbox 退休时写一次(寿命续不上而轮换、或
-  // run 收尾),run 中途硬崩会丢掉这一轮积累的记忆。
-  maxConcurrency: 1,
+  // Group 内串行复用，Group 间并行；host checkpoint 按 (Experiment, Group) 隔离。
+  maxConcurrency: 6,
   // 与 claude 组对齐(重型题可能超 10 分钟),消除条件间超时偏置——2026-07-10 重跑里
   // 本实验 repomod/terminal-cancel 正是死于 600s 默认超时(setup 含 ~514MB 模型预热)。
   // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the
