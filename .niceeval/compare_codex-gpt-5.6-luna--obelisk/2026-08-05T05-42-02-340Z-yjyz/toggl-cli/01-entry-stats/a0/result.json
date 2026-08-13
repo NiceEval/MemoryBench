@@ -1,0 +1,93 @@
+{
+  "id": "toggl-cli/01-entry-stats",
+  "description": "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's output/JSON/duration conventions for new commands",
+  "verdict": "errored",
+  "fingerprint": "1e7b7db9255a0c5052e81f06d8f5eb2a83eeb90f15c518e250886c4365e37e81",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "attempt": 0,
+  "durationMs": 88975,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "rust toolchain setup failed: debconf: delaying package configuration, since apt-utils is not installed\ninfo: downloading installer\nwarn: curl: (18) HTTP/2 stream 1 was not closed cleanly before end of the underlying stream\nerror: command failed: downloader https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init /tmp/tmp.mLC8lf7NMa/rustup-init x86_64-unknown-linux-gnu",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: rust toolchain setup failed: debconf: delaying package configuration, since apt-utils is not installed\ninfo: downloading installer\nwarn: curl: (18) HTTP/2 stream 1 was not closed cleanly before end of the underlying stream\nerror: command failed: downloader https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init /tmp/tmp.mLC8lf7NMa/rustup-init x86_64-unknown-linux-gnu\n    at Object.installRustToolchain (/home/ctrdh/Code/NiceEval/MemoryBench/evals/toggl-cli/harness.ts:207:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 88974,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 1,
+          "durationMs": 88974,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "bash",
+              "startOffsetMs": 1,
+              "durationMs": 88974,
+              "command": {
+                "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  APT_WAIT='-o DPkg::Lock::Timeout=300'\n  apt-get …",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799999
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 88975,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "7b2acdbb9520",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 6
+  },
+  "locator": "@1MXB16SKJF4ZK",
+  "startedAt": "2026-08-05T05:59:14.331Z",
+  "locatorRunId": "8c4b2480-e79c-4e8c-8c5a-01a528621122",
+  "artifacts": [
+    "commands"
+  ]
+}

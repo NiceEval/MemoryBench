@@ -1,0 +1,109 @@
+{
+  "id": "yet-another-react-lightbox/pr-408",
+  "description": "yet-another-react-lightbox pr-408: let the Zoom plugin opt custom slide types into zoom via supports/maxZoom props (real yet-another-react-lightbox issue)",
+  "verdict": "errored",
+  "fingerprint": "9ecaa6784e74fa502e5725f33f62d930837e7093dab8ea52c3ed121d057dca27",
+  "configHash": "201eac8dcce24b77f12fe68d8c8667b28a88a8fd68dcff10d521e84eaf8c6e5d",
+  "attempt": 0,
+  "durationMs": 9825,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Node runtime swap failed: mkdir: cannot create directory '/usr/local/n': Permission denied\n\n  Error: sudo required (or change ownership, or define N_PREFIX)",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: Node runtime swap failed: mkdir: cannot create directory '/usr/local/n': Permission denied\n\n  Error: sudo required (or change ownership, or define N_PREFIX)\n    at Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/evals/yet-another-react-lightbox/pr-408/eval.ts:83:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 9825,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 0,
+          "durationMs": 9825,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 1,
+              "durationMs": 5778,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/igordanchenko/yet-another-react-lightbox.git .niceeval-…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1800000
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 5779,
+              "durationMs": 4046,
+              "command": {
+                "display": "set -euo pipefail\nnpm install -g --prefix /usr/local n@10.2.0\nn 22.13.0",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1794221
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 9825,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "8f2957612ff7",
+    "reused": true,
+    "reuseSandbox": 4,
+    "reuseOrdinal": 4
+  },
+  "locator": "@137WBTNCM7P85",
+  "startedAt": "2026-08-04T14:17:57.181Z",
+  "locatorRunId": "b96e0a3d-c1bd-4f59-a6e5-ca2449e443fe",
+  "artifacts": [
+    "commands"
+  ]
+}

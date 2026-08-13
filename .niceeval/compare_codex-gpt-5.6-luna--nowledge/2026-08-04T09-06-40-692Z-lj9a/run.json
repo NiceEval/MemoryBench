@@ -1,0 +1,216 @@
+{
+  "format": "niceeval.results",
+  "schemaVersion": 15,
+  "producer": {
+    "name": "niceeval",
+    "version": "0.4.6"
+  },
+  "runId": "4efa8b89-a35c-4e07-8bcc-275382697202",
+  "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+  "experiment": {
+    "description": "codex · gpt-5.6-luna · Nowledge Mem",
+    "flags": {
+      "memory": "nowledge",
+      "nowledgeVersion": "0.10.48",
+      "nowledgeCohort": "configured-local-20260802"
+    },
+    "labels": {
+      "line": "codex"
+    },
+    "attempts": 1,
+    "earlyExit": false,
+    "timeoutMs": 1800000,
+    "maxConcurrency": 1,
+    "selectedEvalIds": [
+      "toggl-cli/04-billing-doc",
+      "downshift/pr-1414",
+      "downshift/pr-1456",
+      "downshift/pr-1458",
+      "downshift/pr-1484",
+      "downshift/pr-1587",
+      "downshift/pr-1603",
+      "react-datepicker/pr-6058",
+      "react-datepicker/pr-6073",
+      "react-datepicker/pr-6092",
+      "react-datepicker/pr-6167",
+      "react-datepicker/pr-6168",
+      "react-datepicker/pr-6172",
+      "react-datepicker/pr-6206",
+      "react-hook-form/pr-13476",
+      "react-hook-form/pr-13512",
+      "react-hook-form/pr-13515",
+      "react-hook-form/pr-13566",
+      "react-hook-form/pr-13579",
+      "react-hook-form/pr-13594",
+      "react-hook-form/pr-13599",
+      "react-hook-form/pr-13603",
+      "react-tooltip/pr-1269",
+      "react-tooltip/pr-1271",
+      "react-tooltip/pr-1275",
+      "react-tooltip/pr-1278",
+      "react-tooltip/pr-1282",
+      "react-tooltip/pr-970",
+      "toggl-cli/01-entry-stats",
+      "toggl-cli/02-entry-bill",
+      "toggl-cli/03-entry-bill-weekly",
+      "toggl-cli/05-entry-invoice",
+      "toggl-cli/06-entry-invoice-monthly",
+      "yet-another-react-lightbox/commit-5578052",
+      "yet-another-react-lightbox/commit-f63f6af",
+      "yet-another-react-lightbox/pr-408"
+    ],
+    "sandboxLayer": {
+      "layer": {
+        "_tag": "Template",
+        "value": {
+          "version": 2,
+          "provider": "e2b",
+          "kind": "template",
+          "publishable": {
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+        }
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "index": 0
+        }
+      ]
+    },
+    "sandboxPlansByEval": {
+      "toggl-cli/04-billing-doc": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/04-billing-doc",
+          "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--nowledge"
+        },
+        "template": {
+          "version": 2,
+          "provider": "e2b",
+          "kind": "template",
+          "publishable": {
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "experiment",
+              "id": "compare/codex-gpt-5.6-luna--nowledge"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "e2b",
+          "plannerRevision": "e2b-template-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "provider-standard",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 20,
+            "lane": {
+              "key": "e2b",
+              "limit": 20
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/e2b-template",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "ProviderValidated",
+              "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+            }
+          },
+          "carry": {
+            "_tag": "Eligible"
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129",
+            "buildKeys": []
+          },
+          "publishable": {
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642"
+        }
+      }
+    },
+    "sandboxReuse": true,
+    "judge": {
+      "model": "gpt-5.6-sol",
+      "baseUrl": "https://x1api.top/v1"
+    },
+    "agentInstalls": [
+      {
+        "order": 0,
+        "ensure": {
+          "agent": "codex",
+          "version": "0.144.1",
+          "revision": "4"
+        },
+        "installer": {
+          "_tag": "Matched",
+          "identity": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "4"
+          },
+          "installMode": "staged",
+          "platforms": {
+            "_tag": "All"
+          }
+        }
+      }
+    ]
+  },
+  "agent": "codex",
+  "model": "gpt-5.6-luna",
+  "startedAt": "2026-08-04T09:06:40.676Z",
+  "completedAt": "2026-08-04T09:06:40.692Z"
+}

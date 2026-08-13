@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../fixture.ts";
 
 // 挖自真实合入 PR react-hook-form/react-hook-form#13515(不让被测 agent 看到 PR 号/commit/URL):
 // deepEqual() 的循环引用防护把「已访问过的对象」全塞进一个共享 WeakSet,只要本次比较里任何一侧
@@ -11,6 +10,7 @@ import { prepareRepo } from "../fixture.ts";
 // 一个「只删掉 visited 防护」的作弊修复能让新增的复用引用断言通过,但会在那个循环引用用例上
 // 爆栈——所以 run-tests.sh 对 deepEqual.test.ts 是整份跑,不按 test name 抠。
 
+const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "1e00a1b18643d6de6cd9a92bcb05b996ac163455";
 
 export default defineEval({
@@ -18,8 +18,41 @@ export default defineEval({
     "react-hook-form pr-13515: deepEqual's circular-reference guard makes equality \"sticky\" across unrelated " +
     "reused object references instead of only guarding genuine cycles (real react-hook-form issue)",
   diff: { ignore: ["coverage", "node_modules", ".niceeval-clone"] },
-  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
+    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
+    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
+    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
+    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
+    t.progress({ message: "cloning react-hook-form @ base commit" });
+    const cloned = await t.sandbox.runShell(
+      [
+        "set -euo pipefail",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
+        `git reset -q --hard ${BASE_COMMIT}`,
+        "git remote remove origin",
+        "git tag -l | xargs -r git tag -d >/dev/null",
+        "git reflog expire --expire=now --all",
+        "git gc -q --prune=now",
+        // 上游同款自检:base commit 之后不应再有任何 commit 可见
+        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
+        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
+        '[ "$COUNT" -eq 1 ]',
+      ].join("\n"),
+    );
+    if (cloned.exitCode !== 0) {
+      throw new Error(`react-hook-form checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
+    }
+
+    t.progress({ message: "installing dependencies" });
+    const installed = await t.sandbox.runShell("npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts");
+    if (installed.exitCode !== 0) {
+      throw new Error(`pnpm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
+    }
+
     await t
       .send(
         "Your working directory is a checkout of the real react-hook-form repository at the commit where the bug " +
@@ -55,7 +88,7 @@ export default defineEval({
           "pnpm install --no-frozen-lockfile --ignore-scripts`). Run the relevant tests with `node_modules/.bin/jest --config " +
           "./scripts/jest/jest.config.js <path-to-file>`. Fix the library source; do not just edit tests.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     // 真实仓库路径:覆盖掉 agent 可能留下的任何版本,判分对齐上游隐藏测试。
     await t.sandbox.uploadFile(

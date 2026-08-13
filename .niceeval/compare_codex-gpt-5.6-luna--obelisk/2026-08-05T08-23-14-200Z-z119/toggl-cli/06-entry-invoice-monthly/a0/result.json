@@ -1,0 +1,93 @@
+{
+  "id": "toggl-cli/06-entry-invoice-monthly",
+  "description": "toggl-cli 06: add `toggl entry invoice-monthly`; the amounts are right only if it recalls BOTH the 15-minute rounding and the 30-minute minimum from the two earlier billing sessions",
+  "verdict": "errored",
+  "fingerprint": "10780223afe5c2fa8142b2c678ae9bfe44d1d63abe380de4efcb6a8135fb3d6a",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "attempt": 0,
+  "durationMs": 3108,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "rust toolchain setup failed: info: using existing install for stable-x86_64-unknown-linux-gnu\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\nbash: line 34: python3: command not found",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: rust toolchain setup failed: info: using existing install for stable-x86_64-unknown-linux-gnu\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\nbash: line 34: python3: command not found\n    at Object.installRustToolchain (/home/ctrdh/Code/NiceEval/MemoryBench/evals/toggl-cli/harness.ts:207:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 3107,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 1,
+          "durationMs": 3107,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "bash",
+              "startOffsetMs": 1,
+              "durationMs": 3107,
+              "command": {
+                "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  APT_WAIT='-o DPkg::Lock::Timeout=300'\n  apt-get …",
+                "exitCode": 127,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1800000
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 3108,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "2ba825d571aa",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 5
+  },
+  "locator": "@147AQCS0KC0BQ",
+  "startedAt": "2026-08-05T08:23:25.257Z",
+  "locatorRunId": "67d6a739-95b9-4e1d-8b24-4025a64b7b1f",
+  "artifacts": [
+    "commands"
+  ]
+}

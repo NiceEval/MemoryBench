@@ -1,0 +1,747 @@
+{
+  "toggl-cli/01-entry-stats": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": false,
+      "strict": false,
+      "flags.memory": "baseline",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "lifetime": {
+                "_tag": "ProviderDefault"
+              }
+            },
+            "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+          }
+        },
+        "commands": []
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "3"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "toggl-cli/01-entry-stats",
+        "experimentId": "compare/codex-gpt-5.6-luna",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/01-entry-stats"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/01-entry-stats"
+          },
+          "index": 1
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "a602c70171a1264796f14667ffa8aaa1278f1a0bcee3f513ec73b9059d9340ab",
+          "buildKeys": []
+        },
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "74702cd1783c65f0d4bdd445f5c0b5e95a1b4b1e8824fda068fc6cbf95f6be96"
+      }
+    },
+    "source": {
+      "evals/toggl-cli/01-entry-stats/eval.ts": "107c3152db028a50a284d4241512332f6a4b1f3b8d34354f635a4ccbdd3fab24",
+      "evals/toggl-cli/harness.ts": "65551a0528bc22641d1c2e8b28332721df1338f50b0a0b5a14c8c9f6db5cb67e"
+    },
+    "data": {}
+  },
+  "toggl-cli/02-entry-bill": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": false,
+      "strict": false,
+      "flags.memory": "baseline",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "lifetime": {
+                "_tag": "ProviderDefault"
+              }
+            },
+            "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+          }
+        },
+        "commands": []
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "3"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "toggl-cli/02-entry-bill",
+        "experimentId": "compare/codex-gpt-5.6-luna",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/02-entry-bill"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/02-entry-bill"
+          },
+          "index": 1
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "a602c70171a1264796f14667ffa8aaa1278f1a0bcee3f513ec73b9059d9340ab",
+          "buildKeys": []
+        },
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "74702cd1783c65f0d4bdd445f5c0b5e95a1b4b1e8824fda068fc6cbf95f6be96"
+      }
+    },
+    "source": {
+      "evals/toggl-cli/02-entry-bill/eval.ts": "88783c87cfdad1f5e41fa7e062e3620570193e8ca9bc94f97da22bae4965858b",
+      "evals/toggl-cli/harness.ts": "65551a0528bc22641d1c2e8b28332721df1338f50b0a0b5a14c8c9f6db5cb67e"
+    },
+    "data": {}
+  },
+  "toggl-cli/03-entry-bill-weekly": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": false,
+      "strict": false,
+      "flags.memory": "baseline",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "lifetime": {
+                "_tag": "ProviderDefault"
+              }
+            },
+            "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+          }
+        },
+        "commands": []
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "3"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "toggl-cli/03-entry-bill-weekly",
+        "experimentId": "compare/codex-gpt-5.6-luna",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/03-entry-bill-weekly"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/03-entry-bill-weekly"
+          },
+          "index": 1
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "a602c70171a1264796f14667ffa8aaa1278f1a0bcee3f513ec73b9059d9340ab",
+          "buildKeys": []
+        },
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "74702cd1783c65f0d4bdd445f5c0b5e95a1b4b1e8824fda068fc6cbf95f6be96"
+      }
+    },
+    "source": {
+      "evals/toggl-cli/03-entry-bill-weekly/eval.ts": "0b5af325e9ba4049bc67e8c1eab38843298737de69d56e4c15e2ffedf3e84f3b",
+      "evals/toggl-cli/harness.ts": "65551a0528bc22641d1c2e8b28332721df1338f50b0a0b5a14c8c9f6db5cb67e"
+    },
+    "data": {}
+  },
+  "toggl-cli/05-entry-invoice": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": false,
+      "strict": false,
+      "flags.memory": "baseline",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "lifetime": {
+                "_tag": "ProviderDefault"
+              }
+            },
+            "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+          }
+        },
+        "commands": []
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "3"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "toggl-cli/05-entry-invoice",
+        "experimentId": "compare/codex-gpt-5.6-luna",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/05-entry-invoice"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/05-entry-invoice"
+          },
+          "index": 1
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "a602c70171a1264796f14667ffa8aaa1278f1a0bcee3f513ec73b9059d9340ab",
+          "buildKeys": []
+        },
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "74702cd1783c65f0d4bdd445f5c0b5e95a1b4b1e8824fda068fc6cbf95f6be96"
+      }
+    },
+    "source": {
+      "evals/toggl-cli/05-entry-invoice/eval.ts": "f2cf7b5788471eddd8dc7275c25f1a70a7f01e5b1c5a2b0c1507ccf40ee68bc3",
+      "evals/toggl-cli/harness.ts": "65551a0528bc22641d1c2e8b28332721df1338f50b0a0b5a14c8c9f6db5cb67e"
+    },
+    "data": {}
+  },
+  "toggl-cli/06-entry-invoice-monthly": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": false,
+      "strict": false,
+      "flags.memory": "baseline",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "lifetime": {
+                "_tag": "ProviderDefault"
+              }
+            },
+            "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+          }
+        },
+        "commands": []
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "3"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "3"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "toggl-cli/06-entry-invoice-monthly",
+        "experimentId": "compare/codex-gpt-5.6-luna",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "dce03dd5a7b1b62fd58e3ebe2b62e842b077a81a3fb188e7e1e70ed945613daf"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/06-entry-invoice-monthly"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/06-entry-invoice-monthly"
+          },
+          "index": 1
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "a602c70171a1264796f14667ffa8aaa1278f1a0bcee3f513ec73b9059d9340ab",
+          "buildKeys": []
+        },
+        "publishable": {
+          "lifetime": {
+            "_tag": "ProviderDefault"
+          }
+        },
+        "privateIdentityDigest": "74702cd1783c65f0d4bdd445f5c0b5e95a1b4b1e8824fda068fc6cbf95f6be96"
+      }
+    },
+    "source": {
+      "evals/toggl-cli/06-entry-invoice-monthly/eval.ts": "ca8fe5319764f365f2acdf6a911ef0e58b04c31866e189cb411920101695da8b",
+      "evals/toggl-cli/harness.ts": "65551a0528bc22641d1c2e8b28332721df1338f50b0a0b5a14c8c9f6db5cb67e"
+    },
+    "data": {}
+  }
+}

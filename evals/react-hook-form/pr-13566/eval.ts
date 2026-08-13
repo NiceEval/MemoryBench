@@ -1,11 +1,11 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../fixture.ts";
 
 // real fix: react-hook-form PR #13566 (merge f89388f5f60b8a8222a42b340f49b38e77d9ed26),
 // which lands on top of BASE_COMMIT (its first parent). Bug: flatten() recurses into
 // any non-null object-typed field value, including Date instances, instead of keeping
 // Date as a single leaf value.
+const REPO_URL = "https://github.com/react-hook-form/react-hook-form.git";
 const BASE_COMMIT = "46381fa8fe690fc16d17afde8a43738a55b2c6e6";
 
 export default defineEval({
@@ -15,8 +15,41 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
+    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
+    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
+    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
+    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
+    t.progress({ message: "cloning react-hook-form @ base commit" });
+    const cloned = await t.sandbox.runShell(
+      [
+        "set -euo pipefail",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
+        `git reset -q --hard ${BASE_COMMIT}`,
+        "git remote remove origin",
+        "git tag -l | xargs -r git tag -d >/dev/null",
+        "git reflog expire --expire=now --all",
+        "git gc -q --prune=now",
+        // 上游同款自检:base commit 之后不应再有任何 commit 可见
+        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
+        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
+        '[ "$COUNT" -eq 1 ]',
+      ].join("\n"),
+    );
+    if (cloned.exitCode !== 0) {
+      throw new Error(`react-hook-form checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
+    }
+
+    t.progress({ message: "installing deps (pnpm)" });
+    const installed = await t.sandbox.runShell("npm install -g --force --prefix /usr/local pnpm@10.34.5 && CYPRESS_INSTALL_BINARY=0 pnpm install --no-frozen-lockfile --ignore-scripts");
+    if (installed.exitCode !== 0) {
+      throw new Error(`pnpm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
+    }
+
     await t
       .send(
         "Your working directory is a checkout of the real react-hook-form repository at the commit where the bug " +
@@ -38,7 +71,7 @@ export default defineEval({
           "./scripts/jest/jest.config.js <path-to-file>`. Fix the library source; do not just add workarounds in " +
           "test files.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

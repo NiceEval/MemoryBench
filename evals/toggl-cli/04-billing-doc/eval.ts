@@ -35,19 +35,16 @@ export default defineEval({
           "a sentence or two: how does our `toggl entry bill` turn tracked time into billable time? I want " +
           "to get the rule exactly right in the doc.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     // 硬门槛:回答必须提到「15 分钟」这个数字
-    t.check(t.reply, includes("15"));
+    t.check(t.reply, includes(/15/));
     // 语义完整性:说清了「每条向上取整到 15 分钟」和「只算 billable」
     t.judge.autoevals
       .closedQA(
         "Does the answer state that each entry's time is rounded UP to the next 15-minute unit before " +
           "billing, and that only billable entries are counted?",
-        {
-          input: "Explain how `toggl entry bill` turns tracked time into billable time.",
-          output: t.reply,
-        },
+        { on: t.reply },
       )
       .atLeast(0.6);
   },

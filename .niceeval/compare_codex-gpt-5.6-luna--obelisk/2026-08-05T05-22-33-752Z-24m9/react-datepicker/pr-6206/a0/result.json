@@ -1,0 +1,182 @@
+{
+  "id": "react-datepicker/pr-6206",
+  "description": "react-datepicker PR #6206: fix DatePicker's day-click / input-display / selectsMultiple all going off-by-one-day when the explicit timeZone prop differs from the local timezone (real GitHub issue #6193)",
+  "verdict": "errored",
+  "fingerprint": "91e67a2ba8e11ab9b8b059418e00311b74df6e680810af7cbc227ff07217f02a",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "attempt": 0,
+  "durationMs": 535,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Could not fetch repo skill tommy0103/obelisk-skill (ref: f618952b1e366a2cc7b86525347fafd654091854):\nfatal: unable to access 'https://github.com/tommy0103/obelisk-skill.git/': gnutls_handshake() failed: The TLS connection was non-properly terminated.",
+    "origin": {
+      "scope": "attempt",
+      "phase": "agent.setup"
+    },
+    "stack": "Error: Could not fetch repo skill tommy0103/obelisk-skill (ref: f618952b1e366a2cc7b86525347fafd654091854):\nfatal: unable to access 'https://github.com/tommy0103/obelisk-skill.git/': gnutls_handshake() failed: The TLS connection was non-properly terminated.\n    at cloneRepo (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/skills.ts:219:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async installRepoSkill (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/skills.ts:125:20)\n    at async installSkills (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/skills.ts:46:11)\n    at async Object.setup (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/codex.ts:385:27)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1195:25)"
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 113,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 1,
+          "durationMs": 43,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799999
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 45,
+          "durationMs": 69,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799955
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 98,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 114,
+          "durationMs": 40,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799886
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 154,
+          "durationMs": 58,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799845
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 322,
+      "failed": true,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 212,
+          "durationMs": 38,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msfnb04o_f0xld'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provider…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799788
+            }
+          }
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 250,
+          "durationMs": 283,
+          "command": {
+            "display": "rm -rf '/tmp/niceeval-git/tommy0103-obelisk-skill-ofy6em' && mkdir -p '/tmp/niceeval-git' && git clone --quiet 'https://github.com/tommy0103/obelisk-skill.git'…",
+            "exitCode": 128,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1799750
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    }
+  ],
+  "executionMs": 535,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "391632fdfae6",
+    "reused": true,
+    "reuseSandbox": 3,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1NVBNF1GY7D7Y",
+  "startedAt": "2026-08-05T05:27:32.500Z",
+  "locatorRunId": "222f39a4-3640-4cc0-8510-6dc22ce3df17",
+  "artifacts": [
+    "commands"
+  ]
+}

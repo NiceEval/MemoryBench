@@ -1,0 +1,137 @@
+{
+  "id": "toggl-cli/05-entry-invoice",
+  "description": "toggl-cli 05: add `toggl entry invoice` (per-project invoice) and establish the 30-minute minimum billing increment",
+  "verdict": "errored",
+  "fingerprint": "e694969922f3b6dde0f9cd9057c191e3b4ccfc2f22a51ca891fc6960d6df7e4c",
+  "configHash": "9fb613faa1115fbbd85a0ab438cb1e935277ac2e21897f8bdeeb5a2f8a727efb",
+  "attempt": 0,
+  "durationMs": 27829,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "rust toolchain setup failed: ost triple.\ninfo: profile set to default\ninfo: default host triple is x86_64-unknown-linux-gnu\ninfo: syncing channel updates for stable-x86_64-unknown-linux-gnu\ninfo: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)\ninfo: downloading 6 components\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\ninfo: using existing install for stable-x86_64-unknown-linux-gnu\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\nbash: line 34: python3: command not found",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: rust toolchain setup failed: ost triple.\ninfo: profile set to default\ninfo: default host triple is x86_64-unknown-linux-gnu\ninfo: syncing channel updates for stable-x86_64-unknown-linux-gnu\ninfo: latest update on 2026-07-16 for version 1.97.1 (8bab26f4f 2026-07-14)\ninfo: downloading 6 components\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\ninfo: using existing install for stable-x86_64-unknown-linux-gnu\ninfo: default toolchain set to stable-x86_64-unknown-linux-gnu\nbash: line 34: python3: command not found\n    at Object.installRustToolchain (/home/ctrdh/Code/NiceEval/MemoryBench/evals/toggl-cli/harness.ts:207:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "facts": {
+    "remem.binary_version": "remem 0.6.47 (schema v75)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 27828,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 0,
+          "durationMs": 78,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 0,
+              "durationMs": 42,
+              "command": {
+                "display": "command -v remem",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799999
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "remem",
+              "startOffsetMs": 42,
+              "durationMs": 36,
+              "command": {
+                "display": "remem --version",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799958
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 78,
+          "durationMs": 27751,
+          "children": [
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "bash",
+              "startOffsetMs": 78,
+              "durationMs": 27751,
+              "command": {
+                "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  APT_WAIT='-o DPkg::Lock::Timeout=300'\n  apt-get …",
+                "exitCode": 127,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799921
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 27829,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "7565821c012f",
+    "reused": true,
+    "reuseSandbox": 26,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1CHS6TKGQWRZZ",
+  "startedAt": "2026-08-04T07:24:48.561Z",
+  "locatorRunId": "edc502d6-1558-40d3-857f-bee07a6e4a81",
+  "artifacts": [
+    "commands"
+  ]
+}

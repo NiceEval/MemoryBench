@@ -1,0 +1,655 @@
+{
+  "react-datepicker/pr-6167": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": true,
+      "strict": false,
+      "flags.memory": "nowledge",
+      "flags.nowledgeVersion": "0.10.48",
+      "flags.nowledgeCohort": "configured-local-20260802",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "user": {
+                "_tag": "EnvironmentDefault"
+              },
+              "lifetime": {
+                "_tag": "Configured",
+                "milliseconds": 3600000
+              }
+            },
+            "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+          }
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "index": 0
+          }
+        ]
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "4"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "4"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "react-datepicker/pr-6167",
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna--nowledge"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "experiment",
+            "id": "compare/codex-gpt-5.6-luna--nowledge"
+          },
+          "index": 0
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129",
+          "buildKeys": []
+        },
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642"
+      }
+    },
+    "source": {
+      "evals/react-datepicker/pr-6167/eval.ts": "bf29392bcb43f6bd006c52859bc6de2add3362f3c1326ec22f99c0bf5c634954"
+    },
+    "data": {}
+  },
+  "yet-another-react-lightbox/commit-5578052": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": true,
+      "strict": false,
+      "flags.memory": "nowledge",
+      "flags.nowledgeVersion": "0.10.48",
+      "flags.nowledgeCohort": "configured-local-20260802",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "user": {
+                "_tag": "EnvironmentDefault"
+              },
+              "lifetime": {
+                "_tag": "Configured",
+                "milliseconds": 3600000
+              }
+            },
+            "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+          }
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "index": 0
+          }
+        ]
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "4"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "4"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "yet-another-react-lightbox/commit-5578052",
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna--nowledge"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "experiment",
+            "id": "compare/codex-gpt-5.6-luna--nowledge"
+          },
+          "index": 0
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129",
+          "buildKeys": []
+        },
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642"
+      }
+    },
+    "source": {
+      "evals/yet-another-react-lightbox/commit-5578052/eval.ts": "baf49fb7e409053ee9182792a049f35aeabb44670d9e176e0d98c6e6962a348a"
+    },
+    "data": {}
+  },
+  "toggl-cli/01-entry-stats": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": true,
+      "strict": false,
+      "flags.memory": "nowledge",
+      "flags.nowledgeVersion": "0.10.48",
+      "flags.nowledgeCohort": "configured-local-20260802",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "user": {
+                "_tag": "EnvironmentDefault"
+              },
+              "lifetime": {
+                "_tag": "Configured",
+                "milliseconds": 3600000
+              }
+            },
+            "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+          }
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "index": 0
+          }
+        ]
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "4"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "4"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "toggl-cli/01-entry-stats",
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna--nowledge"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "experiment",
+            "id": "compare/codex-gpt-5.6-luna--nowledge"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/01-entry-stats"
+          },
+          "index": 0
+        },
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "eval",
+            "id": "toggl-cli/01-entry-stats"
+          },
+          "index": 1
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129",
+          "buildKeys": []
+        },
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642"
+      }
+    },
+    "source": {
+      "evals/toggl-cli/01-entry-stats/eval.ts": "107c3152db028a50a284d4241512332f6a4b1f3b8d34354f635a4ccbdd3fab24",
+      "evals/toggl-cli/harness.ts": "18c46cac2305554bcc5ffd221b96acd4d8013501918928e62bf0f0a4b210969c"
+    },
+    "data": {}
+  },
+  "react-tooltip/pr-1271": {
+    "algorithmVersion": 2,
+    "coverageVersion": 1,
+    "config": {
+      "agent": "codex",
+      "model": "gpt-5.6-luna",
+      "sandboxReuse": true,
+      "strict": false,
+      "flags.memory": "nowledge",
+      "flags.nowledgeVersion": "0.10.48",
+      "flags.nowledgeCohort": "configured-local-20260802",
+      "sandboxLayer": {
+        "layer": {
+          "_tag": "Template",
+          "value": {
+            "version": 2,
+            "provider": "e2b",
+            "kind": "template",
+            "publishable": {
+              "user": {
+                "_tag": "EnvironmentDefault"
+              },
+              "lifetime": {
+                "_tag": "Configured",
+                "milliseconds": 3600000
+              }
+            },
+            "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+          }
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "index": 0
+          }
+        ]
+      },
+      "agentInstalls": [
+        {
+          "order": 0,
+          "ensure": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "4"
+          },
+          "installer": {
+            "_tag": "Matched",
+            "identity": {
+              "agent": "codex",
+              "version": "0.144.1",
+              "revision": "4"
+            },
+            "installMode": "staged",
+            "platforms": {
+              "_tag": "All"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "version": 1,
+      "mode": "sandbox",
+      "pair": {
+        "evalId": "react-tooltip/pr-1271",
+        "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+        "agentName": "codex"
+      },
+      "templateOwner": {
+        "kind": "experiment",
+        "id": "compare/codex-gpt-5.6-luna--nowledge"
+      },
+      "template": {
+        "version": 2,
+        "provider": "e2b",
+        "kind": "template",
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "owner": {
+            "kind": "experiment",
+            "id": "compare/codex-gpt-5.6-luna--nowledge"
+          },
+          "index": 0
+        }
+      ],
+      "providerPlan": {
+        "version": 3,
+        "provider": "e2b",
+        "plannerRevision": "e2b-template-1",
+        "caseKind": "prebuilt",
+        "target": {
+          "source": "provider-standard",
+          "platform": {
+            "_tag": "Linux",
+            "os": "linux",
+            "arch": "x64",
+            "libc": "gnu"
+          }
+        },
+        "scheduling": {
+          "recommendedConcurrency": 20,
+          "lane": {
+            "key": "e2b",
+            "limit": 20
+          },
+          "admission": {
+            "_tag": "Shared"
+          }
+        },
+        "providerModule": "niceeval/e2b-template",
+        "capabilities": {
+          "retention": {
+            "_tag": "Suspendable"
+          },
+          "reuse": {
+            "_tag": "Supported"
+          },
+          "sessionLimit": {
+            "_tag": "ProviderValidated",
+            "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+          }
+        },
+        "carry": {
+          "_tag": "Eligible"
+        },
+        "build": {
+          "_tag": "None",
+          "caseKey": "f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129",
+          "buildKeys": []
+        },
+        "publishable": {
+          "user": {
+            "_tag": "EnvironmentDefault"
+          },
+          "lifetime": {
+            "_tag": "Configured",
+            "milliseconds": 3600000
+          }
+        },
+        "privateIdentityDigest": "dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642"
+      }
+    },
+    "source": {
+      "evals/react-tooltip/pr-1271/eval.ts": "d3b4779b09980b4260a33b3b8dd084219a52e9e09a26bbdd407eb49b5d5a7579"
+    },
+    "data": {}
+  }
+}

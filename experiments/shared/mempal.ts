@@ -2,42 +2,39 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ClaudeCodeConfig, CodexConfig, SkillSpec } from "niceeval/adapter";
-import { createCheckpoint, restoreCheckpoint, shell } from "niceeval/sandbox";
+import type { SkillSpec } from "niceeval/adapter";
+import { createCheckpoint, restoreCheckpoint } from "niceeval/sandbox";
 import type {
   SandboxCommand,
+  SandboxCommandContext,
+  SandboxCommandTarget,
   SandboxHook,
 } from "niceeval/sandbox";
 import {
-  NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE,
-  NICEEVAL_CODEX_DOCKER_IMAGE,
-} from "niceeval/sandbox";
+  NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE,
+  NICEEVAL_CODEX_E2B_TEMPLATE,
+} from "niceeval/sandbox/e2b-template";
 
 const STATE_DIR = fileURLToPath(new URL("../../.cache/mempal/state/", import.meta.url));
 const STATE_PATHS = [".mempal", ".mempal-notes"];
 const COHORT_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
 const CHECKPOINT_BYTES_FACT = "mempal.checkpoint_bytes";
 
-/** mempal crates.io 版本；构建镜像、镜像身份和结果 flags 共用这一处。 */
+/** mempal crates.io 版本；构建模板、模板身份和结果 flags 共用这一处。 */
 export const MEMPAL_VERSION = "0.9.0";
 
-/** Docker 配方修订；变更稳定依赖或构建步骤时必须递增，避免覆盖旧镜像。 */
-export const MEMPAL_DOCKERFILE_REVISION = "r1";
-
-/** 每个派生镜像都从 NiceEval 公开、版本钉死的对应 Agent 基底继续构建。 */
-export function mempalBaseImage(tool: "claude" | "codex"): string {
-  return tool === "claude" ? NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE : NICEEVAL_CODEX_DOCKER_IMAGE;
+/** 每个派生模板只依赖实际使用的完整 base ref，不另存 NiceEval release 锁。 */
+export function mempalBaseTemplate(tool: "claude" | "codex"): string {
+  return tool === "claude" ? NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE : NICEEVAL_CODEX_E2B_TEMPLATE;
 }
 
-/** 基底、mempal 与配方版本都直接写进可读 tag；不再用基底字符串的截断 hash 代替版本。 */
-export function mempalDockerImage(tool: "claude" | "codex"): string {
-  const baseImage = mempalBaseImage(tool);
-  const baseVersion = baseImage.slice(baseImage.lastIndexOf(":") + 1);
-  return `memorybench-${tool}-mempal:${baseVersion}-${MEMPAL_VERSION}-${MEMPAL_DOCKERFILE_REVISION}`;
+/** base ref 或 mempal 版本任一变化，派生模板名都会自然变化，避免复用旧构建。 */
+export function mempalTemplate(tool: "claude" | "codex"): string {
+  const base = createHash("sha256").update(mempalBaseTemplate(tool)).digest("hex").slice(0, 12);
+  const mempal = MEMPAL_VERSION.replace(/[^a-z0-9]+/gi, "-");
+  // E2B 静默把模板名小写化（服务端存的就是 memorybench-...），源码里跟着写小写以免依赖未文档化的大小写不敏感匹配。
+  return `memorybench-${tool}-mempal-${base}-${mempal}`;
 }
-
-export const MEMPAL_CLAUDE_DOCKER_IMAGE = mempalDockerImage("claude");
-export const MEMPAL_CODEX_DOCKER_IMAGE = mempalDockerImage("codex");
 
 /** 报告分组与状态 provenance 共用的实验事实。正式比较应显式设置 MEMPAL_COHORT。 */
 export function mempalFlags(): Record<string, string> {
@@ -61,9 +58,9 @@ export const mempalSkill: SkillSpec = {
   name: "mempal-memory",
 };
 
-function statePathFor(experimentId: string, evalGroupId: string): string {
+function statePathFor(experimentId: string): string {
   const cohortRoot = resolve(STATE_DIR, mempalFlags().mempalCohort);
-  const statePath = resolve(cohortRoot, experimentId, `${evalGroupId}.tgz`);
+  const statePath = resolve(cohortRoot, `${experimentId}.tgz`);
   const insideCohort = relative(cohortRoot, statePath);
   if (
     insideCohort === "" ||
@@ -76,25 +73,42 @@ function statePathFor(experimentId: string, evalGroupId: string): string {
   return statePath;
 }
 
-/** 每条 Attempt 重放的薄 prepare：只验证不可变 Docker 镜像里的二进制与 embedding cache。 */
-export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
-  const image = mempalDockerImage(tool);
-  const missingImage =
-    `[mempal] Docker image does not contain mempal. Build ${image} with ` +
-    `pnpm docker:mempal ${tool}, then use that image.`;
-  return shell([
-    "set -eu",
-    `command -v mempal >/dev/null 2>&1 || { printf '%s\\n' ${JSON.stringify(missingImage)} >&2; exit 1; }`,
-    'test -n "$(find "$HOME/.cache/huggingface" -name "*.safetensors" -print -quit 2>/dev/null)" || { printf \'%s\\n\' \'[mempal] embedding cache probe failed\' >&2; exit 1; }',
-  ].join("\n"));
+function commandFailure(label: string, result: { exitCode: number; stdout: string; stderr: string }): Error {
+  const tail = (result.stderr || result.stdout).trim().slice(-500) || "no output";
+  return new Error(`[mempal] ${label} failed (exit ${result.exitCode}): ${tail}`);
 }
 
-/** 每台 Group 的物理 Docker Sandbox 建成时恢复一次；同 Group 复用时 Attempt 间直接保留 `$HOME/.mempal`。 */
+async function requireCommand(sb: SandboxCommandTarget, label: string, script: string): Promise<void> {
+  const result = await sb.runShell(script);
+  if (result.exitCode !== 0) throw commandFailure(label, result);
+}
+
+function commandLog(ctx: SandboxCommandContext, message: string): void {
+  ctx.progress({ message });
+}
+
+/** 每条 Attempt 重放的薄 prepare：只验证不可变模板里的二进制与 embedding cache。 */
+export function mempalPrepare(tool: "claude" | "codex"): SandboxCommand {
+  return async (sb, ctx) => {
+    const probe = await sb.runShell("command -v mempal");
+    if (probe.exitCode !== 0) {
+      throw new Error(
+        `[mempal] template does not contain mempal. Build ${mempalTemplate(tool)} with ` +
+          `\`pnpm template:mempal ${tool}\`, then use that template.`,
+      );
+    }
+    await requireCommand(
+      sb,
+      "embedding cache probe",
+      'test -n "$(find "$HOME/.cache/huggingface" -name "*.safetensors" -print -quit 2>/dev/null)"',
+    );
+    commandLog(ctx, "[mempal] template probe passed: binary and embedding cache");
+  };
+}
+
+/** 每台物理 Sandbox 建成时恢复一次；reuse 时 Attempt 间直接保留 `$HOME/.mempal`。 */
 export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
-  if (ctx.evalGroup === undefined) {
-    throw new Error("[mempal] Eval Group context is required to isolate parallel checkpoints.");
-  }
-  const statePath = statePathFor(ctx.experimentId, ctx.evalGroup.id);
+  const statePath = statePathFor(ctx.experimentId);
   let state: Buffer | undefined;
   try {
     state = readFileSync(statePath);
@@ -112,13 +126,10 @@ export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
   ctx.fact(CHECKPOINT_BYTES_FACT, state?.length ?? 0);
 };
 
-/** 每台 Group 的物理 Docker Sandbox 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
+/** 每台物理 Sandbox 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
 export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
   try {
-    if (ctx.evalGroup === undefined) {
-      throw new Error("[mempal] Eval Group context is required to isolate parallel checkpoints.");
-    }
-    const statePath = statePathFor(ctx.experimentId, ctx.evalGroup.id);
+    const statePath = statePathFor(ctx.experimentId);
     const home = (await sandbox.runShellOrThrow('printf "%s" "$HOME"')).stdout.trim();
     await sandbox.runShellOrThrow(`test -d '${home}/.mempal'`);
 
@@ -137,7 +148,6 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
       `${JSON.stringify(
         {
           experimentId: ctx.experimentId,
-          evalGroupId: ctx.evalGroup.id,
           cohort: mempalFlags().mempalCohort,
           mempalVersion: MEMPAL_VERSION,
           sha256: createHash("sha256").update(data).digest("hex"),
@@ -158,18 +168,3 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
     });
   }
 };
-
-/** Mempal 的 Codex 扩展直接属于官方 Agent factory，而不是 Plugin。 */
-export function mempalCodexConfig(skill: SkillSpec = mempalSkill): Pick<CodexConfig, "skills"> {
-  return { skills: [skill] };
-}
-
-/** Mempal 的 Claude Code 扩展直接属于官方 Agent factory，而不是 Plugin。 */
-export function mempalClaudeConfig(
-  skill: SkillSpec = mempalSkill,
-): Pick<ClaudeCodeConfig, "skills" | "settingsFile"> {
-  return {
-    skills: [skill],
-    settingsFile: "configs/claude-code/mempal.json",
-  };
-}

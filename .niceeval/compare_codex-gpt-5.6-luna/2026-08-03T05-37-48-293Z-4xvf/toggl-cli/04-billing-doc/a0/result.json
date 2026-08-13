@@ -1,0 +1,368 @@
+{
+  "id": "toggl-cli/04-billing-doc",
+  "description": "toggl-cli 04: answer how the shop's billing works — recallable only from the rule agreed in the `entry bill` session (round up to 15 minutes, billable only)",
+  "verdict": "errored",
+  "fingerprint": "f6760dba2745e52631caa0e85d91f097d08f1fac083ab346c884078b03202767",
+  "configHash": "e991448f9b9011d75d6270bfbd246d580a4c6da0f0beef77551ee3d4a75dd4a6",
+  "attempt": 0,
+  "durationMs": 42556,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/04-billing-doc/eval.ts",
+        "line": 38,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/04-billing-doc/eval.ts",
+            "line": 32,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "includes(/15/)",
+      "severity": "gate",
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/04-billing-doc/eval.ts",
+        "line": 41,
+        "column": 7,
+        "callers": []
+      },
+      "sourceOrder": 3,
+      "outcome": "failed",
+      "score": 0,
+      "expected": "matches /15/",
+      "received": "I can’t verify that rule because the workspace is empty and contains no `toggl entry bill` implementation or documentation. Please provide the repository or relevant file; I don’t want to guess at billing behavior."
+    },
+    {
+      "name": "judge:autoevals:closedQA",
+      "severity": "soft",
+      "detail": "closedQA(\"Does the answer state that each entry's time is rounded UP to the next 15-minute…\")",
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/04-billing-doc/eval.ts",
+        "line": 44,
+        "column": 8,
+        "callers": []
+      },
+      "sourceOrder": 4,
+      "outcome": "unavailable",
+      "reason": "judge-call-failed",
+      "evidence": "HTTP 502: 502 status code (no body)"
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 16772,
+    "outputTokens": 756,
+    "cacheReadTokens": 48896,
+    "reasoningTokens": 146,
+    "requests": 1
+  },
+  "estimatedCostUSD": 0.005239519999999999,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "agent.ensure": "hit"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 6649
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 726
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 1105,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 7376,
+          "durationMs": 213,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792624
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 7590,
+          "durationMs": 891,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1792410
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 564,
+      "children": [
+        {
+          "id": "n3",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 8482,
+          "durationMs": 233,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791518
+            }
+          }
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 8715,
+          "durationMs": 330,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1791285
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 226,
+      "children": [
+        {
+          "id": "n5",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 9045,
+          "durationMs": 226,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_mscsrrky_fegkbw'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\n[model_provide…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1790955
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 699,
+      "children": [
+        {
+          "id": "n6",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 9271,
+          "durationMs": 700,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1790728
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 26838,
+      "children": [
+        {
+          "id": "n7",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 9976,
+          "durationMs": 197,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1790024
+            }
+          }
+        },
+        {
+          "id": "n8",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 10173,
+          "durationMs": 25957,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1789827
+            }
+          }
+        },
+        {
+          "id": "n9",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 36132,
+          "durationMs": 217,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1763868
+            }
+          }
+        },
+        {
+          "id": "n10",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 9976,
+          "durationMs": 26373,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 16772,
+            "outputTokens": 756,
+            "cacheReadTokens": 48896,
+            "reasoningTokens": 146,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 36351,
+          "durationMs": 254,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1763649
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 497,
+      "children": [
+        {
+          "id": "n12",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 1 window · 0 files",
+          "startOffsetMs": 36809,
+          "durationMs": 497,
+          "children": [
+            {
+              "id": "n13",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 36809,
+              "durationMs": 272,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1763191
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 3902
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 1348
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 438
+    }
+  ],
+  "executionMs": 42556,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "iocnd893wwldsmlhx10wj"
+  },
+  "locator": "@1GFJW8384Z8X4",
+  "startedAt": "2026-08-03T05:37:05.293Z",
+  "locatorRunId": "332a707d-f69f-44b7-9cfb-44492824af0c",
+  "artifacts": [
+    "events",
+    "trace",
+    "o11y",
+    "diff",
+    "sources"
+  ]
+}

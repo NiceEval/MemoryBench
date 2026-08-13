@@ -1,8 +1,8 @@
 import { defineEval } from "niceeval";
 import { equals, isTrue } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
 
-import { prepareRepo } from "../fixture.ts";
-import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
+import { installRustToolchain, orderedLines, prepareRepo, runProbe, type ProbeCase } from "../harness.ts";
 
 // 链的第 3 题。按周汇总的计费视图。
 //
@@ -27,6 +27,14 @@ const ENTRIES = [
   { id: 5, description: "running", start: `${W2}T16:00:00Z`, duration: -1772000000, billable: true, workspace_id: 1 },
 ];
 
+const asJson = (probeCase: ProbeCase): any => {
+  try {
+    return JSON.parse(probeCase.stdout.trim());
+  } catch {
+    return { parseError: probeCase.stdout };
+  }
+};
+
 const weekSummary = (payload: any) =>
   Array.isArray(payload?.weeks) ? payload.weeks.map((w: any) => [w?.week, w?.billable_seconds]) : payload;
 
@@ -37,7 +45,7 @@ export default defineEval({
   tags: ["toggl-cli", "chain"],
   timeoutMs: 1_800_000,
   diff: { ignore: ["target", ".niceeval-clone"] },
-  sandbox: prepareRepo,
+  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
   async test(t) {
     await t
       .send(
@@ -51,7 +59,7 @@ export default defineEval({
           "- Human output: one line per week `<YYYY-MM-DD>  <seconds>s`, two spaces between columns, then " +
           "`Total  <seconds>s`. Empty window prints `(no data)` on stdout and exits 0. No new dependencies.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t
       .send(
@@ -61,9 +69,9 @@ export default defineEval({
           "Then build and run the existing test suite. (`cargo test` also compiles tests/live_cli.rs, which " +
           "needs real credentials to actually run — compiling is enough.)",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
-    const verifierPlan: VerifierPlan = {
+    const probe = await runProbe(t, {
       windows: [{ contains: `start_date=${W1}`, entries: ENTRIES }],
       default_entries: [],
       cases: [
@@ -71,39 +79,28 @@ export default defineEval({
         { name: "json", args: ["entry", "bill-weekly", "--since", W1, "--until", "2026-03-15", "--json"] },
         { name: "empty", args: ["entry", "bill-weekly", "--since", "2026-01-01", "--until", "2026-01-02"] },
       ],
-    };
-
-    await t.sandbox.uploadFile(
-      new URL("../_support/verifier.py", import.meta.url),
-      "tests/verifier.py",
-    );
-    await t.sandbox.uploadFile(
-      new URL("../_support/run-verifier.sh", import.meta.url),
-      "tests/run-verifier.sh",
-    );
-    await t.sandbox.writeText("tests/verifier-plan.json", JSON.stringify(verifierPlan, null, 2));
-    const verification = await runVerifier(t);
+    });
 
     // --- 功能形状:分桶、键、排序,都在本题 prompt 里说清 ---
     await t.group("命令存在,按周分桶、周一为键、旧的在前", () => {
-      t.check(verification.human.exit, equals(0));
-      const weeks = weekSummary(parseJsonOutput(verification.json));
+      t.check(probe.human.exit, equals(0));
+      const weeks = weekSummary(asJson(probe.json));
       t.check(Array.isArray(weeks) ? weeks.map((w: any[]) => w[0]) : weeks, equals([W1, W2]));
     });
 
     await t.group("空窗口打印 (no data) 并 exit 0", () => {
-      const lines = orderedLines(verification.empty, ["(no data)"]);
+      const lines = orderedLines(probe.empty, ["(no data)"]);
       t.check(lines.ok, isTrue(lines.message));
-      t.check(verification.empty.exit, equals(0));
+      t.check(probe.empty.exit, equals(0));
     });
 
     // --- 计费口径:本题 prompt 未重述,规则见 R-round(第 2 题) ---
     await t.group("计费金额体现 15 分钟向上取整(只能从第 2 题的规则回忆)", () => {
-      t.check(weekSummary(parseJsonOutput(verification.json)), equals([
+      t.check(weekSummary(asJson(probe.json)), equals([
         [W1, 2700],
         [W2, 2700],
       ]));
-      t.check(parseJsonOutput(verification.json)?.total_billable_seconds, equals(5400));
+      t.check(asJson(probe.json)?.total_billable_seconds, equals(5400));
     });
   },
 });

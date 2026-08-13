@@ -1,10 +1,11 @@
 import { defineExperiment } from "niceeval";
 import { claudeCodeAgent } from "niceeval/adapter";
-import { dockerSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandbox";
+import { e2bSandbox } from "niceeval/sandbox";
+import { NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE } from "niceeval/sandbox/e2b-template";
 import {
-  nowledgeAttachRemote,
   nowledgeClaudeConfig,
   nowledgeFlags,
+  nowledgeAttachRemote,
 } from "../shared/nowledge.ts";
 
 // claude-dp-v4 的 Nowledge Mem 变体:同模型同沙箱,只多一层 Nowledge Mem 记忆条件 ——
@@ -14,13 +15,12 @@ import {
 // 已冒烟跑通(probe 实锤 Stop hook 落 thread 到服务端)。
 //
 // mem 服务端是长期运行的固定远程实例(连接坐标在 .env,见 shared/nowledge.ts 文件头):
-// niceeval 侧不管理服务端生命周期，Sandbox prepare 只做接线。每个 Eval Group 使用同名
-// Nowledge Space；同一 Group 的状态跨 run / 跨实验持续积累，与 mempal 的持久状态语义对齐。
-// 同批 Codex / Claude 变体按 Group 共用 Space，正式对比要说清起点状态。license 在服务端侧
-// 一次性激活(device 固定,seat 稳定占一个,不再随 run 增长);
+// niceeval 侧无任何生命周期,沙箱钩子只做接线,记忆跨 run / 跨实验持续积累,与 mempal
+// 「状态跨 run 存续」对齐。同批的 codex-gpt-5.6-luna--nowledge 共用同一个库;正式对比要说清
+// 起点库状态。license 在服务端侧一次性激活(device 固定,seat 稳定占一个,不再随 run 增长);
 // free tier memory 上限 50,持久积累库容易撞上限,正式跑前确认服务端是 pro。
-// Eval Group 只保证组内共享一条串行 lane、Group 间可并行；当前尚无业务顺序契约，
-// 不能把 `evals` 数组位置解释成 N 必然读取 N-1。
+// 隔离:中心化 server 下并行 attempt 共享同一记忆库,故 maxConcurrency:1 串行 —— 让跨 eval 的记忆
+// 累积顺序确定(eval N 读得到 eval N-1 写的),与 mempal 条件语义对齐。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "claude-code · deepseek-v4-flash · Nowledge Mem",
@@ -30,14 +30,14 @@ export default defineExperiment({
     baseUrl: process.env.DEEPSEEK_BASE_URL,
     ...nowledgeClaudeConfig(),
   }),
-  flags: nowledgeFlags(),
+  flags: { ...nowledgeFlags() },
   model: "deepseek-v4-flash",
-  sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 })
+  sandbox: e2bSandbox({ template: NICEEVAL_CLAUDE_CODE_E2B_TEMPLATE })
     .prepare(nowledgeAttachRemote()),
   // agent config 的 preTeardown 每条 Attempt 核对 prepare 时连接的隧道。
   attempts: 1,
   earlyExit: true,
-  // Group 内共享一条 lane；不同 Group 由中心化服务并发处理。
-  maxConcurrency: 6,
+  // 串行:中心化记忆库跨 attempt 共享,串行让累积顺序确定(对齐 claude-dp-v4--mempal 语义)。
+  maxConcurrency: 1,
   timeoutMs: 1200000,
 });

@@ -1,0 +1,89 @@
+{
+  "id": "downshift/pr-1456",
+  "description": "downshift pr-1456: fix character-key type-ahead search to treat Space as a normal search character and to correctly advance through repeated-key matches (real downshift issue)",
+  "verdict": "errored",
+  "fingerprint": "863d23634dfed34a622ad567bcdb36d7d228fa23e563bb36bd1a8dc50bbe9aeb",
+  "configHash": "99e5c4bd5ed1d3e018138a1143c1a305c604049010b5829cf746b4007958a200",
+  "attempt": 0,
+  "durationMs": 11060,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "Cannot verify Sandbox platform against planned target linux-x64-gnu: 2: [unknown] fetch failed",
+    "origin": {
+      "scope": "attempt",
+      "phase": "agent.ensure"
+    },
+    "stack": "SandboxTargetVerificationError: Cannot verify Sandbox platform against planned target linux-x64-gnu: 2: [unknown] fetch failed\n    at catch (/home/ctrdh/Code/NiceEval/NiceEval/src/agents/provisioner.ts:103:23)\n    at EffectPrimitive.effect_instruction_i0 (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/core-effect.ts:1683:29)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)\n    at body (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/Utils.ts:786:14)\n    at FiberRuntime.Sync (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:950:27)\n    at FiberRuntime.evaluateMessageWhileSuspended (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:918:14)"
+  },
+  "phases": [
+    {
+      "name": "sandbox.queue",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.create",
+      "durationMs": 1237
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 5502
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 4321,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 6739,
+          "durationMs": 4320,
+          "failed": true,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1793261
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sandbox.stop",
+      "durationMs": 3785
+    }
+  ],
+  "executionMs": 11060,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "it6x42nzcjbafb483tt8l"
+  },
+  "locator": "@127YX2PRS6TF3",
+  "startedAt": "2026-08-04T11:14:31.323Z",
+  "locatorRunId": "72be2850-4fde-48c3-9e4a-249ff6bb977c"
+}

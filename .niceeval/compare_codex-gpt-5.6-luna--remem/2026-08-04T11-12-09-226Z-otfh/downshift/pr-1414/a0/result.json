@@ -1,0 +1,137 @@
+{
+  "id": "downshift/pr-1414",
+  "description": "downshift pr-1414: clicking an item in an open useCombobox menu must keep the text input focused (no focus flicker); getItemProps() should expose a mousedown handler that suppresses the default blur while still composing with a user-supplied onMouseDown and preventDownshiftDefault (real downshift issue)",
+  "verdict": "errored",
+  "fingerprint": "f2c1a645926588d98a597867f8c0915c8baddbbeb937b4e166e8b00138ea244e",
+  "configHash": "9c9d7716859253336e6e8172772b057b0333e66b4d40b454b15aa2b70d14aa5c",
+  "attempt": 0,
+  "durationMs": 81112,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "downshift checkout failed: error: RPC failed; curl 56 GnuTLS recv error (-9): Error decoding the received TLS packet.\nerror: 5865 bytes of body are still expected\nfetch-pack: unexpected disconnect while reading sideband packet\nfatal: early EOF\nfatal: fetch-pack: invalid index-pack output",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: downshift checkout failed: error: RPC failed; curl 56 GnuTLS recv error (-9): Error decoding the received TLS packet.\nerror: 5865 bytes of body are still expected\nfetch-pack: unexpected disconnect while reading sideband packet\nfatal: early EOF\nfatal: fetch-pack: invalid index-pack output\n    at Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/evals/downshift/pr-1414/eval.ts:60:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "facts": {
+    "remem.binary_version": "remem 0.6.47 (schema v75)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 3
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 81105,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 4,
+          "durationMs": 95,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 4,
+              "durationMs": 36,
+              "command": {
+                "display": "command -v remem",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799996
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "remem",
+              "startOffsetMs": 40,
+              "durationMs": 59,
+              "command": {
+                "display": "remem --version",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799960
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 99,
+          "durationMs": 81010,
+          "children": [
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 99,
+              "durationMs": 81010,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/downshift-js/downshift.git .niceeval-clone\nmv .niceeval…",
+                "exitCode": 128,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799901
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 81112,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "5e6b9c992bdc",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1THC6TWFX15RR",
+  "startedAt": "2026-08-04T11:10:48.063Z",
+  "locatorRunId": "3d1c3581-f0a5-4a3e-a52d-619a1db08f9c",
+  "artifacts": [
+    "commands"
+  ]
+}

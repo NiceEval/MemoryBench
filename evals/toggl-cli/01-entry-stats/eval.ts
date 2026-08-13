@@ -1,8 +1,8 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded, equals, isTrue } from "niceeval/expect";
+import { sandboxLayer } from "niceeval/sandbox";
 
-import { prepareRepo } from "../fixture.ts";
-import { orderedLines, parseJsonOutput, runVerifier, type VerifierPlan } from "../verifier.ts";
+import { installRustToolchain, prepareRepo, runProbe, orderedLines, type ProbeCase } from "../harness.ts";
 
 // 链的第 1 题。三轮对话用大白话说清一组项目级约定,这些约定从 checkout 里推不出来。
 //
@@ -31,6 +31,14 @@ const ENTRIES = [
   { id: 5, description: "still going", start: `${DAY}T16:00:00Z`, duration: -1772000000, billable: false, workspace_id: 1, project_id: 11 },
 ];
 
+const asJson = (probeCase: ProbeCase): unknown => {
+  try {
+    return JSON.parse(probeCase.stdout.trim());
+  } catch {
+    return { parseError: probeCase.stdout };
+  }
+};
+
 export default defineEval({
   description:
     "toggl-cli 01: add `toggl entry stats` (per-project totals) and establish the project's " +
@@ -44,7 +52,7 @@ export default defineEval({
     // 或增量产物落进 diff 分类账。
     ignore: ["target", ".niceeval-clone"],
   },
-  sandbox: prepareRepo,
+  sandbox: sandboxLayer().prepare(installRustToolchain).prepare(prepareRepo),
   async test(t) {
     await t
       .send(
@@ -73,7 +81,7 @@ export default defineEval({
           "And no new dependencies: everything you need is already in Cargo.toml. Follow the repo's " +
           "existing structure for adding a command (AGENTS.md describes it).",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t
       .send(
@@ -86,7 +94,7 @@ export default defineEval({
           "a `seconds` key — never a formatted string, formatting is for humans only; the grand total is " +
           "`total_seconds`; and every key is snake_case.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t
       .send(
@@ -99,9 +107,9 @@ export default defineEval({
           "`cargo test` also compiles tests/live_cli.rs, which needs real credentials to actually run — " +
           "compiling it is enough, you don't need those tests to pass.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
-    const verifierPlan: VerifierPlan = {
+    const probe = await runProbe(t, {
       windows: [{ contains: `start_date=${DAY}`, entries: ENTRIES }],
       default_entries: [],
       cases: [
@@ -110,24 +118,13 @@ export default defineEval({
         { name: "empty", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01"] },
         { name: "empty-json", args: ["entry", "stats", "--since", "2026-03-01", "--until", "2026-03-01", "--json"] },
       ],
-    };
-
-    await t.sandbox.uploadFile(
-      new URL("../_support/verifier.py", import.meta.url),
-      "tests/verifier.py",
-    );
-    await t.sandbox.uploadFile(
-      new URL("../_support/run-verifier.sh", import.meta.url),
-      "tests/run-verifier.sh",
-    );
-    await t.sandbox.writeText("tests/verifier-plan.json", JSON.stringify(verifierPlan, null, 2));
-    const verification = await runVerifier(t);
+    });
 
     const dependenciesUntouched = await t.sandbox.runShell("git diff --quiet -- Cargo.toml Cargo.lock");
 
     await t.group("the command exists and aggregates per project", () => {
-      t.check(verification.human.exit, equals(0));
-      t.check(parseJsonOutput(verification.json), equals({
+      t.check(probe.human.exit, equals(0));
+      t.check(asJson(probe.json), equals({
         groups: [
           { project: "Alpha", seconds: 5400 },
           { project: "Beta", seconds: 3720 },
@@ -138,7 +135,7 @@ export default defineEval({
     });
 
     await t.group("compact duration style (1h 02m / 45m)", () => {
-      const lines1 = orderedLines(verification.human, ["1h 30m Alpha", "1h 02m Beta", "45m No Project", "3h 17m Total"]);
+      const lines1 = orderedLines(probe.human, ["1h 30m Alpha", "1h 02m Beta", "45m No Project", "3h 17m Total"]);
       t.check(lines1.ok, isTrue(lines1.message));
     });
 
@@ -147,10 +144,10 @@ export default defineEval({
     });
 
     await t.group("empty window prints (no data) and exits 0", () => {
-      const lines2 = orderedLines(verification.empty, ["(no data)"]);
+      const lines2 = orderedLines(probe.empty, ["(no data)"]);
       t.check(lines2.ok, isTrue(lines2.message));
-      t.check(verification.empty.exit, equals(0));
-      t.check(parseJsonOutput(verification["empty-json"]), equals({ groups: [], total_seconds: 0 }));
+      t.check(probe.empty.exit, equals(0));
+      t.check(asJson(probe["empty-json"]), equals({ groups: [], total_seconds: 0 }));
     });
   },
 });

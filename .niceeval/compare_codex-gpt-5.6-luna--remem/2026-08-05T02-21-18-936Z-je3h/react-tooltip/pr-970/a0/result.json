@@ -1,0 +1,153 @@
+{
+  "id": "react-tooltip/pr-970",
+  "description": "react-tooltip pr-970: expose the tooltip's actual computed placement so consumers can target it with placement-specific CSS (real react-tooltip feature request)",
+  "verdict": "errored",
+  "fingerprint": "0bc017439bc58f0aa1e5b0a87082c60f48726506fcd43970c3557066f55f0863",
+  "configHash": "bc482bbdde27fc81d57187aca51389008ca5951a37cbbf63e8022b2474257bca",
+  "attempt": 0,
+  "durationMs": 3361,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "yarn install failed: npm error code EEXIST\nnpm error path /usr/local/bin/yarn\nnpm error EEXIST: file already exists\nnpm error File exists: /usr/local/bin/yarn\nnpm error Remove the existing file and try again, or run npm\nnpm error with --force to overwrite files recklessly.\nnpm error A complete log of this run can be found in: /home/node/.npm/_logs/2026-08-05T03_18_05_554Z-debug-0.log",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: yarn install failed: npm error code EEXIST\nnpm error path /usr/local/bin/yarn\nnpm error EEXIST: file already exists\nnpm error File exists: /usr/local/bin/yarn\nnpm error Remove the existing file and try again, or run npm\nnpm error with --force to overwrite files recklessly.\nnpm error A complete log of this run can be found in: /home/node/.npm/_logs/2026-08-05T03_18_05_554Z-debug-0.log\n    at Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/evals/react-tooltip/pr-970/eval.ts:75:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "facts": {
+    "remem.binary_version": "remem 0.6.47 (schema v75)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 0
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 3361,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 0,
+          "durationMs": 79,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 0,
+              "durationMs": 38,
+              "command": {
+                "display": "command -v remem",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1800000
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "remem",
+              "startOffsetMs": 38,
+              "durationMs": 41,
+              "command": {
+                "display": "remem --version",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799962
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 79,
+          "durationMs": 3282,
+          "children": [
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 79,
+              "durationMs": 2986,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/ReactTooltip/react-tooltip.git .niceeval-clone\nmv .nice…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799921
+                }
+              }
+            },
+            {
+              "id": "n6",
+              "key": "sandbox.command",
+              "label": "npm",
+              "startOffsetMs": 3065,
+              "durationMs": 296,
+              "command": {
+                "display": "npm install -g --prefix /usr/local yarn@1.22.22 && yarn install --ignore-scripts --ignore-engines",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1796935
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 3361,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "6d801d3bbd30",
+    "reused": true,
+    "reuseSandbox": 2,
+    "reuseOrdinal": 16
+  },
+  "locator": "@15N7GYVGA55TM",
+  "startedAt": "2026-08-05T03:18:02.405Z",
+  "locatorRunId": "ed15b395-b491-4486-95c3-256a09a5efde",
+  "artifacts": [
+    "commands"
+  ]
+}

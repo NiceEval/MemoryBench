@@ -1,0 +1,62 @@
+{
+  "id": "react-datepicker/pr-6206",
+  "description": "react-datepicker PR #6206: fix DatePicker's day-click / input-display / selectsMultiple all going off-by-one-day when the explicit timeZone prop differs from the local timezone (real GitHub issue #6193)",
+  "verdict": "errored",
+  "fingerprint": "841e2e6f321e7d6642f3566819cb03217d00749eda38e54b3c3591b409845b90",
+  "configHash": "daaf432037ae4945ebb8459af8baeffce7a35c07f39138c22e1aa658368e5ecb",
+  "attempt": 0,
+  "durationMs": 60675,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "timeout",
+    "message": "e2b command timed out after 1829649ms",
+    "origin": {
+      "scope": "attempt",
+      "phase": "telemetry.configure"
+    },
+    "timeout": {
+      "trigger": "attempt-deadline",
+      "limitMs": 1800000,
+      "source": "experiment"
+    },
+    "stack": "SandboxCommandTimeoutError: e2b command timed out after 1829649ms\n    at E2BSandbox.runShell (/Users/ctrdh/Code/NiceEval/niceeval/src/sandbox/e2b.ts:609:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 60674
+    }
+  ],
+  "executionMs": 60675,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "ifx6yg5af4t4ollbueuny",
+    "reused": true,
+    "reuseSandbox": 3,
+    "reuseOrdinal": 4
+  },
+  "locator": "@1XHVTX25C3QNY",
+  "startedAt": "2026-08-02T15:00:52.383Z",
+  "locatorRunId": "a4cad08f-ae3d-43bc-9e2d-47336f650893"
+}

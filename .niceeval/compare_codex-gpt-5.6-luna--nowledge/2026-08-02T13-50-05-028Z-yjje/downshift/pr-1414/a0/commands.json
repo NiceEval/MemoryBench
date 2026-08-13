@@ -1,0 +1,1 @@
+[{"timingNodeId":"n19","phase":"agent.setup","display":"$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) plugin marketplace remove 'nowledge-community'","exitCode":1,"checked":false,"stdout":"","stderr":"Error: marketplace `nowledge-community` is not configured or installed\n"}]

@@ -1,6 +1,5 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../fixture.ts";
 
 // real fix: downshift-js/downshift, commit d822530f6b3eebe34c3dc8249353b61dd237d78b
 // ("feat(useSelect): improve highlight by character keys algorithm (#1456)"), which
@@ -15,6 +14,7 @@ import { prepareRepo } from "../fixture.ts";
 // the currently highlighted item might still be a valid match for the next
 // character typed — so repeating/continuing a rapid-succession character search
 // could skip over an item that still matched or restart from the wrong index.
+const REPO_URL = "https://github.com/downshift-js/downshift.git";
 const BASE_COMMIT = "99bd9d936b46620d0e8f27dd3a35ca15149ec7b5";
 
 export default defineEval({
@@ -27,8 +27,58 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
-  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
+    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
+    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
+    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
+    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
+    t.progress({ message: "cloning downshift @ base commit" });
+    const cloned = await t.sandbox.runShell(
+      [
+        "set -euo pipefail",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
+        `git reset -q --hard ${BASE_COMMIT}`,
+        "git remote remove origin",
+        "git tag -l | xargs -r git tag -d >/dev/null",
+        "git reflog expire --expire=now --all",
+        "git gc -q --prune=now",
+        // 上游同款自检:base commit 之后不应再有任何 commit 可见
+        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
+        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
+        '[ "$COUNT" -eq 1 ]',
+      ].join("\n"),
+    );
+    if (cloned.exitCode !== 0) {
+      throw new Error(`downshift checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
+    }
+
+    t.progress({ message: "installing deps (npm)" });
+    // plain npm — no packageManager field pinned in this repo, so corepack is skipped
+    // entirely (a bare `corepack enable` reliably crashes on the sandbox's Node
+    // 20.9.0 when no packageManager field pins a version). CYPRESS_INSTALL_BINARY=0
+    // skips the (unused-by-this-eval) Cypress browser download. The two explicit
+    // @babel/plugin-proposal-* devDependencies work around a real npm flat-tree
+    // hoisting bug in this unlocked (package-lock=false) repo: without them, npm
+    // resolves either a Babel "placeholder" package or nothing at all for the two
+    // legacy proposal plugins that this repo's own babel.config.js references
+    // directly, and Jest's transform step fails before any test can run. This is an
+    // environment fix, not part of the task — verified on Node 20.9.0 / npm 10.1.0
+    // (matching the sandbox) end to end (RED without the library fix, GREEN with it).
+    const installed = await t.sandbox.runShell(
+      [
+        "set -euo pipefail",
+        "CYPRESS_INSTALL_BINARY=0 npm install",
+        "npm install --save-dev @babel/plugin-proposal-private-property-in-object@7.21.11 @babel/plugin-proposal-private-methods@7.18.6",
+      ].join("\n"),
+    );
+    if (installed.exitCode !== 0) {
+      throw new Error(`npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
+    }
+
     await t
       .send(
         "Your working directory is a checkout of the real downshift repository (the accessible dropdown/combobox " +
@@ -58,7 +108,7 @@ export default defineEval({
           "suite to whatever file you're iterating on with `npx kcd-scripts test --no-watch <path-to-file>`. Fix " +
           "the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

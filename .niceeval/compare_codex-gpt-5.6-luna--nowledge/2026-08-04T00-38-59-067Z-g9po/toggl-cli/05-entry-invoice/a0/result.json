@@ -1,0 +1,177 @@
+{
+  "id": "toggl-cli/05-entry-invoice",
+  "description": "toggl-cli 05: add `toggl entry invoice` (per-project invoice) and establish the 30-minute minimum billing increment",
+  "verdict": "errored",
+  "fingerprint": "8ea3236bd5f5c42345c6e26f85cab20e7cb85933e3f1a88969208bcfbc64f5a8",
+  "configHash": "daaf432037ae4945ebb8459af8baeffce7a35c07f39138c22e1aa658368e5ecb",
+  "attempt": 0,
+  "durationMs": 5872,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "[nowledge] nowledge server probe failed (exit 1): error: connecting to <redacted-url> error sending request for url (<redacted-url> client error (Connect): dns error: failed to lookup address information: Name or service not known",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.experiment"
+    },
+    "stack": "ExperimentFatalError: [nowledge] nowledge server probe failed (exit 1): error: connecting to <redacted-url> error sending request for url (<redacted-url> client error (Connect): dns error: failed to lookup address information: Name or service not known\n    at requireCommand (/home/ctrdh/Code/NiceEval/MemoryBench/experiments/shared/nowledge.ts:149:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/experiments/shared/nowledge.ts:205:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "facts": {
+    "nowledge.cohort": "configured-local-20260802",
+    "nowledge.server-version": "0.10.48"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1017
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 4852,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 1018,
+          "durationMs": 4851,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 1018,
+              "durationMs": 217,
+              "command": {
+                "display": "command -v python3",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798981
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "if",
+              "startOffsetMs": 1235,
+              "durationMs": 2766,
+              "command": {
+                "display": "if command -v nmem >/dev/null 2>&1 && [ \"$(nmem --version 2>/dev/null)\" = \"nmem 0.10.48\" ]; then exit 0; fi; uv tool install --force 'nmem-cli==0.10.48' >/dev/…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1798765
+                }
+              }
+            },
+            {
+              "id": "n4",
+              "key": "sandbox.command",
+              "label": "nmem_bin=\"$HOME/.local/bin/nmem\";",
+              "startOffsetMs": 4001,
+              "durationMs": 275,
+              "command": {
+                "display": "nmem_bin=\"$HOME/.local/bin/nmem\"; test -x \"$nmem_bin\" || nmem_bin=\"$(command -v nmem 2>/dev/null || true)\"; test -n \"$nmem_bin\" && \"$nmem_bin\" --version 2>/dev…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795999
+                }
+              }
+            },
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "printf",
+              "startOffsetMs": 4276,
+              "durationMs": 871,
+              "command": {
+                "display": "printf \"%s\" \"$HOME\"",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795724
+                }
+              }
+            },
+            {
+              "id": "n6",
+              "key": "sandbox.command",
+              "label": "mkdir",
+              "startOffsetMs": 5147,
+              "durationMs": 220,
+              "command": {
+                "display": "mkdir -p \"$HOME/.nowledge-mem\"",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1794852
+                }
+              }
+            },
+            {
+              "id": "n7",
+              "key": "sandbox.command",
+              "label": "nmem",
+              "startOffsetMs": 5599,
+              "durationMs": 270,
+              "command": {
+                "display": "nmem --json status",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1794400
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 5872,
+  "sandbox": {
+    "provider": "e2b",
+    "sandboxId": "ixxs4voenztlro00xzlps",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1BSHXNMXW354H",
+  "startedAt": "2026-08-04T00:38:52.695Z",
+  "locatorRunId": "dd138ace-bf20-4057-9d78-9c7dc1bcb3cb",
+  "artifacts": [
+    "commands"
+  ]
+}

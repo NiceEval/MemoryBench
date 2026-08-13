@@ -1,0 +1,922 @@
+{
+  "id": "toggl-cli/02-entry-bill",
+  "description": "toggl-cli 02: add `toggl entry bill` (billable time per project) and establish the shop's billing rounding rule — round every entry up to the next 15 minutes",
+  "verdict": "passed",
+  "fingerprint": "1c325c0eeab1868dac4e3a39db54444eb0fb2fe903e0c79f0cd045ff85234798",
+  "configHash": "c1abde19710f6630db274f3aaec229475240c3ee09e0664ab2b546a98b322d8e",
+  "attempt": 0,
+  "durationMs": 333525,
+  "assertions": [
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 66,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 51,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 2,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "succeeded",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 77,
+        "column": 28,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 68,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 4,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "commandSucceeded()",
+      "severity": "gate",
+      "stopOnFailure": true,
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/harness.ts",
+        "line": 350,
+        "column": 3,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 79,
+            "column": 19
+          }
+        ]
+      },
+      "sourceOrder": 5,
+      "outcome": "passed",
+      "score": 1,
+      "evidence": "bash tests/run-probe.sh"
+    },
+    {
+      "name": "equals(0)",
+      "severity": "gate",
+      "groupPath": [
+        "命令存在,且按 15 分钟向上取整后汇总可计费时长"
+      ],
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 90,
+        "column": 9,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 89,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 6,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals([[\"Alpha\",2700],[\"Beta\",2700]])",
+      "severity": "gate",
+      "groupPath": [
+        "命令存在,且按 15 分钟向上取整后汇总可计费时长"
+      ],
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 91,
+        "column": 9,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 89,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 7,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals(5400)",
+      "severity": "gate",
+      "groupPath": [
+        "命令存在,且按 15 分钟向上取整后汇总可计费时长"
+      ],
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 95,
+        "column": 9,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 89,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 8,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals(5400)",
+      "severity": "gate",
+      "groupPath": [
+        "只算 billable、忽略非计费与运行中(总计不含那 3600s)"
+      ],
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 100,
+        "column": 9,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 98,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 9,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "isTrue(expected these lines, in this order: [\"(no data)\"]\nactual stdout lines: [\"(no data)\"])",
+      "severity": "gate",
+      "groupPath": [
+        "空窗口打印 (no data) 并 exit 0"
+      ],
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 105,
+        "column": 9,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 103,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 10,
+      "outcome": "passed",
+      "score": 1
+    },
+    {
+      "name": "equals(0)",
+      "severity": "gate",
+      "groupPath": [
+        "空窗口打印 (no data) 并 exit 0"
+      ],
+      "loc": {
+        "kind": "project",
+        "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+        "line": 106,
+        "column": 9,
+        "callers": [
+          {
+            "kind": "project",
+            "file": "evals/toggl-cli/02-entry-bill/eval.ts",
+            "line": 103,
+            "column": 5
+          }
+        ]
+      },
+      "sourceOrder": 11,
+      "outcome": "passed",
+      "score": 1
+    }
+  ],
+  "evaluationKind": "pass",
+  "usage": {
+    "inputTokens": 133469,
+    "outputTokens": 13058,
+    "cacheReadTokens": 1320960,
+    "reasoningTokens": 2806,
+    "requests": 2
+  },
+  "estimatedCostUSD": 0.0687826,
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "facts": {
+    "remem.binary_version": "remem 0.6.47 (schema v75)",
+    "sandbox.disk.free_kb": 393402404,
+    "sandbox.disk.total_kb": 859357208,
+    "sandbox.build_tree.kb": 775948,
+    "agent.ensure": "hit",
+    "remem.memories": "0",
+    "remem.captured_events": "2"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 221
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 119121,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "experiment#0",
+          "startOffsetMs": 222,
+          "durationMs": 79,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "command",
+              "startOffsetMs": 222,
+              "durationMs": 38,
+              "command": {
+                "display": "command -v remem",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799778
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "remem",
+              "startOffsetMs": 260,
+              "durationMs": 41,
+              "command": {
+                "display": "remem --version",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799739
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n4",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 301,
+          "durationMs": 31795,
+          "children": [
+            {
+              "id": "n5",
+              "key": "sandbox.command",
+              "label": "bash",
+              "startOffsetMs": 301,
+              "durationMs": 31795,
+              "command": {
+                "display": "bash -lc set -euo pipefail\nexport DEBIAN_FRONTEND=noninteractive\nif command -v apt-get >/dev/null 2>&1; then\n  APT_WAIT='-o DPkg::Lock::Timeout=300'\n  apt-get …",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799699
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "n6",
+          "key": "sandbox.prepare",
+          "label": "eval#1",
+          "startOffsetMs": 32096,
+          "durationMs": 87247,
+          "children": [
+            {
+              "id": "n7",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 32097,
+              "durationMs": 1661,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin https://github.com/CorrectRoadH/toggl-cli.git .niceeval-clone\nmv .niceeval-clone/.git .git…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1767903
+                }
+              }
+            },
+            {
+              "id": "n8",
+              "key": "sandbox.command",
+              "label": "export",
+              "startOffsetMs": 33758,
+              "durationMs": 85517,
+              "command": {
+                "display": "export RUSTUP_HOME=/usr/local/rustup CARGO_HOME=/usr/local/cargo\nexport PATH=\"/usr/local/cargo/bin:$PATH\"\ncargo build --tests --quiet",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1766242
+                }
+              }
+            },
+            {
+              "id": "n9",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 119276,
+              "durationMs": 66,
+              "command": {
+                "display": "set -euo pipefail\ndf -Pk / 2>/dev/null\ndu -sk /opt/cargo-target 2>/dev/null",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1680724
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent.ensure",
+      "durationMs": 137,
+      "children": [
+        {
+          "id": "n10",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 119343,
+          "durationMs": 49,
+          "command": {
+            "display": "printf '%s\\n' \"$(uname -s)\"\nprintf '%s\\n' \"$(uname -m)\"\nif command -v ldd >/dev/null 2>&1; then ldd --version 2>&1 | head -1; else printf '\\n'; fi",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1680657
+            }
+          }
+        },
+        {
+          "id": "n11",
+          "key": "sandbox.command",
+          "label": "BIN=\"\";",
+          "startOffsetMs": 119393,
+          "durationMs": 87,
+          "command": {
+            "display": "BIN=\"\"; if [ -x \"$HOME/.local/bin/codex\" ]; then BIN=\"$HOME/.local/bin/codex\"; elif command -v 'codex' >/dev/null 2>&1; then BIN=\"$(command -v 'codex')\"; fi; i…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1680607
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.baseline",
+      "durationMs": 620,
+      "children": [
+        {
+          "id": "n12",
+          "key": "sandbox.command",
+          "label": "command",
+          "startOffsetMs": 119480,
+          "durationMs": 42,
+          "command": {
+            "display": "command -p id -u",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1680520
+            }
+          }
+        },
+        {
+          "id": "n13",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 119522,
+          "durationMs": 578,
+          "command": {
+            "display": "rm -rf -- '/tmp/.niceeval-ledger' && mkdir -p -m 0700 -- '/tmp/.niceeval-ledger' && git init -q \"/tmp/.niceeval-ledger\" && git -c advice.addEmbeddedRepo=false …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1680478
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "agent.setup",
+      "durationMs": 641,
+      "children": [
+        {
+          "id": "n14",
+          "key": "sandbox.command",
+          "label": "mkdir",
+          "startOffsetMs": 120102,
+          "durationMs": 46,
+          "command": {
+            "display": "mkdir -p $(dirname ~/.codex/config.toml) && cat > ~/.codex/config.toml <<'FE_EOF_msl85742_2qluke'\nmodel = \"gpt-5.6-luna\"\nmodel_provider = \"s2a\"\n\nFE_EOF_msl8574…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679898
+            }
+          }
+        },
+        {
+          "id": "n15",
+          "key": "sandbox.command",
+          "label": "printf",
+          "startOffsetMs": 120241,
+          "durationMs": 44,
+          "command": {
+            "display": "printf '\\n' >> ~/.codex/config.toml && cat /tmp/niceeval-native-config-msl8575c-as92sw >> ~/.codex/config.toml && printf '\\n' >> ~/.codex/config.toml && rm -f …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679758
+            }
+          }
+        },
+        {
+          "id": "n16",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 120285,
+          "durationMs": 39,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'NICEEVAL_PROVIDER_EOF'\n\n[model_providers.s2a]\nname = \"s2a\"\nbase_url = \"https://sub2api.350124.xyz/v1\"\nenv_key = \"CODEX_API_KEY\"\n…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679715
+            }
+          }
+        },
+        {
+          "id": "n17",
+          "key": "sandbox.command",
+          "label": "remem",
+          "startOffsetMs": 120324,
+          "durationMs": 299,
+          "command": {
+            "display": "remem install --target codex",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679676
+            }
+          }
+        },
+        {
+          "id": "n18",
+          "key": "sandbox.command",
+          "label": "remem",
+          "startOffsetMs": 120623,
+          "durationMs": 40,
+          "command": {
+            "display": "remem model use auto",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679376
+            }
+          }
+        },
+        {
+          "id": "n19",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 120663,
+          "durationMs": 41,
+          "command": {
+            "display": "grep -q '\"SessionStart\"' \"${CODEX_HOME:-$HOME/.codex}/hooks.json\" && grep -q '\"Stop\"' \"${CODEX_HOME:-$HOME/.codex}/hooks.json\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679337
+            }
+          }
+        },
+        {
+          "id": "n20",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 120704,
+          "durationMs": 37,
+          "command": {
+            "display": "grep -q \"mcp_servers.remem\" \"${CODEX_HOME:-$HOME/.codex}/config.toml\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679296
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "telemetry.configure",
+      "durationMs": 41,
+      "children": [
+        {
+          "id": "n21",
+          "key": "sandbox.command",
+          "label": "cat",
+          "startOffsetMs": 120741,
+          "durationMs": 41,
+          "command": {
+            "display": "cat >> ~/.codex/config.toml <<'EOF'\n\n[otel]\nenvironment = \"niceeval\"\nexporter = \"none\"\nmetrics_exporter = \"none\"\n\n[otel.trace_exporter.otlp-http]\nendpoint = \"h…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679259
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "eval.run",
+      "durationMs": 211884,
+      "children": [
+        {
+          "id": "n22",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 120786,
+          "durationMs": 43,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679214
+            }
+          }
+        },
+        {
+          "id": "n23",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 120829,
+          "durationMs": 153667,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec --json --dangerously-bypass-approvals-and-sandbox -…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1679171
+            }
+          }
+        },
+        {
+          "id": "n24",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 274499,
+          "durationMs": 44,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1525501
+            }
+          }
+        },
+        {
+          "id": "n25",
+          "key": "agent.turn",
+          "label": "turn1",
+          "startOffsetMs": 120786,
+          "durationMs": 153757,
+          "sessionIndex": 1,
+          "turnIndex": 1,
+          "usage": {
+            "inputTokens": 60960,
+            "outputTokens": 5554,
+            "cacheReadTokens": 545280,
+            "reasoningTokens": 1259,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n26",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 274545,
+          "durationMs": 63,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1525455
+            }
+          }
+        },
+        {
+          "id": "n27",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 274617,
+          "durationMs": 44,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1525383
+            }
+          }
+        },
+        {
+          "id": "n28",
+          "key": "sandbox.command",
+          "label": "$(if",
+          "startOffsetMs": 274661,
+          "durationMs": 56700,
+          "command": {
+            "display": "$(if [ -x \"$HOME/.local/bin/codex\" ]; then echo \"$HOME/.local/bin/codex\"; else command -v 'codex'; fi) exec resume 019fe47f-72e9-7700-998c-e9b081f057c6 --json …",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1525339
+            }
+          }
+        },
+        {
+          "id": "n29",
+          "key": "sandbox.command",
+          "label": "git",
+          "startOffsetMs": 331361,
+          "durationMs": 52,
+          "command": {
+            "display": "git -c advice.addEmbeddedRepo=false add -A -f -- . ':(glob,exclude)**/.git' ':(glob,exclude)**/.git/**' ':(glob,exclude)**/node_modules' ':(glob,exclude)**/nod…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1468639
+            }
+          }
+        },
+        {
+          "id": "n30",
+          "key": "agent.turn",
+          "label": "turn2",
+          "startOffsetMs": 274616,
+          "durationMs": 56797,
+          "sessionIndex": 1,
+          "turnIndex": 2,
+          "usage": {
+            "inputTokens": 72509,
+            "outputTokens": 7504,
+            "cacheReadTokens": 775680,
+            "reasoningTokens": 1547,
+            "requests": 1
+          }
+        },
+        {
+          "id": "n31",
+          "key": "sandbox.command",
+          "label": "set",
+          "startOffsetMs": 331414,
+          "durationMs": 92,
+          "command": {
+            "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1468586
+            }
+          }
+        },
+        {
+          "id": "n32",
+          "key": "sandbox.command",
+          "label": "bash",
+          "startOffsetMs": 331760,
+          "durationMs": 865,
+          "command": {
+            "display": "bash tests/run-probe.sh",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1468240
+            }
+          }
+        },
+        {
+          "id": "n33",
+          "key": "sandbox.command",
+          "label": "rm",
+          "startOffsetMs": 332625,
+          "durationMs": 38,
+          "command": {
+            "display": "rm -rf target",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1467375
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "workspace.diff",
+      "durationMs": 92,
+      "children": [
+        {
+          "id": "n34",
+          "key": "workspace.diff.export",
+          "label": "export workspace diff · 2 windows · 4 files",
+          "startOffsetMs": 332666,
+          "durationMs": 92,
+          "children": [
+            {
+              "id": "n35",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 332666,
+              "durationMs": 88,
+              "command": {
+                "display": "set -eu\nD='/tmp/.niceeval-ledger-export'\nrm -rf \"$D\" && mkdir -p \"$D\"\nOUT=$D/export.bin\n: > \"$OUT\"\nfail() { printf \"%s\\n\" \"$1\" >&2; exit 2; }\nemit() { printf \"…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1467334
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "assertions.evaluate",
+      "durationMs": 0
+    },
+    {
+      "name": "telemetry.collect",
+      "durationMs": 767
+    },
+    {
+      "name": "agent.teardown",
+      "durationMs": 130,
+      "children": [
+        {
+          "id": "n36",
+          "key": "sandbox.command",
+          "label": "test",
+          "startOffsetMs": 333527,
+          "durationMs": 36,
+          "command": {
+            "display": "test -s \"$HOME/.remem/remem.db\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1466473
+            }
+          }
+        },
+        {
+          "id": "n37",
+          "key": "sandbox.command",
+          "label": "grep",
+          "startOffsetMs": 333563,
+          "durationMs": 39,
+          "command": {
+            "display": "grep -q '\"Stop\"' \"${CODEX_HOME:-$HOME/.codex}/hooks.json\"",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1466436
+            }
+          }
+        },
+        {
+          "id": "n38",
+          "key": "sandbox.command",
+          "label": "remem",
+          "startOffsetMs": 333602,
+          "durationMs": 54,
+          "command": {
+            "display": "remem status --json",
+            "exitCode": 0,
+            "checked": false,
+            "limit": {
+              "source": "attempt-deadline",
+              "limitMs": 1466398
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "executionMs": 333525,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "da2b42a4a7ca",
+    "reused": true,
+    "reuseSandbox": 1,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1TA06783YKMBY",
+  "startedAt": "2026-08-09T03:07:44.540Z",
+  "locatorRunId": "62909cc6-acb0-45a2-b582-27c9179ac8d5",
+  "artifacts": [
+    "commands",
+    "events",
+    "trace",
+    "o11y",
+    "agentSetup",
+    "diff",
+    "sources"
+  ]
+}

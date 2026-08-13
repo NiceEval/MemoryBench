@@ -1,0 +1,3420 @@
+{
+  "format": "niceeval.results",
+  "schemaVersion": 15,
+  "producer": {
+    "name": "niceeval",
+    "version": "0.4.6"
+  },
+  "runId": "11b9bcc9-b093-4547-9eca-03c322c2866c",
+  "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+  "experiment": {
+    "description": "codex · gpt-5.6-luna · obelisk",
+    "flags": {
+      "memory": "obelisk",
+      "obeliskVersion": "0.2.2"
+    },
+    "labels": {
+      "line": "codex"
+    },
+    "attempts": 1,
+    "earlyExit": false,
+    "timeoutMs": 1800000,
+    "maxConcurrency": 1,
+    "selectedEvalIds": [
+      "downshift/pr-1414",
+      "downshift/pr-1456",
+      "downshift/pr-1458",
+      "downshift/pr-1484",
+      "downshift/pr-1587",
+      "downshift/pr-1603",
+      "react-datepicker/pr-6058",
+      "react-datepicker/pr-6073",
+      "react-datepicker/pr-6092",
+      "react-datepicker/pr-6167",
+      "react-datepicker/pr-6168",
+      "react-datepicker/pr-6172",
+      "react-datepicker/pr-6206",
+      "react-hook-form/pr-13476",
+      "react-hook-form/pr-13512",
+      "react-hook-form/pr-13515",
+      "react-hook-form/pr-13566",
+      "react-hook-form/pr-13579",
+      "react-hook-form/pr-13594",
+      "react-hook-form/pr-13599",
+      "react-hook-form/pr-13603",
+      "react-tooltip/pr-1269",
+      "react-tooltip/pr-1271",
+      "react-tooltip/pr-1275",
+      "react-tooltip/pr-1278",
+      "react-tooltip/pr-1282",
+      "react-tooltip/pr-970",
+      "toggl-cli/01-entry-stats",
+      "toggl-cli/02-entry-bill",
+      "toggl-cli/03-entry-bill-weekly",
+      "toggl-cli/04-billing-doc",
+      "toggl-cli/05-entry-invoice",
+      "toggl-cli/06-entry-invoice-monthly",
+      "yet-another-react-lightbox/commit-5578052",
+      "yet-another-react-lightbox/commit-f63f6af",
+      "yet-another-react-lightbox/pr-408"
+    ],
+    "evalFilterFingerprint": "52c5ab51f2f8fccf",
+    "sandboxLayer": {
+      "layer": {
+        "_tag": "Template",
+        "value": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        }
+      },
+      "commands": [],
+      "lifecycle": [
+        {
+          "kind": "opaque",
+          "phase": "setup",
+          "index": 0
+        }
+      ]
+    },
+    "sandboxPlansByEval": {
+      "downshift/pr-1414": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "downshift/pr-1414",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "downshift/pr-1414"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "downshift/pr-1456": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "downshift/pr-1456",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "downshift/pr-1458": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "downshift/pr-1458",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "downshift/pr-1484": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "downshift/pr-1484",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "downshift/pr-1587": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "downshift/pr-1587",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "downshift/pr-1603": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "downshift/pr-1603",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6058": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6058",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "react-datepicker/pr-6058"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6073": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6073",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6092": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6092",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6167": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6167",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6168": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6168",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6172": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6172",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-datepicker/pr-6206": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-datepicker/pr-6206",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13476": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13476",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "react-hook-form/pr-13476"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13512": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13512",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13515": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13515",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13566": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13566",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13579": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13579",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13594": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13594",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13599": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13599",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-hook-form/pr-13603": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13603",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-tooltip/pr-1269": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-tooltip/pr-1269",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-tooltip/pr-1271": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-tooltip/pr-1271",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-tooltip/pr-1275": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-tooltip/pr-1275",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-tooltip/pr-1278": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-tooltip/pr-1278",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-tooltip/pr-1282": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-tooltip/pr-1282",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "react-tooltip/pr-970": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-tooltip/pr-970",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "react-tooltip/pr-970"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "toggl-cli/01-entry-stats": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/01-entry-stats",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/01-entry-stats"
+            },
+            "index": 0
+          },
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/01-entry-stats"
+            },
+            "index": 1
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "toggl-cli/02-entry-bill": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/02-entry-bill",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/02-entry-bill"
+            },
+            "index": 0
+          },
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/02-entry-bill"
+            },
+            "index": 1
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "toggl-cli/03-entry-bill-weekly": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/03-entry-bill-weekly",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/03-entry-bill-weekly"
+            },
+            "index": 0
+          },
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/03-entry-bill-weekly"
+            },
+            "index": 1
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "toggl-cli/04-billing-doc": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/04-billing-doc",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "toggl-cli/05-entry-invoice": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/05-entry-invoice",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/05-entry-invoice"
+            },
+            "index": 0
+          },
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/05-entry-invoice"
+            },
+            "index": 1
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "toggl-cli/06-entry-invoice-monthly": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "toggl-cli/06-entry-invoice-monthly",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/06-entry-invoice-monthly"
+            },
+            "index": 0
+          },
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "toggl-cli/06-entry-invoice-monthly"
+            },
+            "index": 1
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "yet-another-react-lightbox/commit-5578052": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "yet-another-react-lightbox/commit-5578052",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "yet-another-react-lightbox/commit-f63f6af": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "yet-another-react-lightbox/commit-f63f6af",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      },
+      "yet-another-react-lightbox/pr-408": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "yet-another-react-lightbox/pr-408",
+          "experimentId": "compare/codex-gpt-5.6-luna--obelisk",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--obelisk"
+        },
+        "template": {
+          "version": 2,
+          "provider": "docker",
+          "kind": "image",
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "a662102882109bfda13c2db83238c86c469f74c5427c2aca32cfa89650bdbc5c"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "eval",
+              "id": "yet-another-react-lightbox/pr-408"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "docker",
+          "plannerRevision": "docker-image-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "docker-daemon",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 10,
+            "lane": {
+              "key": "docker",
+              "limit": 10
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/docker-image",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "Unlimited"
+            }
+          },
+          "carry": {
+            "_tag": "Ineligible",
+            "code": "sandbox.image-unresolved",
+            "reason": "Docker image is not pinned to a sha256 digest."
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "cddefb0e673f8d3477d9a891a474c8b7fa0c2a3a1afbdf0bcd8b8db222a72285",
+            "buildKeys": []
+          },
+          "publishable": {
+            "source": "configured-image",
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "09b31c94cc9a52c2c6e2adac3f8eba7407bae521e57359d876d5000eac93130a"
+        }
+      }
+    },
+    "sandboxReuse": true,
+    "agentInstalls": [
+      {
+        "order": 0,
+        "ensure": {
+          "agent": "codex",
+          "version": "0.144.1",
+          "revision": "5"
+        },
+        "installer": {
+          "_tag": "Matched",
+          "identity": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "5"
+          },
+          "installMode": "staged",
+          "platforms": {
+            "_tag": "All"
+          }
+        }
+      }
+    ]
+  },
+  "agent": "codex",
+  "model": "gpt-5.6-luna",
+  "startedAt": "2026-08-05T02:18:57.822Z",
+  "configHash": "28667fb1d7c86cab860981eacd53eb96296eab766bb56451ecb3a100689c771c",
+  "completedAt": "2026-08-05T04:07:58.024Z"
+}

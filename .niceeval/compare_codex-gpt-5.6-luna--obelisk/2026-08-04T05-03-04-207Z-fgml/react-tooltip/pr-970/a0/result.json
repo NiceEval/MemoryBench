@@ -1,0 +1,109 @@
+{
+  "id": "react-tooltip/pr-970",
+  "description": "react-tooltip pr-970: expose the tooltip's actual computed placement so consumers can target it with placement-specific CSS (real react-tooltip feature request)",
+  "verdict": "errored",
+  "fingerprint": "a9f57fd05e4e73b3f472ee8aee9b9a631b751a76cbf4c469d4e2a90013e23e00",
+  "configHash": "062b9332f19e0c7f697168ae808a6215a034b2d65d8345cf59f0236925bcc67e",
+  "attempt": 0,
+  "durationMs": 5290,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "evaluationKind": "pass",
+  "error": {
+    "code": "unexpected-error",
+    "message": "yarn install failed: known env config \"unsafe-perm\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code EEXIST\nnpm error path /usr/local/bin/yarn\nnpm error EEXIST: file already exists\nnpm error File exists: /usr/local/bin/yarn\nnpm error Remove the existing file and try again, or run npm\nnpm error with --force to overwrite files recklessly.\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-08-04T05_04_28_991Z-debug-0.log",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.prepare.eval"
+    },
+    "stack": "Error: yarn install failed: known env config \"unsafe-perm\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\nnpm error code EEXIST\nnpm error path /usr/local/bin/yarn\nnpm error EEXIST: file already exists\nnpm error File exists: /usr/local/bin/yarn\nnpm error Remove the existing file and try again, or run npm\nnpm error with --force to overwrite files recklessly.\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-08-04T05_04_28_991Z-debug-0.log\n    at Object.command (/home/ctrdh/Code/NiceEval/MemoryBench/evals/react-tooltip/pr-970/eval.ts:75:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async runAttemptBody (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/attempt.ts:1144:13)"
+  },
+  "phases": [
+    {
+      "name": "telemetry.configure",
+      "durationMs": 1
+    },
+    {
+      "name": "sandbox.prepare",
+      "durationMs": 5288,
+      "failed": true,
+      "children": [
+        {
+          "id": "n1",
+          "key": "sandbox.prepare",
+          "label": "eval#0",
+          "startOffsetMs": 1,
+          "durationMs": 5288,
+          "children": [
+            {
+              "id": "n2",
+              "key": "sandbox.command",
+              "label": "set",
+              "startOffsetMs": 1,
+              "durationMs": 4716,
+              "command": {
+                "display": "set -euo pipefail\nrm -rf .git .niceeval-clone\ngit clone -q -o origin --single-branch https://github.com/ReactTooltip/react-tooltip.git .niceeval-clone\nmv .nice…",
+                "exitCode": 0,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1799999
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "key": "sandbox.command",
+              "label": "npm",
+              "startOffsetMs": 4717,
+              "durationMs": 572,
+              "command": {
+                "display": "npm install -g --prefix /usr/local yarn@1.22.22 && yarn install --ignore-scripts --ignore-engines",
+                "exitCode": 1,
+                "checked": false,
+                "limit": {
+                  "source": "attempt-deadline",
+                  "limitMs": 1795283
+                }
+              }
+            }
+          ],
+          "failed": true
+        }
+      ]
+    }
+  ],
+  "executionMs": 5290,
+  "sandbox": {
+    "provider": "docker",
+    "sandboxId": "706df39db85e",
+    "reused": true,
+    "reuseSandbox": 6,
+    "reuseOrdinal": 1
+  },
+  "locator": "@1H7T90EMV7R5K",
+  "startedAt": "2026-08-04T05:04:24.152Z",
+  "locatorRunId": "6077fdc8-e21c-4efd-a750-009fe779d0db",
+  "artifacts": [
+    "commands"
+  ]
+}

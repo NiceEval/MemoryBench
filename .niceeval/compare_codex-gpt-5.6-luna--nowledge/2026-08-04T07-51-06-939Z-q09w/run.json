@@ -1,0 +1,194 @@
+{
+  "format": "niceeval.results",
+  "schemaVersion": 15,
+  "producer": {
+    "name": "niceeval"
+  },
+  "runId": "9aa35493-dbe9-453e-aaad-75eeb16992dd",
+  "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+  "experiment": {
+    "description": "codex · gpt-5.6-luna · Nowledge Mem",
+    "flags": {
+      "memory": "nowledge",
+      "nowledgeVersion": "0.10.48",
+      "nowledgeCohort": "configured-local-20260802"
+    },
+    "labels": {
+      "line": "codex"
+    },
+    "attempts": 1,
+    "earlyExit": false,
+    "timeoutMs": 1800000,
+    "maxConcurrency": 1,
+    "selectedEvalIds": [
+      "react-hook-form/pr-13579",
+      "downshift/pr-1456",
+      "downshift/pr-1587",
+      "react-datepicker/pr-6206",
+      "react-hook-form/pr-13599",
+      "react-tooltip/pr-1269",
+      "toggl-cli/02-entry-bill",
+      "toggl-cli/06-entry-invoice-monthly"
+    ],
+    "sandboxLayer": {
+      "layer": {
+        "_tag": "Template",
+        "value": {
+          "version": 2,
+          "provider": "e2b",
+          "kind": "template",
+          "publishable": {
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+        }
+      },
+      "commands": [
+        {
+          "kind": "opaque",
+          "index": 0
+        }
+      ]
+    },
+    "sandboxPlansByEval": {
+      "react-hook-form/pr-13579": {
+        "version": 1,
+        "mode": "sandbox",
+        "pair": {
+          "evalId": "react-hook-form/pr-13579",
+          "experimentId": "compare/codex-gpt-5.6-luna--nowledge",
+          "agentName": "codex"
+        },
+        "templateOwner": {
+          "kind": "experiment",
+          "id": "compare/codex-gpt-5.6-luna--nowledge"
+        },
+        "template": {
+          "version": 2,
+          "provider": "e2b",
+          "kind": "template",
+          "publishable": {
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "8324f458b6b18cb696cc34731a8c136744a18442c1ad8810dfc556979a035653"
+        },
+        "commands": [
+          {
+            "kind": "opaque",
+            "owner": {
+              "kind": "experiment",
+              "id": "compare/codex-gpt-5.6-luna--nowledge"
+            },
+            "index": 0
+          }
+        ],
+        "providerPlan": {
+          "version": 3,
+          "provider": "e2b",
+          "plannerRevision": "e2b-template-1",
+          "caseKind": "prebuilt",
+          "target": {
+            "source": "provider-standard",
+            "platform": {
+              "_tag": "Linux",
+              "os": "linux",
+              "arch": "x64",
+              "libc": "gnu"
+            }
+          },
+          "scheduling": {
+            "recommendedConcurrency": 20,
+            "lane": {
+              "key": "e2b",
+              "limit": 20
+            },
+            "admission": {
+              "_tag": "Shared"
+            }
+          },
+          "providerModule": "niceeval/e2b-template",
+          "capabilities": {
+            "retention": {
+              "_tag": "Suspendable"
+            },
+            "reuse": {
+              "_tag": "Supported"
+            },
+            "sessionLimit": {
+              "_tag": "ProviderValidated",
+              "reason": "E2B validates lifetimeMs against the active account tier when the sandbox is created or renewed."
+            }
+          },
+          "carry": {
+            "_tag": "Eligible"
+          },
+          "build": {
+            "_tag": "None",
+            "caseKey": "f8b8a601c62b83269faf31ba8da4185631dde6230e0367e014f234528c425129",
+            "buildKeys": []
+          },
+          "publishable": {
+            "user": {
+              "_tag": "EnvironmentDefault"
+            },
+            "lifetime": {
+              "_tag": "Configured",
+              "milliseconds": 3600000
+            }
+          },
+          "privateIdentityDigest": "dbad071240797f70fc37f5607d1933b958a8234e0a11471f8ccdf422bca3c642"
+        }
+      }
+    },
+    "sandboxReuse": true,
+    "agentInstalls": [
+      {
+        "order": 0,
+        "ensure": {
+          "agent": "codex",
+          "version": "0.144.1",
+          "revision": "4"
+        },
+        "installer": {
+          "_tag": "Matched",
+          "identity": {
+            "agent": "codex",
+            "version": "0.144.1",
+            "revision": "4"
+          },
+          "installMode": "staged",
+          "platforms": {
+            "_tag": "All"
+          }
+        }
+      }
+    ]
+  },
+  "agent": "codex",
+  "model": "gpt-5.6-luna",
+  "startedAt": "2026-08-04T07:51:06.938Z",
+  "configHash": "bcb2ec66850a09e034e8bc0152fa9cdaa5589434e2c9a3c7175b9f774bd38c74",
+  "completedAt": "2026-08-04T07:51:06.944Z",
+  "knownEvalIds": [
+    "react-hook-form/pr-13579",
+    "downshift/pr-1587",
+    "react-hook-form/pr-13599",
+    "toggl-cli/06-entry-invoice-monthly",
+    "toggl-cli/02-entry-bill",
+    "downshift/pr-1456",
+    "react-tooltip/pr-1269",
+    "react-datepicker/pr-6206"
+  ]
+}

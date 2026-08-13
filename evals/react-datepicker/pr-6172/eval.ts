@@ -1,7 +1,7 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
-import { prepareRepo } from "../fixture.ts";
 
+const REPO_URL = "https://github.com/Hacker0x01/react-datepicker.git";
 // PR #6172 (fix/restore-native-date-fallback-6164), merge commit 75a4ed1fd2d45f4af5cbb2c9e533ae7c0a793c34.
 // gh's reported baseRefOid (df8a91d9) is 13 commits behind this — that's just the branch point at
 // PR-creation time, before the base branch moved on. The merge commit's actual first parent is
@@ -16,8 +16,41 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", "package.json", ".niceeval-clone"],
   },
-  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
+    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
+    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
+    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
+    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
+    t.progress({ message: "cloning react-datepicker @ base commit" });
+    const cloned = await t.sandbox.runShell(
+      [
+        "set -euo pipefail",
+        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
+        "rm -rf .git .niceeval-clone",
+        "git clone -q -o origin --single-branch " + REPO_URL + " .niceeval-clone",
+        "mv .niceeval-clone/.git .git",
+        "rm -rf .niceeval-clone",
+        `git reset -q --hard ${BASE_COMMIT}`,
+        "git remote remove origin",
+        "git tag -l | xargs -r git tag -d >/dev/null",
+        "git reflog expire --expire=now --all",
+        "git gc -q --prune=now",
+        // 上游同款自检:base commit 之后不应再有任何 commit 可见
+        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
+        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
+        '[ "$COUNT" -eq 1 ]',
+      ].join("\n"),
+    );
+    if (cloned.exitCode !== 0) {
+      throw new Error(`react-datepicker checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`);
+    }
+
+    t.progress({ message: "yarn install" });
+    const installed = await t.sandbox.runShell("corepack enable && yarn install --immutable");
+    if (installed.exitCode !== 0) {
+      throw new Error(`yarn install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
+    }
+
     await t
       .send(
         "Your working directory is a checkout of the real react-datepicker repository at the commit where the " +
@@ -38,7 +71,7 @@ export default defineEval({
           "`node_modules/.bin/jest src/test/date_utils_test.test.ts` to scope to the date-parsing tests. " +
           "Fix the library source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().orStop());
+      .then((turn) => turn.succeeded().stopOnFailure());
 
     await t.sandbox.uploadFile(
 

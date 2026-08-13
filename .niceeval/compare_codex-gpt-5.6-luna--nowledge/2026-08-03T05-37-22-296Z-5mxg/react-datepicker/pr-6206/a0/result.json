@@ -1,0 +1,41 @@
+{
+  "id": "react-datepicker/pr-6206",
+  "description": "react-datepicker PR #6206: fix DatePicker's day-click / input-display / selectsMultiple all going off-by-one-day when the explicit timeZone prop differs from the local timezone (real GitHub issue #6193)",
+  "verdict": "errored",
+  "fingerprint": "0ed13b1f2f54d3058378498bd662b55b6d47828c337e3b8f049d79df6ad64e12",
+  "attempt": 0,
+  "durationMs": 0,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "error": {
+    "code": "unexpected-error",
+    "message": "2: [unknown] fetch failed",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.create"
+    },
+    "stack": "SandboxError: 2: [unknown] fetch failed\n    at handleRpcError (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:109:12)\n    at handleRpcErrorWithHealthCheck (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/envd/rpc.ts:142:10)\n    at Commands.start (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/commands/index.ts:485:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Commands.run (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/e2b@2.31.0/node_modules/e2b/src/sandbox/commands/index.ts:421:18)\n    at async E2BSandbox.runShell (/home/ctrdh/Code/NiceEval/NiceEval/src/sandbox/e2b.ts:552:28)"
+  },
+  "locator": "@1HZ3AAKH21Y78",
+  "startedAt": "2026-08-03T05:37:22.295Z",
+  "locatorRunId": "a33c910c-82df-4170-9dce-62294a6a35b9"
+}

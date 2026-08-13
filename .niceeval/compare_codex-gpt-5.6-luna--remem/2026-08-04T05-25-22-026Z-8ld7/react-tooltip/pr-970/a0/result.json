@@ -1,0 +1,41 @@
+{
+  "id": "react-tooltip/pr-970",
+  "description": "react-tooltip pr-970: expose the tooltip's actual computed placement so consumers can target it with placement-specific CSS (real react-tooltip feature request)",
+  "verdict": "errored",
+  "fingerprint": "3274232943bd82638a90f81c9f80f9eb7fd8df94a58a9b2ed31522a3f99a4226",
+  "attempt": 0,
+  "durationMs": 0,
+  "assertions": [],
+  "evidenceCoverage": {
+    "events": {
+      "status": "complete"
+    },
+    "actions": {
+      "status": "complete"
+    },
+    "messages": {
+      "status": "complete"
+    },
+    "usage": {
+      "status": "complete"
+    },
+    "status": {
+      "status": "complete"
+    },
+    "data": {
+      "status": "complete"
+    }
+  },
+  "error": {
+    "code": "unexpected-error",
+    "message": "sandboxReuse cannot prepare the \"docker\" sandbox: the docker sandbox needs lifetimeMs when sandboxReuse is enabled",
+    "origin": {
+      "scope": "attempt",
+      "phase": "sandbox.create"
+    },
+    "stack": "Error: sandboxReuse cannot prepare the \"docker\" sandbox: the docker sandbox needs lifetimeMs when sandboxReuse is enabled\n    at ReusableSandboxPool.<anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/src/runner/sandbox-pool.ts:213:9)\n    at Generator.next (<anonymous>)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:198:67)\n    at body (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/Utils.ts:786:14)\n    at Object.Iterator (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:198:21)\n    at FiberRuntime.Success (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1185:37)\n    at <anonymous> (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/home/ctrdh/Code/NiceEval/NiceEval/node_modules/.pnpm/effect@3.21.4/node_modules/effect/src/internal/fiberRuntime.ts:950:27)"
+  },
+  "locator": "@1KBG7FPG86D5Q",
+  "startedAt": "2026-08-04T05:25:40.276Z",
+  "locatorRunId": "c595d9a9-7b9f-448d-af9d-4b3b9a2425e5"
+}
