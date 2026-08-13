@@ -38,6 +38,6 @@ export default defineExperiment({
   attempts: 1,
   earlyExit: true,
   // Group 内共享一条 lane；不同 Group 由中心化服务并发处理。
-  maxConcurrency: 4,
+  maxConcurrency: 6,
   timeoutMs: 1200000,
 });

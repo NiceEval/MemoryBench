@@ -31,7 +31,7 @@ export default defineExperiment({
     .teardown(mempalSaveState),
   earlyExit: false,
   // Group 内串行复用，Group 间并行；host checkpoint 按 (Experiment, Group) 隔离。
-  maxConcurrency: 4,
+  maxConcurrency: 6,
   // 与 claude 组对齐(重型题可能超 10 分钟),消除条件间超时偏置——2026-07-10 重跑里
   // 本实验 repomod/terminal-cancel 正是死于 600s 默认超时(setup 含 ~514MB 模型预热)。
   // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the

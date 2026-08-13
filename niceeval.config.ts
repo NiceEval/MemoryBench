@@ -47,24 +47,12 @@ export default defineConfig({
 
   timeoutMs: 600_000,
 
-  // Docker provider 的推荐默认并发是 10；本仓库保留 headroom，避免 Attempt 收尾与下一台容器
-  // 创建重叠时同时吃满本机 CPU、内存和 Docker daemon。Nowledge 还会连同宿主机上的服务与隧道，
-  // 并发过高会把 laptop 压到被 SIGTERM（见 memory: memory-experiments-run-sequential）。
+  // 全局上限只作为多实验共同运行时的安全阀；各实验按自己的 Eval Group 数量设置并发，
+  // 让每条可复用 lane 同时推进，又不会在同一 Group 内并行。
   // 另见 memory: niceeval-budget-probe-starves-global-semaphore。
   //
   // 注意这是**全局**上限;实验自己声明的 maxConcurrency 是独立的实验级闸,只串行化本实验,
   // 不钳全局（共享状态条件由各自 Eval Group 的串行队列保证）。
   //
-  // 2026-07-30 实测:真正咬人的上限不是 Docker 容器数,而是 **x1api 代理的账号级并发**,
-  // 约 5 路,且超出的请求不会立刻 429——它把连接挂住 30 秒再拒。10 路并发只活 5 路;
-  // 换模型绕不开(gpt-5.6 与 gpt-5.6-sol 各 3 路同时打,总共只活 2 路,说明按账号不按模型算)。
-  // 后果一:judge 预检只等 20 秒,槽位一满它看到的就是「连上了但永远不回」,整次运行在派发前
-  // 硬失败(`judge precheck timed out after 20s`),错误信息指向 baseUrl / gateway,极易误诊。
-  // 后果二:这个额度是**跨仓库共享**的——同一把 CODEX_API_KEY 在别的项目跑 --max-concurrency 8,
-  // 这边就一个槽都抢不到。开跑前先 `ps aux | grep "niceeval exp"` 看看还有谁在跑。
-  // 所以这个数字要按「同时在飞的 agent 数 ≤ 4」来配,给 judge 留一路,而不是按容器容量配。
-  //
-  // 全局值维持 8，实验自身的 `maxConcurrency: 4` 会把同一 Agent 条件限制在代理可承受范围；
-  // 多个条件混跑时仍须以实际代理容量为准，而不是盲目抬高 Docker 并发。
-  maxConcurrency: 8,
+  maxConcurrency: 30,
 });

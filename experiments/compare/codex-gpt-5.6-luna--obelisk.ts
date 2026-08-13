@@ -46,7 +46,7 @@ export default defineExperiment({
   earlyExit: false,
   // Group 内沿实际执行历史积累 session；不同仓库家族使用独立 Sandbox 并行推进。
   // 当前 Eval Group 不把数组位置解释成业务顺序。
-  maxConcurrency: 4,
+  maxConcurrency: 6,
   // 与 codex baseline/mempal/nowledge 对齐,消除条件间超时偏置;toggl-cli 链式题需要
   // 30 分钟的 agent 超时,实验级上限不能比它更紧。
   timeoutMs: 1_800_000,

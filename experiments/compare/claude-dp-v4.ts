@@ -6,6 +6,7 @@ import { dockerSandbox, NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE } from "niceeval/sandb
 // 使用 NiceEval release-pinned 公共 Claude Code Docker 镜像；环境变量可切换到项目派生版本。
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
+  maxConcurrency: 6,
   description: "claude-code · deepseek-v4-flash · Docker sandbox",
   labels: { line: "claude" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
   agent: claudeCodeAgent({

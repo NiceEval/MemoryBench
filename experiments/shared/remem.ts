@@ -19,7 +19,7 @@ import type {
  * (host checkpoint 显式跨 run 回存)都不同。
  *
  * 2026-08-09 全量重跑时，Docker events 只有 6 个容器，正好对应 6 个
- * Eval Group；`maxConcurrency=4` 时最多 4 条 Attempt 同时执行，各 lane 的
+ * Eval Group；实验并发等于 6 个 Group 时最多 6 条 Attempt 同时执行，各 lane 的
  * 后续 Attempt 没有新建容器。toggl-cli 链上 `captured_events`
  * 5→7→8→10→12 也证明 `$HOME/.remem` 的原始捕获确实跨题存活。
  *

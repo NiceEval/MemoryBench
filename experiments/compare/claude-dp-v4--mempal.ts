@@ -39,6 +39,6 @@ export default defineExperiment({
   attempts: 1,
   earlyExit: true,
   // Group 内串行，Group 间并行；checkpoint 路径带 Group ID，不会互相覆盖。
-  maxConcurrency: 4,
+  maxConcurrency: 6,
   timeoutMs: 1200000,
 });

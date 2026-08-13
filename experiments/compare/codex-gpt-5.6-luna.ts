@@ -15,8 +15,8 @@ export default defineExperiment({
   sandbox: dockerSandbox({ source: { type: "image", image: NICEEVAL_CODEX_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
   // 代理(base_url + key)走 .env,由 niceeval codex adapter 配成自定义 model_provider(wire_api=responses)
   earlyExit: false,
-  // 每个 Eval Group 内串行复用一台 Sandbox，不同 Group 并行；4 是代理账号级实测上限。
-  maxConcurrency: 4,
+  // 每个 Eval Group 内串行复用一台 Sandbox，6 个 Group 彼此并行。
+  maxConcurrency: 6,
   // 与 claude 组对齐(重型题 mvn build / pytest 可能超 10 分钟),消除条件间超时偏置。
   // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the
   // experiment ceiling aligned so it does not truncate their per-eval timeout.

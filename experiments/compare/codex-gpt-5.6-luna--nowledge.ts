@@ -34,7 +34,7 @@ export default defineExperiment({
   // 吸收(2026-07-30 用 dogfood × attempts:3 验过:第 2、3 条 attempt 踩残留 $HOME 仍全过)。
   earlyExit: false,
   // Group 内共享一条 lane，不同 Group 由中心化服务并发处理。
-  maxConcurrency: 4,
+  maxConcurrency: 6,
   // 与 codex baseline/mempal 对齐,astropy eval 两阶段都要源码构建。
   // toggl-cli chain evals explicitly need a 30-minute agent deadline; keep the
   // experiment ceiling aligned so it does not truncate their per-eval timeout.
