@@ -2,7 +2,7 @@
 # 公共 Docker provider 入口等），本地必须指向 sibling checkout。下次 NiceEval release 后删除
 # 这个 override，并把 package.json 的最低版本抬到该 release；Vercel 不读取此 link。
 overrides:
-  niceeval: link:../NiceEval
+  niceeval: link:../../NiceEval/record
 
 allowBuilds:
   cpu-features: false

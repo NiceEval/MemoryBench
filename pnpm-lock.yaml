@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  niceeval: link:../NiceEval
+  niceeval: link:../../NiceEval/record
 
 importers:
 
@@ -27,8 +27,8 @@ importers:
         specifier: ^3.22.1
         version: 3.22.1
       niceeval:
-        specifier: link:../NiceEval
-        version: link:../NiceEval
+        specifier: link:../../NiceEval/record
+        version: link:../../NiceEval/record
       react:
         specifier: ^19.2.7
         version: 19.2.7
