@@ -3,7 +3,6 @@ import {
   ExperimentScatter,
   ExperimentTable,
   SampleSummary,
-  definePricingProfile,
   defineReport,
 } from "niceeval/report";
 import {
@@ -12,35 +11,6 @@ import {
 } from "niceeval/report/built-in";
 import { Leaderboard } from "./components/leaderboard.tsx";
 import { MemoryBenchHero } from "./components/memorybench-hero.tsx";
-
-// Report-author estimate only. Analysis retains provider-cost observations as
-// observed evidence; this rate card never writes back to or replaces them.
-const memoryBenchPricing = definePricingProfile({
-  currency: "USD",
-  display: { decimalPlaces: 6, rounding: "half-away-from-zero" },
-  provenance: {
-    kind: "declared-rate-card",
-    source: "models.dev snapshot vendored by NiceEval bad27524 on 2026-08-10",
-    asOf: 1786345368000,
-  },
-  coverage: [
-    {
-      coverageId: "memorybench-codex-gpt-5-6-luna-2026-08-10",
-      state: "priced",
-      selector: { provider: "codex", model: "gpt-5.6-luna" },
-      effective: { startsAt: 1786345368000, endsAt: null },
-      charges: [
-        { kind: "token", bucket: "input", perMillionTokens: "0.2" },
-        { kind: "token", bucket: "output", perMillionTokens: "1.2" },
-        { kind: "token", bucket: "cache-read", perMillionTokens: "0.02" },
-        { kind: "token", bucket: "cache-write", perMillionTokens: "0.25" },
-        // Model requests are deliberately priced at zero: the token rates are
-        // complete, rather than relying on a missing-charge fallback.
-        { kind: "request", requestKind: "model", ratePerRequest: "0" },
-      ],
-    },
-  ],
-});
 
 // ReportDefinition.pages 是站点的唯一页面集合。MemoryBench 显式复用官方
 // 参数页，ExperimentTable 的链接因此始终指向同一份已闭合详情。
@@ -63,7 +33,6 @@ export default defineReport({
     standardExperimentPage,
   ],
   title: { en: "MemoryBench", "zh-CN": "MemoryBench" },
-  pricing: memoryBenchPricing,
   // GA4:官方 snippet 直译成 head 声明(niceeval ≥0.8 的结构化 head 通道)。
   // react-grab 只在本地 `niceeval view` 时注入,线上构建由 vercel-build.sh 设置 VERCEL=1 挡掉。
   head: [
