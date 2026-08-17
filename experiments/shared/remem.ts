@@ -354,15 +354,6 @@ function rememDrainExtraction(
         "latest_session_memory_spend.ai_total_tokens",
       );
 
-      ctx.facts("remem.memories", memories);
-      ctx.facts("remem.raw_messages", rawMessages);
-      ctx.facts("remem.captured_events", captured);
-      ctx.facts("remem.extract_todo", todo);
-      ctx.facts("remem.extract_running", running);
-      ctx.facts("remem.extract_failed", failed);
-      ctx.facts("remem.memory_ai_calls", aiCalls);
-      ctx.facts("remem.memory_ai_tokens", aiTokens);
-
       if (dropped > 0 || spills > 0 || failed > 0 || ingestFailures > 0) {
         throw new Error(
           `[remem] capture/extraction is unhealthy: dropped=${dropped}, spills=${spills}, ` +

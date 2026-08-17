@@ -22,7 +22,7 @@ ARG MEMPAL_VERSION
 # 让 Eval Group 的物理 Docker Sandbox 能安全复用。
 USER root
 COPY --from=mempal-builder /usr/local/cargo/bin/mempal /usr/local/bin/mempal
-RUN chmod 0755 /usr/local/bin/mempal
+RUN chmod 0755 /usr/local/bin/mempal && chown -R node:node /usr/local
 
 USER node
 

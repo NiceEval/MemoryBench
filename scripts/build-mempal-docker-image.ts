@@ -55,7 +55,7 @@ if (declaredUser !== "node") {
   throw new Error(`Expected ${image} to declare USER node, got ${JSON.stringify(declaredUser || "<root>")}.`);
 }
 
-console.log("==> verifying non-root identity, Agent CLI, mempal binary, and embedding cache");
+console.log("==> verifying non-root identity, runtime Node installation, Agent CLI, mempal, and cache");
 run("docker", [
   "run",
   "--rm",
@@ -68,6 +68,9 @@ run("docker", [
     `command -v ${agentBinary}`,
     "mempal --help | grep -F 'Usage: mempal'",
     'test -n "$(find \"$HOME/.cache/huggingface\" -name \"*.safetensors\" -print -quit)"',
+    "npm install -g --prefix /usr/local n@10.2.0 >/dev/null",
+    "n 22.13.0 >/dev/null",
+    'test "$(node -p process.version)" = "v22.13.0"',
     'printf "default identity: %s (uid=%s), HOME=%s\\n" "$(whoami)" "$(id -u)" "$HOME"',
   ].join("\n"),
 ]);

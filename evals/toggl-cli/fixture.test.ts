@@ -16,18 +16,18 @@ const checkOutput = (free_kb: number, total_kb: number, build_tree_kb: number) =
   ].join("\n");
 
 const fakeContext = () => {
-  const facts = new Map<string, string | number | boolean>();
+  const progress: unknown[] = [];
   const diagnostics: unknown[] = [];
   return {
     ctx: {
-      facts(key: string, value: string | number | boolean) {
-        facts.set(key, value);
+      progress(input: unknown) {
+        progress.push(input);
       },
       diagnostic(input: unknown) {
         diagnostics.push(input);
       },
     },
-    facts,
+    progress,
     diagnostics,
   };
 };
@@ -37,33 +37,31 @@ const result = (stdout: string, exitCode = 0): SandboxDiskCheckResult => ({
   stdout,
 });
 
-test("正常空间只记录三个数值 facts，不发 warning", () => {
-  const { ctx, facts, diagnostics } = fakeContext();
+test("正常空间通过 progress 呈现一次，不发 warning", () => {
+  const { ctx, progress, diagnostics } = fakeContext();
 
   reportSandboxDiskCheck(
     ctx,
     result(checkOutput(SANDBOX_DISK_LOW_THRESHOLD_KB, SANDBOX_DISK_LOW_THRESHOLD_KB * 2, 1_000_000)),
   );
 
-  assert.deepEqual(Object.fromEntries(facts), {
-    "sandbox.disk.free_kb": SANDBOX_DISK_LOW_THRESHOLD_KB,
-    "sandbox.disk.total_kb": SANDBOX_DISK_LOW_THRESHOLD_KB * 2,
-    "sandbox.build_tree.kb": 1_000_000,
-  });
+  assert.deepEqual(progress, [{
+    message: "sandbox 磁盘空间：剩余 4.00 GiB / 总量 8.00 GiB，/opt/cargo-target 构建树 0.95 GiB",
+  }]);
   assert.deepEqual(diagnostics, []);
 });
 
-test("低于阈值时保留 facts 并发真实风险 warning", () => {
-  const { ctx, facts, diagnostics } = fakeContext();
+test("低于阈值时仍报告 progress，并发真实风险 warning", () => {
+  const { ctx, progress, diagnostics } = fakeContext();
   const free_kb = 3 * 1024 * 1024;
   const total_kb = SANDBOX_DISK_LOW_THRESHOLD_KB * 2;
   const build_tree_kb = 1_048_576;
 
   reportSandboxDiskCheck(ctx, result(checkOutput(free_kb, total_kb, build_tree_kb)));
 
-  assert.equal(facts.get("sandbox.disk.free_kb"), free_kb);
-  assert.equal(facts.get("sandbox.disk.total_kb"), total_kb);
-  assert.equal(facts.get("sandbox.build_tree.kb"), build_tree_kb);
+  assert.deepEqual(progress, [{
+    message: "sandbox 磁盘空间：剩余 3.00 GiB / 总量 8.00 GiB，/opt/cargo-target 构建树 1.00 GiB",
+  }]);
   assert.equal(diagnostics.length, 1);
   assert.deepEqual(diagnostics[0], {
     code: "sandbox-disk-space-low",
@@ -80,23 +78,23 @@ test("低于阈值时保留 facts 并发真实风险 warning", () => {
   });
 });
 
-test("检查命令失败时只报告观测退化，不伪造 facts", () => {
-  const { ctx, facts, diagnostics } = fakeContext();
+test("检查命令失败时只报告观测退化，不伪造 progress", () => {
+  const { ctx, progress, diagnostics } = fakeContext();
 
   reportSandboxDiskCheck(ctx, { exitCode: 1, stdout: "", stderr: "df failed" });
 
-  assert.deepEqual(Object.fromEntries(facts), {});
+  assert.deepEqual(progress, []);
   assert.equal(diagnostics.length, 1);
   assert.equal((diagnostics[0] as { code: string }).code, "sandbox-space-check-failed");
   assert.match((diagnostics[0] as { message: string }).message, /退出码 1/);
 });
 
-test("检查输出畸形时只报告观测退化，不伪造 facts", () => {
-  const { ctx, facts, diagnostics } = fakeContext();
+test("检查输出畸形时只报告观测退化，不伪造 progress", () => {
+  const { ctx, progress, diagnostics } = fakeContext();
 
   reportSandboxDiskCheck(ctx, result("not df or du output"));
 
-  assert.deepEqual(Object.fromEntries(facts), {});
+  assert.deepEqual(progress, []);
   assert.equal(diagnostics.length, 1);
   assert.equal((diagnostics[0] as { code: string }).code, "sandbox-space-check-failed");
   assert.match((diagnostics[0] as { message: string }).message, /格式无法解析/);

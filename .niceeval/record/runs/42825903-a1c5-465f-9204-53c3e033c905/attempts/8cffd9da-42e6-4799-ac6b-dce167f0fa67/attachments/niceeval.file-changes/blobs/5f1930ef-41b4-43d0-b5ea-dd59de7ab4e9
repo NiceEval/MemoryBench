@@ -1,0 +1,81 @@
+import { act, render, screen } from "@testing-library/react";
+
+import { lightbox, expectLightboxToBeOpen } from "../test-utils.js";
+import { Zoom } from "../../../src/plugins/index.js";
+import { ZoomRef } from "../../../src/index.js";
+import * as React from "react";
+import { findCurrentSlide } from "../test-utils.js";
+
+describe("Zoom", () => {
+  it("renders without crashing", async () => {
+    render(
+      lightbox({
+        slides: Array.from({ length: 3 }).map((_, i) => ({
+          src: `image${i + 1}`,
+          width: 3000,
+          height: 2000,
+        })),
+        plugins: [Zoom],
+      }),
+    );
+
+    act(() => {
+      screen.getByLabelText("Zoom in").click();
+    });
+
+    act(() => {
+      screen.getByLabelText("Zoom out").click();
+    });
+
+    expectLightboxToBeOpen();
+  });
+
+  it("zooms supported custom slides", () => {
+    const ref = React.createRef<ZoomRef>();
+
+    render(
+      lightbox({
+        slides: [{ type: "custom" }] as never,
+        plugins: [Zoom],
+        zoom: { ref, supports: ["custom" as never], maxZoom: (slide) => (slide.type === "custom" ? 4 : undefined) },
+        render: { slide: ({ slide }) => React.createElement("div", { "data-testid": "custom-slide" }, slide.type) },
+      }),
+    );
+
+    expect(findCurrentSlide()?.querySelector(".yarl__slide_wrapper")).toBeInTheDocument();
+    expect(findCurrentSlide()?.querySelector('[data-testid="custom-slide"]')).toBeInTheDocument();
+    expect(ref.current?.disabled).toBe(false);
+    expect(ref.current?.maxZoom).toBe(4);
+
+    act(() => ref.current?.zoomIn());
+    expect(ref.current?.zoom).toBe(2);
+  });
+
+  it("uses the default maximum zoom when a custom maximum is undefined", () => {
+    const ref = React.createRef<ZoomRef>();
+
+    render(
+      lightbox({
+        slides: [{ type: "custom" }] as never,
+        plugins: [Zoom],
+        zoom: { ref, supports: ["custom" as never], maxZoom: () => undefined },
+        render: { slide: () => React.createElement("div") },
+      }),
+    );
+
+    expect(ref.current?.maxZoom).toBe(8);
+  });
+
+  it("does not wrap unsupported custom slides", () => {
+    render(
+      lightbox({
+        slides: [{ type: "custom" }] as never,
+        plugins: [Zoom],
+        render: { slide: () => React.createElement("div", { "data-testid": "custom-slide" }) },
+      }),
+    );
+
+    expect(findCurrentSlide()?.querySelector(".yarl__slide_wrapper")).not.toBeInTheDocument();
+    expect(findCurrentSlide()?.querySelector('[data-testid="custom-slide"]')).toBeInTheDocument();
+  });
+});

@@ -16,13 +16,12 @@ import {
 const STATE_DIR = fileURLToPath(new URL("../../.cache/mempal/state/", import.meta.url));
 const STATE_PATHS = [".mempal", ".mempal-notes"];
 const COHORT_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
-const CHECKPOINT_BYTES_FACT = "mempal.checkpoint_bytes";
 
 /** mempal crates.io 版本；构建镜像、镜像身份和结果 flags 共用这一处。 */
 export const MEMPAL_VERSION = "0.9.0";
 
 /** Docker 配方修订；变更稳定依赖或构建步骤时必须递增，避免覆盖旧镜像。 */
-export const MEMPAL_DOCKERFILE_REVISION = "r1";
+export const MEMPAL_DOCKERFILE_REVISION = "r2";
 
 /** 每个派生镜像都从 NiceEval 公开、版本钉死的对应 Agent 基底继续构建。 */
 export function mempalBaseImage(tool: "claude" | "codex"): string {
@@ -108,8 +107,9 @@ export const mempalLoadState: SandboxHook = async (sandbox, ctx) => {
     await sandbox.runShellOrThrow("mempal init .");
   }
   await sandbox.runShellOrThrow('mkdir -p "$HOME/.mempal-notes"');
-  ctx.fact("mempal.state", state ? "restored" : "empty");
-  ctx.fact(CHECKPOINT_BYTES_FACT, state?.length ?? 0);
+  ctx.progress({
+    message: `[mempal] checkpoint ${state ? "restored" : "empty"} (${state?.length ?? 0} bytes)`,
+  });
 };
 
 /** 每台 Group 的物理 Docker Sandbox 退休时 best-effort 回存一次，不能反改已完成的题目 verdict。 */
@@ -149,7 +149,7 @@ export const mempalSaveState: SandboxHook = async (sandbox, ctx) => {
       )}\n`,
     );
     renameSync(metadataTmp, metadataPath);
-    ctx.fact(CHECKPOINT_BYTES_FACT, data.length);
+    ctx.progress({ message: `[mempal] checkpoint saved (${data.length} bytes)` });
   } catch (error) {
     ctx.diagnostic({
       code: "mempal-checkpoint-save-failed",

@@ -82,7 +82,7 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
  *    `find "$HOME/.codex/sessions"` + `echo HOME=$HOME`，结果用 `ctx.diagnostic(...)` 报告——
  *    两条连续 Attempt 的探针都显示 `HOME=/root`（同一路径），但 `~/.codex/sessions` 下只有
  *    当前 Attempt 自己的 rollout 文件——上一条 Attempt 几分钟前写下的那份已经不在了。
- * 2. 用 `codexAgent({ postSetup })` 探针（`ctx.facts` 记会话数）确认：第 2 条 Attempt 的
+ * 2. 用 `codexAgent({ postSetup })` 探针（记录会话数）确认：第 2 条 Attempt 的
  *    `postSetup` 一开始就已经看到 `~/.codex/sessions` 是空的，早于任何可见的 shell 命令。
  * 3. 按「归档目录挪到 `$HOME` 之外的 `/opt`」接了一版方案冒烟，同样落空：`preTeardown` 里
  *    单纯 `date +%s%N >> /opt/obelisk-marker.txt` 写一个标记文件，下一条 Attempt 的
@@ -110,9 +110,8 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
  * `mkdir -p`/`cp` 会静默失败而不报错，之前一直没暴露是因为反正整个复用机制都没生效，这层
  * 权限问题被更大的问题掩盖了。
  *
- * `obeliskArchiveSessions()`/`obeliskRestoreSessions()` 两个函数本身逻辑没有变，`ctx.facts`
- * 也确认能在裸 `niceeval show @<locator>` 概览的 `facts:` 行里看到（这条呈现缺口的纠正是
- * 最初那轮排查唯一确定拿到的正向结果，仍然成立）。**这份修复目前只验证到"容器身份非 root +
+ * `obeliskArchiveSessions()`/`obeliskRestoreSessions()` 两个函数本身逻辑没有变，运行中的
+ * 会话计数只作为 progress 反馈。**这份修复目前只验证到"容器身份非 root +
  * Docker 复用检查通过 + 标记文件跨题间 reset 存活"这一层（零成本，不需要真实模型调用）；
  * 完整的多 Attempt archive/restore 流程——即这套机制真的能让后一条 Attempt 的 agent 查到
  * 前面几条 Attempt 的会话——还没有用一次真实的 codex exec 批次验证过，需要用户批准全量重跑
@@ -211,7 +210,8 @@ export function obeliskArchiveSessions(): SandboxCommand {
     const result = await sb.runShellOrThrow(
       `find "${SESSION_ARCHIVE_DIR}" -name "*.jsonl" 2>/dev/null | wc -l | tr -d " "`,
     );
-    ctx.facts("obelisk.session_archive_count", Number.parseInt(result.stdout.trim(), 10) || 0);
+    const archived = Number.parseInt(result.stdout.trim(), 10) || 0;
+    ctx.progress({ message: `[obelisk] archived ${archived} session file(s)` });
   };
 }
 
@@ -229,7 +229,8 @@ export function obeliskRestoreSessions(): SandboxCommand {
     const result = await sb.runShellOrThrow(
       'find "$HOME/.codex/sessions" -name "*.jsonl" 2>/dev/null | wc -l | tr -d " "',
     );
-    ctx.facts("obelisk.codex_sessions_at_setup", Number.parseInt(result.stdout.trim(), 10) || 0);
+    const restored = Number.parseInt(result.stdout.trim(), 10) || 0;
+    ctx.progress({ message: `[obelisk] restored ${restored} session file(s)` });
   };
 }
 

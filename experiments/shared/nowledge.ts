@@ -28,7 +28,7 @@ import type {
  * - **每个逻辑评测流有一个 cohort 标签**:用非秘密 `NOWLEDGE_COHORT` 区分结果批次；它进入
  *   flags / fingerprint，但不参与服务端连接。未显式设置时使用本轮直连标签。
  *
- * URL 是连接坐标而不是实验身份，也绝不进入 flags、facts 或进度文本。写路径是否可用由
+ * URL 是连接坐标而不是实验身份，也绝不进入 flags、诊断或进度文本。写路径是否可用由
  * 每条 Attempt 的 prepare 与 preTeardown 探针验证，Space 名作为非秘密运行事实记录，连接坐标
  * 不复制到终端记录。
  */
@@ -109,7 +109,7 @@ export function nowledgeEndpoint(): NowledgeEnv {
  *
  * 隧道 URL **不在这里**。它是跑起来才存在的连接坐标:换一个地址连的仍是同一个固定实例、
  * 同一个库,attempt 里发生的事一模一样,进 flags 只会让每次 cloudflared 重启作废全部已跑完的
- * 结果。cohort 而非 endpoint 会作为安全的 Attempt fact 留给报告分组。
+ * 结果。cohort 而非 endpoint 已作为安全的实验条件写入 flags。
  */
 export function nowledgeFlags(): Record<string, string> {
   return {
@@ -233,7 +233,6 @@ function bindAgentToNowledgeSpace(binName: "codex" | "claude"): SandboxCommand {
       ].join("\n"),
     );
     await requireCommand(sb, `${binName} Space wrapper executable`, `chmod 755 ${shellQuote(bin)}`);
-    ctx.facts("nowledge.space", space);
     commandLog(ctx, `[nowledge] ${binName} bound to Space ${space}`);
   };
 }
@@ -249,9 +248,7 @@ export function nowledgeAttachRemote(endpoint: () => NowledgeEnv = nowledgeEndpo
     const space = evalGroupSpace(ctx);
     const conn = endpoint();
     attemptConditions.set(sb, { cohort, serverVersion, space });
-    ctx.facts("nowledge.cohort", cohort);
-    ctx.facts("nowledge.server-version", serverVersion);
-    ctx.facts("nowledge.space", space);
+    commandLog(ctx, `[nowledge] preparing nmem ${serverVersion} client for cohort ${cohort}, Space ${space}`);
 
     // 插件的 lifecycle hooks 与 install_hooks.py 都要 python3。Docker 镜像里没有就是全实验没有。
     await requireCommand(sb, "python3 probe", "command -v python3", { shared: true });

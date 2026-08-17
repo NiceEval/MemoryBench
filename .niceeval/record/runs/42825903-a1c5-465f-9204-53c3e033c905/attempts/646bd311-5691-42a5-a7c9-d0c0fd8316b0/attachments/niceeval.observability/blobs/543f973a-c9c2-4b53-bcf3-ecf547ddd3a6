@@ -1,0 +1,295 @@
+{
+  "version": "0.6.47 (schema v75)",
+  "database": {
+    "path": "/home/node/.remem/remem.db",
+    "size_bytes": 1572864,
+    "size_mb": 1.5
+  },
+  "totals": {
+    "memories": 0,
+    "observations": 0,
+    "sessions": 4,
+    "raw_messages": 30
+  },
+  "embedding": {
+    "configured_provider": "auto",
+    "fallback_provider": null,
+    "active_provider": "feature-hash",
+    "active_model_id": "remem-local-feature-hash-v1",
+    "degraded": false,
+    "disabled": false,
+    "unavailable_reason": null,
+    "degradation_reason": null,
+    "coverage": {
+      "embedded": 0,
+      "total": 0,
+      "percent": 0.0,
+      "mixed_profile_count": 0
+    }
+  },
+  "raw_archive": {
+    "messages": 30,
+    "ingest_failures": 0,
+    "parse_errors": 0,
+    "insert_errors": 0,
+    "latest_failure_epoch": null,
+    "latest_failure_age_secs": null,
+    "latest_failure_kind": null,
+    "latest_failure_path": null,
+    "latest_failure_message": null
+  },
+  "capture_pipeline": {
+    "captured": 4,
+    "dropped": 0,
+    "unrecovered_spills": 0,
+    "latest_drop_epoch": null,
+    "latest_drop_age_secs": null,
+    "latest_drop_reason": null,
+    "latest_drop_detail": null,
+    "extract_todo": 0,
+    "extract_running": 0,
+    "extract_expired": 0,
+    "extract_failed": 0,
+    "retryable_replay_ranges": 0,
+    "active_replay_ranges": 0,
+    "quarantined_replay_ranges": 0,
+    "pending_candidates": 18,
+    "pending_graph_candidates": 0,
+    "oldest_task_epoch": null,
+    "oldest_task_age_secs": null
+  },
+  "promotion_funnel": {
+    "captured_events": 4,
+    "observations": 0,
+    "observation_rate_percent": 0.0,
+    "candidates": 18,
+    "candidate_rate_percent": 0.0,
+    "promoted": 0,
+    "promoted_rate_percent": 0.0,
+    "pending_review": 18,
+    "pending_review_rate_percent": 100.0
+  },
+  "legacy_surfaces": [
+    {
+      "surface": "observations",
+      "disposition": "reclassify-current",
+      "row_count": 0,
+      "last_write_epoch": null,
+      "last_write_age_secs": null,
+      "frozen_write_violations": 0
+    },
+    {
+      "surface": "observations_fts",
+      "disposition": "reclassify-current",
+      "row_count": 0,
+      "last_write_epoch": null,
+      "last_write_age_secs": null,
+      "frozen_write_violations": 0
+    },
+    {
+      "surface": "session_summaries",
+      "disposition": "keep",
+      "row_count": 4,
+      "last_write_epoch": 1786857018,
+      "last_write_age_secs": 104,
+      "frozen_write_violations": 0
+    },
+    {
+      "surface": "pending_observations",
+      "disposition": "retire",
+      "row_count": 0,
+      "last_write_epoch": null,
+      "last_write_age_secs": null,
+      "frozen_write_violations": 0
+    },
+    {
+      "surface": "summary_jobs",
+      "disposition": "retire-summary-only",
+      "row_count": 0,
+      "last_write_epoch": null,
+      "last_write_age_secs": null,
+      "frozen_write_violations": 0
+    }
+  ],
+  "usage_feedback": {
+    "citation_events": 8,
+    "citation_line_present_events": 6,
+    "citation_line_present_rate_percent": 75.0,
+    "matched_events": 0,
+    "match_rate_percent": 0.0,
+    "inserted_events": 0,
+    "no_citation_events": 8,
+    "unmatched_events": 0,
+    "usage_events": 0
+  },
+  "pending_observations": {
+    "ready": 0,
+    "delayed": 0,
+    "processing": 0,
+    "expired": 0,
+    "failed": 0,
+    "replayable_legacy": 0,
+    "oldest_ready_epoch": null,
+    "oldest_ready_age_secs": null
+  },
+  "review_queue": {
+    "pending": 18,
+    "median_age_secs": 438,
+    "max_age_secs": 768,
+    "inflow_7d": 18,
+    "resolved_7d": 0,
+    "projects": [
+      {
+        "project": "/home/sandbox/workspace",
+        "pending": 18,
+        "median_age_secs": 438,
+        "max_age_secs": 768,
+        "inflow_7d": 18,
+        "resolved_7d": 0
+      }
+    ],
+    "block_reasons": [
+      {
+        "reason": "source_trust_below_floor",
+        "pending": 13,
+        "example_ids": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "reason": "summary_type_not_allowlisted",
+        "pending": 5,
+        "example_ids": [
+          4,
+          5,
+          9
+        ]
+      }
+    ]
+  },
+  "candidate_promotion": [
+    {
+      "source_kind": "summary",
+      "review_status": "pending_review",
+      "block_reason": "source_trust_below_floor",
+      "total": 13,
+      "last_7_days": 13
+    },
+    {
+      "source_kind": "summary",
+      "review_status": "pending_review",
+      "block_reason": "summary_type_not_allowlisted",
+      "total": 5,
+      "last_7_days": 5
+    }
+  ],
+  "user_context": {
+    "claims_total": 0,
+    "claims_active": 0,
+    "claims_suppressed": 0,
+    "claims_deleted": 0,
+    "candidates_total": 0,
+    "candidates_pending_review": 0,
+    "candidates_auto_promoted": 0,
+    "candidate_block_reasons": []
+  },
+  "jobs": {
+    "pending": 0,
+    "processing": 0,
+    "failed": 0,
+    "stuck": 0
+  },
+  "failure_lifecycle": {
+    "pending_observation": {
+      "actionable_total": 0,
+      "actionable_7d": 0,
+      "transient": 0,
+      "permanent": 0,
+      "exhausted": 0,
+      "archived": 0,
+      "historical_archived": 0,
+      "historical_purged": 0,
+      "oldest_actionable_epoch": null
+    },
+    "extraction_task": {
+      "actionable_total": 0,
+      "actionable_7d": 0,
+      "transient": 0,
+      "permanent": 0,
+      "exhausted": 0,
+      "archived": 0,
+      "historical_archived": 0,
+      "historical_purged": 0,
+      "oldest_actionable_epoch": null
+    },
+    "extraction_replay_range": {
+      "actionable_total": 0,
+      "actionable_7d": 0,
+      "transient": 0,
+      "permanent": 0,
+      "exhausted": 0,
+      "archived": 0,
+      "historical_archived": 0,
+      "historical_purged": 0,
+      "oldest_actionable_epoch": null
+    },
+    "job": {
+      "actionable_total": 0,
+      "actionable_7d": 0,
+      "transient": 0,
+      "permanent": 0,
+      "exhausted": 0,
+      "archived": 0,
+      "historical_archived": 0,
+      "historical_purged": 0,
+      "oldest_actionable_epoch": null
+    }
+  },
+  "poisoning_defense": {
+    "pattern_set_version": 1,
+    "quarantined_candidates": 0,
+    "quarantined_summaries": 0,
+    "legacy_unscanned_summaries": 0,
+    "summary_block_count": 0,
+    "quarantined_observations": 0,
+    "memory_injection_drops": 0
+  },
+  "worker_daemon": {
+    "health": "missing",
+    "heartbeat_age_secs": null,
+    "owner": null
+  },
+  "latest_session_memory_spend": {
+    "session_id": "01a008f8-f6e4-7113-9335-3c9caf7bfb12",
+    "project": "/home/sandbox/workspace",
+    "latest_context_epoch": 1786856929,
+    "context_rows": 1,
+    "context_output_chars": 1919,
+    "context_estimated_tokens": 480,
+    "context_emit_count": 1,
+    "context_suppress_count": 0,
+    "relevance_state": "applied",
+    "relevance_policy_version": "sessionstart_significant_token_v1",
+    "relevance_k": 1,
+    "relevance_threshold": 0.3913043478260869,
+    "relevance_candidate_count": 3,
+    "relevance_eligible_count": 2,
+    "relevance_final_injected_count": 1,
+    "relevance_below_threshold_count": 1,
+    "relevance_k_limited_count": 1,
+    "relevance_section_budget_count": 0,
+    "relevance_total_char_limit_count": 0,
+    "ai_usage_attribution": "attributed",
+    "ai_calls": 2,
+    "ai_total_tokens": 32255,
+    "ai_estimated_cost_usd": 0.014889000000000001,
+    "ai_unattributed_legacy_calls": 0
+  },
+  "today": {
+    "new_memories": 0,
+    "new_observations": 0
+  },
+  "top_projects": []
+}

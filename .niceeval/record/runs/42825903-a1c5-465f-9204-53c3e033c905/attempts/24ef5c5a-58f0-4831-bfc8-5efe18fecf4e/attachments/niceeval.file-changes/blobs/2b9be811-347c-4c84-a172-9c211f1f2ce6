@@ -1,0 +1,197 @@
+use crate::api::client::ApiClient;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities;
+use chrono::{Datelike, NaiveDate};
+use serde::Serialize;
+use std::collections::BTreeMap;
+use std::io::{self, BufWriter, Write};
+
+const BILLING_INCREMENT_SECONDS: i64 = 15 * 60;
+
+pub struct BillWeeklyCommand;
+
+#[derive(Serialize)]
+struct WeeklyBill {
+    week: String,
+    billable_seconds: i64,
+}
+
+#[derive(Serialize)]
+struct WeeklyBillOutput {
+    weeks: Vec<WeeklyBill>,
+    total_billable_seconds: i64,
+}
+
+/// Apply the shop billing rule: round each stopped billable entry up to a
+/// 15-minute increment before it is included in any aggregate.
+fn billed_seconds(entry: &TimeEntry) -> Option<i64> {
+    if !entry.billable || entry.stop.is_none() || entry.duration <= 0 {
+        return None;
+    }
+
+    Some(
+        ((entry.duration + BILLING_INCREMENT_SECONDS - 1) / BILLING_INCREMENT_SECONDS)
+            * BILLING_INCREMENT_SECONDS,
+    )
+}
+
+fn weekly_totals(entries: impl IntoIterator<Item = TimeEntry>) -> BTreeMap<NaiveDate, i64> {
+    let mut totals = BTreeMap::new();
+
+    for entry in entries {
+        let Some(seconds) = billed_seconds(&entry) else {
+            continue;
+        };
+        let start_date = entry.start.date_naive();
+        let monday =
+            start_date - chrono::Duration::days(start_date.weekday().num_days_from_monday().into());
+        *totals.entry(monday).or_default() += seconds;
+    }
+
+    totals
+}
+
+fn write_weekly_totals(handle: &mut impl Write, totals: &BTreeMap<NaiveDate, i64>) {
+    if totals.is_empty() {
+        writeln!(handle, "(no data)").expect("failed to print");
+        return;
+    }
+
+    let total: i64 = totals.values().sum();
+    for (monday, seconds) in totals {
+        writeln!(handle, "{}  {}s", monday.format("%Y-%m-%d"), seconds).expect("failed to print");
+    }
+    writeln!(handle, "Total  {total}s").expect("failed to print");
+}
+
+fn write_weekly_totals_json(handle: &mut impl Write, totals: &BTreeMap<NaiveDate, i64>) {
+    let output = WeeklyBillOutput {
+        weeks: totals
+            .iter()
+            .map(|(monday, seconds)| WeeklyBill {
+                week: monday.format("%Y-%m-%d").to_string(),
+                billable_seconds: *seconds,
+            })
+            .collect(),
+        total_billable_seconds: totals.values().sum(),
+    };
+    writeln!(
+        handle,
+        "{}",
+        serde_json::to_string(&output).expect("failed to serialize billing totals")
+    )
+    .expect("failed to print");
+}
+
+impl BillWeeklyCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        since: Option<String>,
+        until: Option<String>,
+        json: bool,
+    ) -> ResultWithDefaultError<()> {
+        let has_date_filter = since.is_some() || until.is_some();
+        let entries = if has_date_filter {
+            let (since, until) = utilities::normalize_time_entry_list_filters(since, until)?;
+            api_client.get_time_entries_filtered(since, until).await?
+        } else {
+            api_client.get_entities().await?.time_entries
+        };
+
+        let totals = weekly_totals(entries);
+        let stdout = io::stdout();
+        let mut handle = BufWriter::new(stdout);
+        if json {
+            write_weekly_totals_json(&mut handle, &totals);
+        } else {
+            write_weekly_totals(&mut handle, &totals);
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{TimeZone, Utc};
+
+    fn entry(start: &str, duration: i64, billable: bool, stopped: bool) -> TimeEntry {
+        let start = Utc.datetime_from_str(start, "%Y-%m-%dT%H:%M:%SZ").unwrap();
+        TimeEntry {
+            id: 1,
+            description: String::new(),
+            start,
+            stop: stopped.then(|| start + chrono::Duration::seconds(duration)),
+            duration,
+            billable,
+            workspace_id: 1,
+            tags: Vec::new(),
+            project: None,
+            task: None,
+            created_with: None,
+        }
+    }
+
+    #[test]
+    fn groups_by_utc_iso_week_and_rounds_each_entry() {
+        let totals = weekly_totals(vec![
+            entry("2026-01-04T23:30:00Z", 901, true, true),
+            entry("2026-01-05T00:30:00Z", 1, true, true),
+            entry("2026-01-05T12:00:00Z", 900, true, true),
+        ]);
+
+        assert_eq!(
+            totals[&NaiveDate::from_ymd_opt(2025, 12, 29).unwrap()],
+            1800
+        );
+        assert_eq!(totals[&NaiveDate::from_ymd_opt(2026, 1, 5).unwrap()], 1800);
+    }
+
+    #[test]
+    fn excludes_unbillable_running_and_invalid_entries() {
+        let totals = weekly_totals(vec![
+            entry("2026-01-05T12:00:00Z", 900, false, true),
+            entry("2026-01-05T12:00:00Z", 900, true, false),
+            entry("2026-01-05T12:00:00Z", 0, true, true),
+        ]);
+
+        assert!(totals.is_empty());
+    }
+
+    #[test]
+    fn writes_empty_and_ordered_human_output() {
+        let mut output = Vec::new();
+        write_weekly_totals(&mut output, &BTreeMap::new());
+        assert_eq!(String::from_utf8(output).unwrap(), "(no data)\n");
+
+        let mut totals = BTreeMap::new();
+        totals.insert(NaiveDate::from_ymd_opt(2026, 1, 5).unwrap(), 1800);
+        totals.insert(NaiveDate::from_ymd_opt(2026, 1, 12).unwrap(), 900);
+        let mut output = Vec::new();
+        write_weekly_totals(&mut output, &totals);
+        assert_eq!(
+            String::from_utf8(output).unwrap(),
+            "2026-01-05  1800s\n2026-01-12  900s\nTotal  2700s\n"
+        );
+    }
+
+    #[test]
+    fn writes_json_output_with_snake_case_keys() {
+        let mut totals = BTreeMap::new();
+        totals.insert(NaiveDate::from_ymd_opt(2026, 3, 2).unwrap(), 2700);
+        totals.insert(NaiveDate::from_ymd_opt(2026, 3, 9).unwrap(), 2700);
+        let mut output = Vec::new();
+        write_weekly_totals_json(&mut output, &totals);
+        assert_eq!(
+            String::from_utf8(output).unwrap(),
+            "{\"weeks\":[{\"week\":\"2026-03-02\",\"billable_seconds\":2700},{\"week\":\"2026-03-09\",\"billable_seconds\":2700}],\"total_billable_seconds\":5400}\n"
+        );
+
+        let mut output = Vec::new();
+        write_weekly_totals_json(&mut output, &BTreeMap::new());
+        assert_eq!(
+            String::from_utf8(output).unwrap(),
+            "{\"weeks\":[],\"total_billable_seconds\":0}\n"
+        );
+    }
+}

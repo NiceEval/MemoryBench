@@ -1,0 +1,134 @@
+import { createFormControl } from '../../logic/createFormControl';
+import isEmptyObject from '../../utils/isEmptyObject';
+
+jest.mock('../../utils/isEmptyObject', () => {
+  const original = jest.requireActual('../../utils/isEmptyObject');
+  return {
+    __esModule: true,
+    default: jest.fn(original.default),
+  };
+});
+
+describe('createFormControl', () => {
+  it('ignores a stale whole-form built-in validation result', async () => {
+    let resolveFirstValidation!: (valid: boolean) => void;
+    let validationCount = 0;
+    const stateUpdates: Array<{ isValid?: boolean }> = [];
+    const { register, control } = createFormControl({});
+
+    control._proxyFormState.isValid = true;
+    control._subjects.state.subscribe({
+      next: (state) => stateUpdates.push(state),
+    });
+    register('test', {
+      validate: () =>
+        ++validationCount === 1
+          ? new Promise<boolean>((resolve) => {
+              resolveFirstValidation = resolve;
+            })
+          : true,
+    });
+
+    const firstValidation = control._setValid(true);
+    const secondValidation = control._setValid(true);
+
+    await secondValidation;
+    resolveFirstValidation(false);
+    await firstValidation;
+
+    expect(stateUpdates.filter((state) => 'isValid' in state)).toEqual([
+      { isValid: true },
+    ]);
+  });
+
+  it('does not clear resolver validation state from a stale whole-form check', async () => {
+    let resolveFirstValidation!: (result: { values: {}; errors: {} }) => void;
+    let resolveSecondValidation!: (result: { values: {}; errors: {} }) => void;
+    let validationCount = 0;
+    const stateUpdates: Array<{ isValidating?: boolean }> = [];
+    const { register, control } = createFormControl({
+      resolver: () =>
+        new Promise((resolve) => {
+          if (++validationCount === 1) {
+            resolveFirstValidation = resolve;
+          } else {
+            resolveSecondValidation = resolve;
+          }
+        }),
+    });
+
+    control._subjects.state.subscribe({
+      next: (state) => stateUpdates.push(state),
+    });
+    register('test');
+    control._proxyFormState.isValid = true;
+    control._proxyFormState.isValidating = true;
+
+    const firstValidation = control._setValid(true);
+    const secondValidation = control._setValid(true);
+
+    resolveFirstValidation({ values: {}, errors: {} });
+    await firstValidation;
+
+    expect(stateUpdates.filter((state) => 'isValidating' in state)).toEqual([
+      { validatingFields: { test: true }, isValidating: true },
+      { validatingFields: { test: true }, isValidating: true },
+    ]);
+
+    resolveSecondValidation({ values: {}, errors: {} });
+    await secondValidation;
+  });
+
+  it('should call `executeBuiltInValidation` once for a single field', async () => {
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: 'foo',
+      },
+    });
+
+    register('foo', {});
+
+    await control._setValid(true);
+
+    expect(isEmptyObject).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call `executeBuiltInValidation` twice for a field as an object with a single sub-field', async () => {
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: {
+          bar: 'bar',
+        },
+      },
+    });
+
+    register('foo.bar', {});
+
+    await control._setValid(true);
+
+    expect(isEmptyObject).toHaveBeenCalledTimes(2);
+  });
+
+  it('should call executeBuiltInValidation the correct number of times in case the field is an array', async () => {
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: [
+          {
+            bar: 'bar',
+            baz: 'baz',
+          },
+          {
+            bar: 'bar',
+            baz: 'baz',
+          },
+        ],
+      },
+    });
+
+    register('foo.1.bar', {});
+
+    await control._setValid(true);
+
+    expect(isEmptyObject).toHaveBeenCalledTimes(3);
+  });
+});

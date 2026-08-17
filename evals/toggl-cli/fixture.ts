@@ -40,7 +40,8 @@ export interface SandboxDiskCheckResult {
   stderr?: string;
 }
 
-type SandboxDiskFactsContext = Pick<SandboxCommandContext, "facts" | "diagnostic">;
+type SandboxDiskFeedbackContext = Pick<SandboxCommandContext, "diagnostic"> &
+  Partial<Pick<SandboxCommandContext, "progress">>;
 
 const parseSafeNonNegativeInteger = (value: string): number | null => {
   if (!/^\d+$/.test(value)) return null;
@@ -79,7 +80,7 @@ export const parseSandboxDiskCheckOutput = (stdout: string): SandboxDiskObservat
 };
 
 export const reportSandboxDiskCheck = (
-  ctx: SandboxDiskFactsContext,
+  ctx: SandboxDiskFeedbackContext,
   result: SandboxDiskCheckResult,
 ): SandboxDiskObservation | null => {
   if (result.exitCode !== 0) {
@@ -88,7 +89,7 @@ export const reportSandboxDiskCheck = (
       code: "sandbox-space-check-failed",
       level: "warning",
       message:
-        `sandbox 磁盘空间观测退化：检查命令退出码 ${result.exitCode ?? "unknown"}，未记录磁盘 facts` +
+        `sandbox 磁盘空间观测退化：检查命令退出码 ${result.exitCode ?? "unknown"}，未报告磁盘空间状态` +
         (detail ? `；${detail}` : ""),
     });
     return null;
@@ -99,14 +100,17 @@ export const reportSandboxDiskCheck = (
     ctx.diagnostic({
       code: "sandbox-space-check-failed",
       level: "warning",
-      message: "sandbox 磁盘空间观测退化：检查输出格式无法解析，未记录磁盘 facts",
+      message: "sandbox 磁盘空间观测退化：检查输出格式无法解析，未报告磁盘空间状态",
     });
     return null;
   }
 
-  ctx.facts("sandbox.disk.free_kb", observation.free_kb);
-  ctx.facts("sandbox.disk.total_kb", observation.total_kb);
-  ctx.facts("sandbox.build_tree.kb", observation.build_tree_kb);
+  ctx.progress?.({
+    message:
+      `sandbox 磁盘空间：剩余 ${formatDiskSizeGiB(observation.free_kb)} / ` +
+      `总量 ${formatDiskSizeGiB(observation.total_kb)}，` +
+      `/opt/cargo-target 构建树 ${formatDiskSizeGiB(observation.build_tree_kb)}`,
+  });
 
   if (observation.free_kb < SANDBOX_DISK_LOW_THRESHOLD_KB) {
     ctx.diagnostic({

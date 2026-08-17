@@ -1,0 +1,202 @@
+use crate::api::client::ApiClient;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities;
+use serde::Serialize;
+use std::collections::HashMap;
+
+const QUARTER_HOUR_SECONDS: i64 = 15 * 60;
+const MINIMUM_BILLING_SECONDS: i64 = 30 * 60;
+const NO_PROJECT: &str = "No Project";
+
+pub struct InvoiceCommand;
+
+#[derive(Debug, PartialEq, Eq)]
+struct InvoiceLine {
+    project: String,
+    seconds: i64,
+}
+
+#[derive(Serialize)]
+struct InvoiceProject<'a> {
+    project: &'a str,
+    billable_seconds: i64,
+}
+
+#[derive(Serialize)]
+struct InvoiceOutput<'a> {
+    projects: Vec<InvoiceProject<'a>>,
+    total_billable_seconds: i64,
+}
+
+fn billable_seconds(duration: i64) -> i64 {
+    let rounded_to_quarter_hour =
+        ((duration + QUARTER_HOUR_SECONDS - 1) / QUARTER_HOUR_SECONDS) * QUARTER_HOUR_SECONDS;
+    rounded_to_quarter_hour.max(MINIMUM_BILLING_SECONDS)
+}
+
+fn invoice_lines(entries: &[TimeEntry]) -> Vec<InvoiceLine> {
+    let mut totals = HashMap::new();
+
+    for entry in entries
+        .iter()
+        .filter(|entry| entry.billable && !entry.is_running())
+    {
+        let project = entry
+            .project
+            .as_ref()
+            .map(|project| project.name.clone())
+            .unwrap_or_else(|| NO_PROJECT.to_string());
+        *totals.entry(project).or_insert(0) += billable_seconds(entry.duration);
+    }
+
+    let mut lines: Vec<_> = totals
+        .into_iter()
+        .map(|(project, seconds)| InvoiceLine { project, seconds })
+        .collect();
+    lines.sort_by(|left, right| {
+        right
+            .seconds
+            .cmp(&left.seconds)
+            .then_with(|| left.project.cmp(&right.project))
+    });
+    lines
+}
+
+fn format_invoice(lines: &[InvoiceLine]) -> String {
+    if lines.is_empty() {
+        return "(no data)\n".to_string();
+    }
+
+    let mut output = String::new();
+    let total: i64 = lines.iter().map(|line| line.seconds).sum();
+    for line in lines {
+        output.push_str(&format!("{}s  {}\n", line.seconds, line.project));
+    }
+    output.push_str(&format!("{}s  Total\n", total));
+    output
+}
+
+fn invoice_json(lines: &[InvoiceLine]) -> String {
+    let output = InvoiceOutput {
+        projects: lines
+            .iter()
+            .map(|line| InvoiceProject {
+                project: &line.project,
+                billable_seconds: line.seconds,
+            })
+            .collect(),
+        total_billable_seconds: lines.iter().map(|line| line.seconds).sum(),
+    };
+    serde_json::to_string(&output).expect("failed to serialize invoice JSON")
+}
+
+impl InvoiceCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        since: Option<String>,
+        until: Option<String>,
+        json: bool,
+    ) -> ResultWithDefaultError<()> {
+        let (since, until) = utilities::normalize_time_entry_list_filters(since, until)?;
+        let entries = api_client.get_time_entries_filtered(since, until).await?;
+        let lines = invoice_lines(&entries);
+        if json {
+            println!("{}", invoice_json(&lines));
+        } else {
+            print!("{}", format_invoice(&lines));
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::Project;
+    use chrono::{TimeZone, Utc};
+
+    fn entry(duration: i64, billable: bool, project: Option<&str>) -> TimeEntry {
+        TimeEntry {
+            duration,
+            billable,
+            project: project.map(|name| Project {
+                id: 1,
+                name: name.to_string(),
+                workspace_id: 1,
+                client: None,
+                is_private: false,
+                active: true,
+                at: Utc.timestamp_opt(0, 0).single().unwrap(),
+                created_at: Utc.timestamp_opt(0, 0).single().unwrap(),
+                color: String::new(),
+                billable: None,
+            }),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn invoices_billable_stopped_entries_with_per_entry_rounding_and_minimum() {
+        let lines = invoice_lines(&[
+            entry(1, true, Some("Alpha")),
+            entry(1_801, true, Some("Alpha")),
+            entry(3_600, true, None),
+            entry(1_200, false, Some("Ignored")),
+            entry(-1, true, Some("Running")),
+        ]);
+
+        assert_eq!(
+            lines,
+            vec![
+                InvoiceLine {
+                    project: "Alpha".to_string(),
+                    seconds: 4_500
+                },
+                InvoiceLine {
+                    project: NO_PROJECT.to_string(),
+                    seconds: 3_600
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn invoice_sorts_equal_totals_alphabetically_and_formats_output() {
+        let lines = invoice_lines(&[
+            entry(1_801, true, Some("Zulu")),
+            entry(1_801, true, Some("Alpha")),
+        ]);
+
+        assert_eq!(
+            format_invoice(&lines),
+            "2700s  Alpha\n2700s  Zulu\n5400s  Total\n"
+        );
+    }
+
+    #[test]
+    fn invoice_empty_output_is_no_data() {
+        assert_eq!(format_invoice(&[]), "(no data)\n");
+    }
+
+    #[test]
+    fn invoice_json_has_ordered_snake_case_fields_and_total() {
+        let lines = invoice_lines(&[
+            entry(1_801, true, Some("Zulu")),
+            entry(1_801, true, Some("Alpha")),
+            entry(3_600, true, Some("Alpha")),
+        ]);
+
+        assert_eq!(
+            invoice_json(&lines),
+            r#"{"projects":[{"project":"Alpha","billable_seconds":6300},{"project":"Zulu","billable_seconds":2700}],"total_billable_seconds":9000}"#
+        );
+    }
+
+    #[test]
+    fn invoice_json_empty_output_has_zero_total() {
+        assert_eq!(
+            invoice_json(&[]),
+            r#"{"projects":[],"total_billable_seconds":0}"#
+        );
+    }
+}
