@@ -1,0 +1,35 @@
+import { VALIDATION_MODE } from '../constants';
+import type {
+  FieldValues,
+  FormState,
+  InternalFieldName,
+  ReadFormState,
+} from '../types';
+import type { EventType } from '../types/events';
+
+export default <T extends FieldValues, K extends ReadFormState>(
+  formStateData: Partial<FormState<T>> & {
+    name?: InternalFieldName;
+    values?: T;
+    type?: EventType;
+  },
+  _proxyFormState: K,
+  updateFormState: (formState: Partial<FormState<T>>) => void,
+  isRoot?: boolean,
+) => {
+  // `name` and `type` describe this notification only. Keep them out of the
+  // persistent form state so they cannot affect a later notification.
+  const { name, type, ...formState } = formStateData;
+  updateFormState(formState);
+  const keys = Object.keys(formState);
+
+  return (
+    !keys.length ||
+    (isRoot && keys.length >= Object.keys(_proxyFormState).length) ||
+    keys.find(
+      (key) =>
+        _proxyFormState[key as keyof ReadFormState] ===
+        (!isRoot || VALIDATION_MODE.all),
+    )
+  );
+};

@@ -192,24 +192,22 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 
 | 想知道 | 命令 |
 | --- | --- |
-| 某实验整体通过率 / 成本 / 每题耗时 | `pnpm niceeval show --exp <experimentId>` |
-| 每题的历次执行、错误摘要、attempt locator | `pnpm niceeval show --exp <id> --history` |
+| 某实验整体通过率 / 成本 / 当前 Record 中匹配的 attempt locator | `pnpm --silent niceeval show --experiment <experimentId>` |
+| 审计一个已知的完整历史 run | `pnpm --silent niceeval show --run <runId>`（可重复传入 `--run`） |
 | 单条 attempt 的阶段耗时树（clone / install / agent 各花多久） | `pnpm niceeval show @<locator> --timing` |
 | agent 到底干了什么 | `pnpm niceeval show @<locator> --execution`（配 `--grep` / `--expand`） |
 | agent 改了哪些文件 | `pnpm niceeval show @<locator> --diff` |
-| token / 成本明细 | `pnpm niceeval show --exp <id> --usage` |
-| 跨历史执行的稳定性矩阵 | `pnpm niceeval show --exp <id> --stats` |
+
+**当前 CLI 参数（2026-08-18 实测）：**`show` 使用 `--experiment`，不再接受旧的 `--exp`；也不再接受
+`--history`、`--usage`、`--stats`。不要凭旧指南继续尝试这些参数。默认/实验概览会显示总成本，但 token 明细与
+跨历史稳定性矩阵目前没有等价 CLI 切片；需要它们时按呈现缺口处理，不得退回读取 `.niceeval/` 内部文件。
 
 已知呈现缺口（**候选上游 feature request**，遇到时直接说「CLI 看不到」，不要退回去读文件）：
 
-- **快照组合丢沿用结果：`show`/`view` 的默认概览既不含 carried、accept 也救不回来**（2026-08-04 实测，
-  已到不读源码的排查边界，按 bug 上报）：run 计划明确打印 `36 of 36 carried in from cache`，跑完后
-  `show --exp` 的快照却只有 1 条；把 36 条历史终态逐一 `niceeval accept`（全部成功、发新 locator）后
-  快照也只组进 6 条；accept 后再跑一次全沿用 run，新快照又缩回 1 条。`--history --json` 能证明沿用
-  attempt 确实进了 run 记录（runStartedAt 是新 run、locator 指向历史），是「组快照」这层把它们丢了。
-  **可靠视图只有两个：`show --exp <id> --history`（单实验全史）与 `show --stats`（36 题 × 全实验矩阵）**；
-  报告站点读快照,在上游修复前站点显示的就是残缺切片,不是数据丢了。期望：快照按「每题最新终态」组合,
-  或至少把 carried/accepted 与 fresh 一视同仁。
+- **旧版快照曾丢沿用结果，但旧排查入口已经移除**：2026-08-04 曾观察到 `show`/`view` 默认概览没有完整组合
+  carried/accepted 结果；当时依赖的 `show --exp <id> --history` 与 `show --stats` 在当前 CLI 均已不存在。
+  现在先用 `show --experiment <id>` 检查当前 Record 选择，用 `show --run <runId>` 审计已知完整历史 run；若两者仍
+  无法解释 carried/accepted 结果，就直接报告 CLI 呈现缺口，不得沿用旧命令，也不得读取内部文件自行拼快照。
 - **Eval Group 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
   `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 Group 提速测量时只能靠 `--timing` 里
   install 耗时的阶梯反推是不是同一条 lane，很别扭。
@@ -220,12 +218,9 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
   **排查 errored 一定先用它**：`--timing` 只在失败命令后打个 ✗ 不给正文，`--execution` 在 agent 起来之前就挂掉的
   attempt 上只会说 "no events recorded"，概览行里的错误又被截断成 `unexpected-error:…`——
   2026-08-04 就是照着这条过时记录先试了 `--timing`/`--execution`，绕了一圈才拿到错误正文。
-- **`--history` 印出来的 locator 有一部分打不开**：`show --exp <id> --history` 会把历史 run 里的 attempt
-  一并列出（快照头部写着 "composed from N runs"），但拿它印的 locator 去 `show @<locator> --timing` 会被拒：
-  `Locator @xxx is outside the selected record scope.`——同一条命令刚把这个 locator 当作「打开它的方式」印给你，
-  下一条命令又说它不在 scope 里。报错也不说怎么扩大 scope（`--record` 是钉记录根，不是选 run；`--run` 只有 `view` 有）。
-  后果：只有最近一次 run 的 attempt 能下钻，历史 attempt 的失败原因查不了（2026-07-30 撞到：nowledge 组
-  01/02 的首次 attempt 全部无法打开）。
+- **历史 locator 的发现与下钻仍不完整**：旧版 `--history` 已移除；当前 `show --run <runId>` 只能审计已知的
+  完整历史 run。若概览没有提供目标 run id 或历史 locator，CLI 就没有足够入口继续下钻；直接报告这个呈现缺口。
+  对已经拿到但 `show @<locator>` 报 `outside the selected record scope` 的历史 locator，也不要读取内部文件绕过。
 - **attempt 被超时杀掉时，看不出是哪一层的 timeoutMs 生效**：`--timing` 只在被杀的那条命令后面打一个 ✗，
   不显示这条命令拿到的 deadline 是多少、来自哪一层（flag / experiment / eval / config / provider SDK 默认）。
   2026-07-30 靠它暴露出一个**真 bug**（已修，见 memory: agent-command-killed-at-600s）：`sandboxReuse` 的建实例

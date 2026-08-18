@@ -1,0 +1,192 @@
+use crate::api::client::ApiClient;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities;
+use chrono::Datelike;
+use serde::Serialize;
+use std::collections::BTreeMap;
+use std::io::{self, BufWriter, Write};
+
+pub struct InvoiceMonthlyCommand;
+
+#[derive(Serialize)]
+struct InvoiceMonth {
+    month: String,
+    billable_seconds: i64,
+}
+
+#[derive(Serialize)]
+struct InvoiceMonthlyOutput {
+    months: Vec<InvoiceMonth>,
+    total_billable_seconds: i64,
+}
+
+fn invoice_monthly_totals(entries: &[TimeEntry]) -> BTreeMap<String, i64> {
+    let mut totals = BTreeMap::new();
+
+    for entry in entries {
+        // Running entries encode their duration as a negative start timestamp and
+        // must never be included on an invoice.
+        if !entry.billable || entry.is_running() {
+            continue;
+        }
+
+        let start = entry.start;
+        let month = format!("{:04}-{:02}", start.year(), start.month());
+        *totals.entry(month).or_insert(0) += entry.duration;
+    }
+
+    totals
+}
+
+fn format_invoice_monthly(totals: &BTreeMap<String, i64>) -> String {
+    if totals.is_empty() {
+        return "(no data)\n".to_string();
+    }
+
+    let total: i64 = totals.values().sum();
+    let mut output = String::new();
+    for (month, seconds) in totals {
+        output.push_str(&format!("{month}  {seconds}s\n"));
+    }
+    output.push_str(&format!("Total  {total}s\n"));
+    output
+}
+
+fn format_invoice_monthly_json(totals: &BTreeMap<String, i64>) -> String {
+    let months = totals
+        .iter()
+        .map(|(month, billable_seconds)| InvoiceMonth {
+            month: month.clone(),
+            billable_seconds: *billable_seconds,
+        })
+        .collect();
+    let output = InvoiceMonthlyOutput {
+        months,
+        total_billable_seconds: totals.values().sum(),
+    };
+    serde_json::to_string(&output).expect("failed to serialize invoice output")
+}
+
+impl InvoiceMonthlyCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        json: bool,
+        since: Option<String>,
+        until: Option<String>,
+    ) -> ResultWithDefaultError<()> {
+        let (since, until) = utilities::normalize_time_entry_list_filters(since, until)?;
+        let entries = api_client
+            .get_time_entries_filtered_minimal(since, until)
+            .await?;
+        let totals = invoice_monthly_totals(&entries);
+
+        let stdout = io::stdout();
+        let mut handle = BufWriter::new(stdout.lock());
+        if json {
+            writeln!(handle, "{}", format_invoice_monthly_json(&totals)).expect("failed to print");
+        } else {
+            write!(handle, "{}", format_invoice_monthly(&totals)).expect("failed to print");
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        format_invoice_monthly, format_invoice_monthly_json, invoice_monthly_totals,
+        InvoiceMonthlyCommand,
+    };
+    use crate::api::client::MockApiClient;
+    use crate::models::TimeEntry;
+    use chrono::Utc;
+    use tokio_test::assert_ok;
+
+    fn entry(id: i64, start: &str, duration: i64, billable: bool) -> TimeEntry {
+        let start = chrono::DateTime::parse_from_rfc3339(start)
+            .unwrap()
+            .with_timezone(&Utc);
+        TimeEntry {
+            id,
+            description: String::new(),
+            start,
+            stop: Some(start + chrono::Duration::seconds(duration.max(0))),
+            duration,
+            billable,
+            workspace_id: 1,
+            tags: vec![],
+            project: None,
+            task: None,
+            created_with: None,
+        }
+    }
+
+    #[test]
+    fn groups_billable_stopped_entries_by_utc_start_month_oldest_first() {
+        let entries = vec![
+            entry(1, "2026-02-01T00:30:00+01:00", 30, true),
+            entry(2, "2026-01-31T23:30:00-01:00", 40, true),
+            entry(3, "2026-02-28T12:00:00Z", 50, true),
+            entry(4, "2026-02-15T12:00:00Z", 60, false),
+            entry(5, "2026-02-15T12:00:00Z", -1, true),
+        ];
+
+        let totals = invoice_monthly_totals(&entries);
+        assert_eq!(
+            format_invoice_monthly(&totals),
+            "2026-01  30s\n2026-02  90s\nTotal  120s\n"
+        );
+    }
+
+    #[test]
+    fn formats_empty_window_as_no_data() {
+        assert_eq!(
+            format_invoice_monthly(&invoice_monthly_totals(&[])),
+            "(no data)\n"
+        );
+    }
+
+    #[test]
+    fn formats_json_with_ordered_months_and_snake_case_fields() {
+        let totals = invoice_monthly_totals(&[
+            entry(1, "2026-02-01T12:00:00Z", 2700, true),
+            entry(2, "2026-01-01T12:00:00Z", 1800, true),
+        ]);
+        assert_eq!(
+            format_invoice_monthly_json(&totals),
+            r#"{"months":[{"month":"2026-01","billable_seconds":1800},{"month":"2026-02","billable_seconds":2700}],"total_billable_seconds":4500}"#
+        );
+    }
+
+    #[test]
+    fn formats_empty_window_as_empty_json_output() {
+        assert_eq!(
+            format_invoice_monthly_json(&invoice_monthly_totals(&[])),
+            r#"{"months":[],"total_billable_seconds":0}"#
+        );
+    }
+
+    #[tokio::test]
+    async fn normalizes_optional_date_filters_before_fetching_entries() {
+        let mut api_client = MockApiClient::new();
+        let (expected_since, expected_until) = crate::utilities::normalize_time_entry_list_filters(
+            Some("2026-01-01".to_string()),
+            Some("2026-01-31".to_string()),
+        )
+        .unwrap();
+        api_client
+            .expect_get_time_entries_filtered_minimal()
+            .withf(move |since, until| *since == expected_since && *until == expected_until)
+            .returning(|_, _| Ok(vec![]));
+
+        assert_ok!(
+            InvoiceMonthlyCommand::execute(
+                api_client,
+                false,
+                Some("2026-01-01".to_string()),
+                Some("2026-01-31".to_string()),
+            )
+            .await
+        );
+    }
+}

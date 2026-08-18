@@ -1,0 +1,188 @@
+use crate::api::client::ApiClient;
+use crate::constants;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities;
+use serde::Serialize;
+use std::collections::HashMap;
+use std::io::{self, BufWriter, Write};
+
+pub struct EntryStatsCommand;
+
+#[derive(Debug, PartialEq, Eq, Serialize)]
+struct ProjectDuration {
+    project: String,
+    seconds: i64,
+}
+
+#[derive(Serialize)]
+struct StatsOutput {
+    groups: Vec<ProjectDuration>,
+    total_seconds: i64,
+}
+
+fn summarize(entries: Vec<TimeEntry>) -> StatsOutput {
+    let mut totals: HashMap<Option<i64>, ProjectDuration> = HashMap::new();
+
+    for entry in entries
+        .into_iter()
+        .filter(|entry| !entry.duration.is_negative())
+    {
+        let (project_id, project_name) = entry
+            .project
+            .as_ref()
+            .map(|project| (Some(project.id), project.name.clone()))
+            .unwrap_or((None, constants::NO_PROJECT.to_string()));
+
+        let total = totals.entry(project_id).or_insert(ProjectDuration {
+            project: project_name,
+            seconds: 0,
+        });
+        total.seconds += entry.duration;
+    }
+
+    let mut totals: Vec<_> = totals.into_values().collect();
+    totals.sort_by(|left, right| {
+        right
+            .seconds
+            .cmp(&left.seconds)
+            .then_with(|| left.project.cmp(&right.project))
+    });
+    let total_seconds = totals.iter().map(|project| project.seconds).sum();
+    StatsOutput {
+        groups: totals,
+        total_seconds,
+    }
+}
+
+fn render(output: &StatsOutput) -> String {
+    let mut rendered = String::new();
+
+    for project in &output.groups {
+        rendered.push_str(&format!(
+            "{}  {}\n",
+            utilities::format_duration_compact(project.seconds),
+            project.project
+        ));
+    }
+    rendered.push_str(&format!(
+        "{}  Total\n",
+        utilities::format_duration_compact(output.total_seconds)
+    ));
+    rendered
+}
+
+impl EntryStatsCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        since: Option<String>,
+        until: Option<String>,
+        json: bool,
+    ) -> ResultWithDefaultError<()> {
+        let (since, until) = utilities::normalize_time_entry_list_filters(since, until)?;
+        let entries = api_client.get_time_entries_filtered(since, until).await?;
+        let output = summarize(entries);
+        let stdout = io::stdout();
+        let mut handle = BufWriter::new(stdout.lock());
+        if json {
+            writeln!(
+                handle,
+                "{}",
+                serde_json::to_string(&output).expect("failed to serialize stats output")
+            )
+            .expect("failed to print");
+        } else {
+            write!(handle, "{}", render(&output)).expect("failed to print");
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{render, summarize, EntryStatsCommand};
+    use crate::api::client::MockApiClient;
+    use crate::models::{Project, TimeEntry};
+    use chrono::{TimeZone, Utc};
+
+    fn project(id: i64, name: &str) -> Project {
+        let timestamp = Utc.timestamp_opt(0, 0).single().unwrap();
+        Project {
+            id,
+            name: name.to_string(),
+            workspace_id: 1,
+            client: None,
+            is_private: false,
+            active: true,
+            at: timestamp,
+            created_at: timestamp,
+            color: "#000000".to_string(),
+            billable: None,
+        }
+    }
+
+    fn entry(duration: i64, project: Option<Project>) -> TimeEntry {
+        TimeEntry {
+            duration,
+            project,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn stats_groups_sorts_and_skips_running_entries() {
+        let output = summarize(vec![
+            entry(3_600, Some(project(1, "Beta"))),
+            entry(1_800, Some(project(1, "Beta"))),
+            entry(5_400, Some(project(2, "Alpha"))),
+            entry(2_700, None),
+            entry(-1, Some(project(3, "Ignored"))),
+        ]);
+
+        assert_eq!(
+            render(&output),
+            "1h 30m  Alpha\n1h 30m  Beta\n45m  No Project\n3h 45m  Total\n"
+        );
+    }
+
+    #[test]
+    fn stats_prints_a_zero_total_for_an_empty_window() {
+        assert_eq!(render(&summarize(Vec::new())), "0m  Total\n");
+    }
+
+    #[test]
+    fn stats_json_uses_seconds_and_matches_human_order() {
+        let output = summarize(vec![
+            entry(5_400, Some(project(2, "Alpha"))),
+            entry(6_420, Some(project(1, "Beta"))),
+        ]);
+
+        assert_eq!(
+            serde_json::to_string(&output).unwrap(),
+            r#"{"groups":[{"project":"Beta","seconds":6420},{"project":"Alpha","seconds":5400}],"total_seconds":11820}"#
+        );
+    }
+
+    #[tokio::test]
+    async fn stats_uses_the_standard_date_filter_normalization() {
+        let mut api_client = MockApiClient::new();
+        let (expected_since, expected_until) = crate::utilities::normalize_time_entry_list_filters(
+            Some("2026-01-01".to_string()),
+            Some("2026-01-31".to_string()),
+        )
+        .expect("date filters should normalize");
+        api_client
+            .expect_get_time_entries_filtered()
+            .withf(move |since, until| *since == expected_since && *until == expected_until)
+            .returning(|_, _| Ok(Vec::new()));
+
+        let result = EntryStatsCommand::execute(
+            api_client,
+            Some("2026-01-01".to_string()),
+            Some("2026-01-31".to_string()),
+            false,
+        )
+        .await;
+
+        assert!(result.is_ok());
+    }
+}

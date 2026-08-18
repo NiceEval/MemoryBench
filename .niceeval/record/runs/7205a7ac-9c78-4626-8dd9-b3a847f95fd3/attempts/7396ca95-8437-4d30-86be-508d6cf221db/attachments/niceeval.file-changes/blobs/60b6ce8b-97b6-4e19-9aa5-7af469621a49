@@ -1,0 +1,110 @@
+import { createFormControl } from '../../logic/createFormControl';
+import isEmptyObject from '../../utils/isEmptyObject';
+
+jest.mock('../../utils/isEmptyObject', () => {
+  const original = jest.requireActual('../../utils/isEmptyObject');
+  return {
+    __esModule: true,
+    default: jest.fn(original.default),
+  };
+});
+
+describe('createFormControl', () => {
+  it('does not update isValid from a superseded async validity check', async () => {
+    let resolveFirstValidation!: (value: boolean) => void;
+    let markFirstValidationStarted!: () => void;
+    let validationCount = 0;
+    const stateUpdates: Array<{ isValid?: boolean }> = [];
+    const firstValidationStarted = new Promise<void>((resolve) => {
+      markFirstValidationStarted = resolve;
+    });
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: 'foo',
+      },
+    });
+
+    register('foo', {
+      validate: () => {
+        validationCount++;
+
+        if (validationCount === 1) {
+          markFirstValidationStarted();
+
+          return new Promise<boolean>((resolve) => {
+            resolveFirstValidation = resolve;
+          });
+        }
+
+        return true;
+      },
+    });
+    control._subjects.state.subscribe({
+      next: (update) => stateUpdates.push(update),
+    });
+
+    const firstValidityCheck = control._setValid(true);
+    await firstValidationStarted;
+
+    await control._setValid(true);
+    expect(stateUpdates.at(-1)).toEqual({ isValid: true });
+
+    resolveFirstValidation(false);
+    await firstValidityCheck;
+
+    expect(stateUpdates.at(-1)).toEqual({ isValid: true });
+  });
+
+  it('should call `executeBuiltInValidation` once for a single field', async () => {
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: 'foo',
+      },
+    });
+
+    register('foo', {});
+
+    await control._setValid(true);
+
+    expect(isEmptyObject).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call `executeBuiltInValidation` twice for a field as an object with a single sub-field', async () => {
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: {
+          bar: 'bar',
+        },
+      },
+    });
+
+    register('foo.bar', {});
+
+    await control._setValid(true);
+
+    expect(isEmptyObject).toHaveBeenCalledTimes(2);
+  });
+
+  it('should call executeBuiltInValidation the correct number of times in case the field is an array', async () => {
+    const { register, control } = createFormControl({
+      defaultValues: {
+        foo: [
+          {
+            bar: 'bar',
+            baz: 'baz',
+          },
+          {
+            bar: 'bar',
+            baz: 'baz',
+          },
+        ],
+      },
+    });
+
+    register('foo.1.bar', {});
+
+    await control._setValid(true);
+
+    expect(isEmptyObject).toHaveBeenCalledTimes(3);
+  });
+});

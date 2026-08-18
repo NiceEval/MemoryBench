@@ -1,0 +1,37 @@
+import * as React from "react";
+
+import { clsx, cssClass } from "../utils.js";
+import { useForkRef, useLayoutEffect } from "../hooks/index.js";
+import { DocumentContextProvider, RTLContextProvider, useA11yContext } from "../contexts/index.js";
+
+export const LightboxRoot = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(function LightboxRoot(
+  { className, children, onFocus, onBlur, ...rest },
+  ref,
+) {
+  const nodeRef = React.useRef<HTMLDivElement>(null);
+  const [isRTL, setIsRTL] = React.useState(false);
+  const { trackFocusWithin } = useA11yContext();
+
+  // Direction can be inherited from an ancestor that changes during any parent render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    if (nodeRef.current) {
+      setIsRTL(window.getComputedStyle(nodeRef.current).direction === "rtl");
+    }
+  });
+
+  return (
+    <DocumentContextProvider nodeRef={nodeRef}>
+      <RTLContextProvider isRTL={isRTL}>
+        <div
+          ref={useForkRef(ref, nodeRef)}
+          className={clsx(cssClass("root"), className)}
+          {...trackFocusWithin(onFocus, onBlur)}
+          {...rest}
+        >
+          {children}
+        </div>
+      </RTLContextProvider>
+    </DocumentContextProvider>
+  );
+});

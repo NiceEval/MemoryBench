@@ -1,0 +1,708 @@
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  useImperativeHandle,
+  memo,
+} from 'react'
+import { createPortal } from 'react-dom'
+import clsx from 'clsx'
+import {
+  useIsomorphicLayoutEffect,
+  computeTooltipPosition,
+  cssTimeToMs,
+  clearTimeoutRef,
+} from '../../utils'
+import type { IComputedPosition } from '../../utils'
+import coreStyles from './core-styles.module.css'
+import styles from './styles.module.css'
+import useTooltipAnchors from './use-tooltip-anchors'
+import useTooltipEvents from './use-tooltip-events'
+import type { IPosition, ITooltip, TooltipImperativeOpenOptions } from './TooltipTypes'
+
+// Shared across all tooltip instances — the CSS variable is on :root and never changes per-instance
+let globalTransitionShowDelay: number | null = null
+
+const Tooltip = ({
+  // props
+  forwardRef,
+  id,
+  className,
+  classNameArrow,
+  variant = 'dark',
+  portalRoot,
+  anchorSelect,
+  place = 'top',
+  offset = 10,
+  openOnClick = false,
+  positionStrategy = 'absolute',
+  middlewares,
+  wrapper: WrapperElement,
+  delayShow = 0,
+  delayHide = 0,
+  autoClose,
+  float = false,
+  hidden = false,
+  noArrow = false,
+  clickable = false,
+  openEvents,
+  closeEvents,
+  globalCloseEvents,
+  imperativeModeOnly,
+  style: externalStyles,
+  position,
+  afterShow,
+  afterHide,
+  disableTooltip,
+  // props handled by controller
+  content,
+  contentWrapperRef,
+  isOpen,
+  defaultIsOpen = false,
+  setIsOpen,
+  previousActiveAnchor,
+  activeAnchor,
+  setActiveAnchor,
+  border,
+  opacity,
+  arrowColor,
+  arrowSize = 8,
+  role = 'tooltip',
+}: ITooltip) => {
+  const tooltipRef = useRef<HTMLElement>(null)
+  const tooltipArrowRef = useRef<HTMLElement>(null)
+  const tooltipShowDelayTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const tooltipHideDelayTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const tooltipAutoCloseTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const missedTransitionTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const [computedPosition, setComputedPosition] = useState<IComputedPosition>({
+    tooltipStyles: {},
+    tooltipArrowStyles: {},
+    place,
+  })
+  const [show, setShow] = useState(false)
+  const [rendered, setRendered] = useState(false)
+  const renderedRef = useRef(rendered)
+  renderedRef.current = rendered
+  const [imperativeOptions, setImperativeOptions] = useState<TooltipImperativeOpenOptions | null>(
+    null,
+  )
+  const wasShowing = useRef(false)
+  const lastFloatPosition = useRef<IPosition | null>(null)
+  const hoveringTooltip = useRef(false)
+  const mounted = useRef(false)
+  const virtualElementRef = useRef({
+    getBoundingClientRect: () => ({
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    }),
+  })
+
+  /**
+   * useLayoutEffect runs before useEffect,
+   * but should be used carefully because of caveats
+   * https://beta.reactjs.org/reference/react/useLayoutEffect#caveats
+   */
+  useIsomorphicLayoutEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+
+  const handleShow = useCallback(
+    (value: boolean) => {
+      if (!mounted.current) {
+        return
+      }
+      if (value) {
+        setRendered(true)
+      }
+      /**
+       * wait for the component to render and calculate position
+       * before actually showing
+       */
+      setTimeout(() => {
+        if (!mounted.current) {
+          return
+        }
+        setIsOpen?.(value)
+        if (isOpen === undefined) {
+          setShow(value)
+        }
+      }, 10)
+    },
+    [isOpen, setIsOpen],
+  )
+
+  /**
+   * Add aria-describedby to activeAnchor when tooltip is active
+   */
+  useEffect(() => {
+    if (!id) return
+
+    function getAriaDescribedBy(element: HTMLElement | null) {
+      return element?.getAttribute('aria-describedby')?.split(' ') || []
+    }
+
+    function removeAriaDescribedBy(element: HTMLElement | null) {
+      const newDescribedBy = getAriaDescribedBy(element).filter((s) => s !== id)
+      if (newDescribedBy.length) {
+        element?.setAttribute('aria-describedby', newDescribedBy.join(' '))
+      } else {
+        element?.removeAttribute('aria-describedby')
+      }
+    }
+
+    if (show) {
+      removeAriaDescribedBy(previousActiveAnchor)
+      const currentDescribedBy = getAriaDescribedBy(activeAnchor)
+      const describedBy = [...new Set([...currentDescribedBy, id])].filter(Boolean).join(' ')
+      activeAnchor?.setAttribute('aria-describedby', describedBy)
+    } else {
+      removeAriaDescribedBy(activeAnchor)
+    }
+
+    return () => {
+      // cleanup aria-describedby when the tooltip is closed
+      removeAriaDescribedBy(activeAnchor)
+      removeAriaDescribedBy(previousActiveAnchor)
+    }
+  }, [activeAnchor, show, id, previousActiveAnchor])
+
+  /**
+   * this replicates the effect from `handleShow()`
+   * when `isOpen` is changed from outside
+   */
+  useEffect(() => {
+    if (isOpen === undefined) {
+      return () => null
+    }
+    if (isOpen) {
+      setRendered(true)
+    }
+    const timeout = setTimeout(() => {
+      setShow(isOpen)
+    }, 10)
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (show === wasShowing.current) {
+      return
+    }
+    clearTimeoutRef(missedTransitionTimerRef)
+    wasShowing.current = show
+    if (show) {
+      afterShow?.()
+    } else {
+      /**
+       * see `onTransitionEnd` on tooltip wrapper
+       */
+      if (globalTransitionShowDelay === null) {
+        const style = getComputedStyle(document.body)
+        globalTransitionShowDelay = cssTimeToMs(
+          style.getPropertyValue('--rt-transition-show-delay'),
+        )
+      }
+      const transitionShowDelay = globalTransitionShowDelay
+      missedTransitionTimerRef.current = setTimeout(() => {
+        /**
+         * if the tooltip switches from `show === true` to `show === false` too fast
+         * the transition never runs, so `onTransitionEnd` callback never gets fired
+         */
+        setRendered(false)
+        setImperativeOptions(null)
+        afterHide?.()
+        // +25ms just to make sure `onTransitionEnd` (if it gets fired) has time to run
+      }, transitionShowDelay + 25)
+    }
+  }, [afterHide, afterShow, show])
+
+  useEffect(() => {
+    clearTimeoutRef(tooltipAutoCloseTimerRef)
+
+    if (!show || !autoClose || autoClose <= 0) {
+      return () => {
+        clearTimeoutRef(tooltipAutoCloseTimerRef)
+      }
+    }
+
+    tooltipAutoCloseTimerRef.current = setTimeout(() => {
+      handleShow(false)
+    }, autoClose)
+
+    return () => {
+      clearTimeoutRef(tooltipAutoCloseTimerRef)
+    }
+  }, [activeAnchor, autoClose, handleShow, show])
+
+  const handleComputedPosition = useCallback((newComputedPosition: IComputedPosition) => {
+    if (!mounted.current) {
+      return
+    }
+    setComputedPosition((oldComputedPosition) => {
+      if (
+        oldComputedPosition.place === newComputedPosition.place &&
+        oldComputedPosition.tooltipStyles.left === newComputedPosition.tooltipStyles.left &&
+        oldComputedPosition.tooltipStyles.top === newComputedPosition.tooltipStyles.top &&
+        oldComputedPosition.tooltipStyles.border === newComputedPosition.tooltipStyles.border &&
+        oldComputedPosition.tooltipArrowStyles.left ===
+          newComputedPosition.tooltipArrowStyles.left &&
+        oldComputedPosition.tooltipArrowStyles.top === newComputedPosition.tooltipArrowStyles.top &&
+        oldComputedPosition.tooltipArrowStyles.right ===
+          newComputedPosition.tooltipArrowStyles.right &&
+        oldComputedPosition.tooltipArrowStyles.bottom ===
+          newComputedPosition.tooltipArrowStyles.bottom &&
+        oldComputedPosition.tooltipArrowStyles.borderBottom ===
+          newComputedPosition.tooltipArrowStyles.borderBottom &&
+        oldComputedPosition.tooltipArrowStyles.borderRight ===
+          newComputedPosition.tooltipArrowStyles.borderRight
+      ) {
+        return oldComputedPosition
+      }
+      return newComputedPosition
+    })
+  }, [])
+
+  const handleShowTooltipDelayed = useCallback(
+    (delay = delayShow) => {
+      if (tooltipShowDelayTimerRef.current) {
+        clearTimeout(tooltipShowDelayTimerRef.current)
+      }
+
+      if (renderedRef.current) {
+        // if the tooltip is already rendered, ignore delay
+        handleShow(true)
+        return
+      }
+
+      tooltipShowDelayTimerRef.current = setTimeout(() => {
+        handleShow(true)
+      }, delay)
+    },
+    [delayShow, handleShow],
+  )
+
+  const handleHideTooltipDelayed = useCallback(
+    (delay = delayHide) => {
+      if (tooltipHideDelayTimerRef.current) {
+        clearTimeout(tooltipHideDelayTimerRef.current)
+      }
+
+      tooltipHideDelayTimerRef.current = setTimeout(() => {
+        if (hoveringTooltip.current) {
+          return
+        }
+        handleShow(false)
+      }, delay)
+    },
+    [delayHide, handleShow],
+  )
+
+  const handleTooltipPosition = useCallback(
+    ({ x, y }: IPosition) => {
+      virtualElementRef.current.getBoundingClientRect = () => ({
+        x,
+        y,
+        width: 0,
+        height: 0,
+        top: y,
+        left: x,
+        right: x,
+        bottom: y,
+      })
+      computeTooltipPosition({
+        place: imperativeOptions?.place ?? place,
+        offset,
+        elementReference: virtualElementRef.current as unknown as Element,
+        tooltipReference: tooltipRef.current,
+        tooltipArrowReference: tooltipArrowRef.current,
+        strategy: positionStrategy,
+        middlewares,
+        border,
+        arrowSize,
+      }).then((computedStylesData) => {
+        handleComputedPosition(computedStylesData)
+      })
+    },
+    [
+      imperativeOptions?.place,
+      place,
+      offset,
+      positionStrategy,
+      middlewares,
+      border,
+      arrowSize,
+      handleComputedPosition,
+    ],
+  )
+
+  const updateTooltipPosition = useCallback(() => {
+    const actualPosition = imperativeOptions?.position ?? position
+    if (actualPosition) {
+      // if `position` is set, override regular and `float` positioning
+      handleTooltipPosition(actualPosition)
+      return
+    }
+
+    if (float) {
+      if (lastFloatPosition.current) {
+        /*
+          Without this, changes to `content`, `place`, `offset`, ..., will only
+          trigger a position calculation after a `mousemove` event.
+
+          To see why this matters, comment this line, run `yarn dev` and click the
+          "Hover me!" anchor.
+        */
+        handleTooltipPosition(lastFloatPosition.current)
+      }
+      // if `float` is set, override regular positioning
+      return
+    }
+
+    if (!activeAnchor?.isConnected) {
+      return
+    }
+
+    computeTooltipPosition({
+      place: imperativeOptions?.place ?? place,
+      offset,
+      elementReference: activeAnchor,
+      tooltipReference: tooltipRef.current,
+      tooltipArrowReference: tooltipArrowRef.current,
+      strategy: positionStrategy,
+      middlewares,
+      border,
+      arrowSize,
+    }).then((computedStylesData) => {
+      if (!mounted.current) {
+        // invalidate computed positions after remount
+        return
+      }
+      handleComputedPosition(computedStylesData)
+    })
+  }, [
+    imperativeOptions?.position,
+    imperativeOptions?.place,
+    position,
+    float,
+    activeAnchor,
+    place,
+    offset,
+    positionStrategy,
+    middlewares,
+    border,
+    handleTooltipPosition,
+    handleComputedPosition,
+    arrowSize,
+  ])
+
+  const handleActiveAnchorRemoved = useCallback(() => {
+    setRendered(false)
+    handleShow(false)
+    setActiveAnchor(null)
+    clearTimeoutRef(tooltipShowDelayTimerRef)
+    clearTimeoutRef(tooltipHideDelayTimerRef)
+    clearTimeoutRef(tooltipAutoCloseTimerRef)
+  }, [handleShow, setActiveAnchor])
+
+  const shouldTrackAnchors =
+    rendered ||
+    defaultIsOpen ||
+    Boolean(isOpen) ||
+    Boolean(activeAnchor) ||
+    Boolean(imperativeOptions?.anchorSelect)
+
+  const { anchorElements, selector: anchorSelector } = useTooltipAnchors({
+    id,
+    anchorSelect,
+    imperativeAnchorSelect: imperativeOptions?.anchorSelect,
+    activeAnchor,
+    disableTooltip,
+    onActiveAnchorRemoved: handleActiveAnchorRemoved,
+    trackAnchors: shouldTrackAnchors,
+  })
+
+  useTooltipEvents({
+    activeAnchor,
+    anchorElements,
+    anchorSelector,
+    clickable,
+    closeEvents,
+    delayHide,
+    delayShow,
+    disableTooltip,
+    float,
+    globalCloseEvents,
+    handleHideTooltipDelayed,
+    handleShow,
+    handleShowTooltipDelayed,
+    handleTooltipPosition,
+    hoveringTooltip,
+    imperativeModeOnly,
+    lastFloatPosition,
+    openEvents,
+    openOnClick,
+    rendered,
+    setActiveAnchor,
+    show,
+    tooltipHideDelayTimerRef,
+    tooltipRef,
+    tooltipShowDelayTimerRef,
+    updateTooltipPosition,
+  })
+
+  const updateTooltipPositionRef = useRef(updateTooltipPosition)
+  updateTooltipPositionRef.current = updateTooltipPosition
+
+  useEffect(() => {
+    if (!rendered) {
+      return
+    }
+    updateTooltipPosition()
+  }, [rendered, updateTooltipPosition])
+
+  useEffect(() => {
+    if (!rendered || !contentWrapperRef?.current) {
+      return () => null
+    }
+
+    let timeoutId: NodeJS.Timeout | null = null
+    const contentObserver = new ResizeObserver(() => {
+      // Clear any existing timeout to prevent memory leaks
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+      timeoutId = setTimeout(() => {
+        if (mounted.current) {
+          updateTooltipPositionRef.current()
+        }
+        timeoutId = null
+      }, 0)
+    })
+    contentObserver.observe(contentWrapperRef.current)
+
+    return () => {
+      contentObserver.disconnect()
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [content, contentWrapperRef, rendered])
+
+  useEffect(() => {
+    const shouldResolveInitialActiveAnchor = defaultIsOpen || Boolean(isOpen)
+
+    if (!shouldResolveInitialActiveAnchor) {
+      return
+    }
+
+    const activeAnchorMatchesImperativeSelector = (() => {
+      if (!activeAnchor || !imperativeOptions?.anchorSelect) {
+        return false
+      }
+
+      try {
+        return activeAnchor.matches(imperativeOptions.anchorSelect)
+      } catch {
+        return false
+      }
+    })()
+
+    if (!activeAnchor || !anchorElements.includes(activeAnchor)) {
+      /**
+       * if there is no active anchor,
+       * or if the current active anchor is not amongst the allowed ones,
+       * reset it
+       */
+      if (activeAnchorMatchesImperativeSelector) {
+        return
+      }
+      setActiveAnchor(anchorElements[0] ?? null)
+    }
+  }, [
+    activeAnchor,
+    anchorElements,
+    defaultIsOpen,
+    imperativeOptions?.anchorSelect,
+    isOpen,
+    rendered,
+    setActiveAnchor,
+  ])
+
+  useEffect(() => {
+    if (defaultIsOpen) {
+      handleShow(true)
+    }
+    return () => {
+      clearTimeoutRef(tooltipShowDelayTimerRef)
+      clearTimeoutRef(tooltipHideDelayTimerRef)
+      clearTimeoutRef(tooltipAutoCloseTimerRef)
+      clearTimeoutRef(missedTransitionTimerRef)
+    }
+  }, [defaultIsOpen, handleShow])
+
+  useEffect(() => {
+    if (tooltipShowDelayTimerRef.current) {
+      /**
+       * if the delay changes while the tooltip is waiting to show,
+       * reset the timer with the new delay
+       */
+      clearTimeoutRef(tooltipShowDelayTimerRef)
+      handleShowTooltipDelayed(delayShow)
+    }
+  }, [delayShow, handleShowTooltipDelayed])
+
+  const actualContent = imperativeOptions?.content ?? content
+  const hasContent = actualContent !== null && actualContent !== undefined
+  const canShow = show && computedPosition.tooltipStyles.left !== undefined
+
+  const tooltipStyle = useMemo(
+    () => ({
+      ...externalStyles,
+      ...computedPosition.tooltipStyles,
+      opacity: opacity !== undefined && canShow ? opacity : undefined,
+    }),
+    [externalStyles, computedPosition.tooltipStyles, opacity, canShow],
+  )
+
+  const arrowBackground = useMemo(
+    () =>
+      arrowColor
+        ? `linear-gradient(to right bottom, transparent 50%, ${arrowColor} 50%)`
+        : undefined,
+    [arrowColor],
+  )
+
+  const arrowStyle = useMemo(
+    () => ({
+      ...computedPosition.tooltipArrowStyles,
+      background: arrowBackground,
+      '--rt-arrow-size': `${arrowSize}px`,
+    }),
+    [computedPosition.tooltipArrowStyles, arrowBackground, arrowSize],
+  )
+
+  useImperativeHandle(forwardRef, () => ({
+    open: (options) => {
+      let imperativeAnchor: HTMLElement | null = null
+      if (options?.anchorSelect) {
+        try {
+          imperativeAnchor = document.querySelector<HTMLElement>(options.anchorSelect)
+        } catch {
+          if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
+            console.warn(`[react-tooltip] "${options.anchorSelect}" is not a valid CSS selector`)
+          }
+          return
+        }
+        if (!imperativeAnchor) {
+          return
+        }
+      }
+      if (imperativeAnchor) {
+        setActiveAnchor(imperativeAnchor)
+      }
+      setImperativeOptions(options ?? null)
+      if (options?.delay) {
+        handleShowTooltipDelayed(options.delay)
+      } else {
+        handleShow(true)
+      }
+    },
+    close: (options) => {
+      if (options?.delay) {
+        handleHideTooltipDelayed(options.delay)
+      } else {
+        handleShow(false)
+      }
+    },
+    activeAnchor,
+    place: computedPosition.place,
+    isOpen: Boolean(rendered && !hidden && hasContent && canShow),
+  }))
+
+  useEffect(() => {
+    return () => {
+      // Final cleanup to ensure no memory leaks
+      clearTimeoutRef(tooltipShowDelayTimerRef)
+      clearTimeoutRef(tooltipHideDelayTimerRef)
+      clearTimeoutRef(tooltipAutoCloseTimerRef)
+      clearTimeoutRef(missedTransitionTimerRef)
+    }
+  }, [])
+
+  const tooltipNode =
+    rendered && !hidden && hasContent ? (
+      <WrapperElement
+        id={id}
+        role={role}
+        className={clsx(
+          'react-tooltip',
+          coreStyles['tooltip'],
+          styles['tooltip'],
+          styles[variant],
+          className,
+          `react-tooltip__place-${computedPosition.place}`,
+          coreStyles[canShow ? 'show' : 'closing'],
+          canShow ? 'react-tooltip__show' : 'react-tooltip__closing',
+          positionStrategy === 'fixed' && coreStyles['fixed'],
+          clickable && coreStyles['clickable'],
+        )}
+        onTransitionEnd={(event: TransitionEvent) => {
+          clearTimeoutRef(missedTransitionTimerRef)
+          if (show || event.propertyName !== 'opacity') {
+            return
+          }
+          setRendered(false)
+          setImperativeOptions(null)
+          afterHide?.()
+        }}
+        style={tooltipStyle}
+        ref={tooltipRef}
+      >
+        <WrapperElement
+          className={clsx(
+            'react-tooltip-content-wrapper',
+            coreStyles['content'],
+            styles['content'],
+          )}
+        >
+          {actualContent}
+        </WrapperElement>
+        <WrapperElement
+          className={clsx(
+            'react-tooltip-arrow',
+            coreStyles['arrow'],
+            styles['arrow'],
+            classNameArrow,
+            noArrow && coreStyles['noArrow'],
+          )}
+          style={arrowStyle}
+          ref={tooltipArrowRef}
+        />
+      </WrapperElement>
+    ) : null
+
+  if (!tooltipNode) {
+    return null
+  }
+
+  if (portalRoot) {
+    return createPortal(tooltipNode, portalRoot)
+  }
+
+  return tooltipNode
+}
+
+export default memo(Tooltip)

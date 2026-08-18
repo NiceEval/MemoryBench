@@ -1,0 +1,106 @@
+import * as React from "react";
+import { act, render, screen } from "@testing-library/react";
+
+import { expectLightboxToBeOpen, lightbox, querySelector } from "../test-utils.js";
+import { ZoomRef } from "../../../src/index.js";
+import { Zoom } from "../../../src/plugins/index.js";
+
+declare module "../../../src/types.js" {
+  interface SlideTypes {
+    custom: { type: "custom"; name: string };
+    unsupported: { type: "unsupported"; name: string };
+  }
+}
+
+describe("Zoom", () => {
+  it("renders without crashing", async () => {
+    render(
+      lightbox({
+        slides: Array.from({ length: 3 }).map((_, i) => ({
+          src: `image${i + 1}`,
+          width: 3000,
+          height: 2000,
+        })),
+        plugins: [Zoom],
+      }),
+    );
+
+    act(() => {
+      screen.getByLabelText("Zoom in").click();
+    });
+
+    act(() => {
+      screen.getByLabelText("Zoom out").click();
+    });
+
+    expectLightboxToBeOpen();
+  });
+
+  it("wraps supported custom slides and uses the default maximum zoom", () => {
+    const zoomRef = React.createRef<ZoomRef>();
+
+    render(
+      lightbox({
+        slides: [{ type: "custom", name: "Custom slide" }],
+        plugins: [Zoom],
+        zoom: { ref: zoomRef, supports: ["custom"] },
+        render: { slide: ({ slide }) => React.createElement("div", { "data-testid": "custom-slide" }, slide.type) },
+      }),
+    );
+
+    expect(
+      querySelector(".yarl__slide_current [data-testid='custom-slide']")?.closest(".yarl__slide_wrapper"),
+    ).toBeInTheDocument();
+    expect(zoomRef.current).toMatchObject({ disabled: false, maxZoom: 8 });
+
+    act(() => zoomRef.current?.changeZoom(2));
+
+    expect(zoomRef.current?.zoom).toBe(2);
+  });
+
+  it("leaves unsupported custom slides unwrapped", () => {
+    const zoomRef = React.createRef<ZoomRef>();
+
+    render(
+      lightbox({
+        slides: [{ type: "unsupported", name: "Unsupported slide" }],
+        plugins: [Zoom],
+        zoom: { ref: zoomRef, supports: ["custom"] },
+        render: {
+          slide: ({ slide }) => React.createElement("div", { "data-testid": "unsupported-slide" }, slide.type),
+        },
+      }),
+    );
+
+    expect(querySelector(".yarl__slide_wrapper")).not.toBeInTheDocument();
+    expect(zoomRef.current?.disabled).toBe(true);
+  });
+
+  it("uses a custom slide maximum zoom callback and falls back when it returns undefined", () => {
+    const zoomRef = React.createRef<ZoomRef>();
+    const maxZoom = vi.fn(({ name }) => (name === "Custom slide" ? 3 : undefined));
+
+    const { rerender } = render(
+      lightbox({
+        slides: [{ type: "custom", name: "Custom slide" }],
+        plugins: [Zoom],
+        zoom: { ref: zoomRef, supports: ["custom"], maxZoom },
+        render: { slide: ({ slide }) => React.createElement("div", undefined, slide.type) },
+      }),
+    );
+
+    expect(zoomRef.current?.maxZoom).toBe(3);
+    expect(maxZoom).toHaveBeenCalledWith({ type: "custom", name: "Custom slide" });
+
+    rerender(
+      lightbox({
+        slides: [{ type: "custom", name: "Default maximum" }],
+        plugins: [Zoom],
+        zoom: { ref: zoomRef, supports: ["custom"], maxZoom },
+        render: { slide: ({ slide }) => React.createElement("div", undefined, slide.type) },
+      }),
+    );
+
+    expect(zoomRef.current?.maxZoom).toBe(8);
+  });
+});
