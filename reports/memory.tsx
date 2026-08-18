@@ -28,7 +28,7 @@ export default defineReport({
       ),
     },
   ],
-  title: { en: "MemoryBench", "zh-CN": "MemoryBench" },
+  title: { en: "MemoryBench 1.0", "zh-CN": "MemoryBench 1.0" },
   // GA4:官方 snippet 直译成 head 声明(niceeval ≥0.8 的结构化 head 通道)。
   // react-grab 只在本地 `niceeval view` 时注入,线上构建由 vercel-build.sh 设置 VERCEL=1 挡掉。
   head: [
