@@ -1,0 +1,191 @@
+use crate::api::client::ApiClient;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities;
+use serde::Serialize;
+use std::collections::HashMap;
+
+const BILLING_INCREMENT_SECONDS: i64 = 15 * 60;
+const MINIMUM_BILLING_SECONDS: i64 = 30 * 60;
+
+pub struct InvoiceCommand;
+
+#[derive(Serialize)]
+struct InvoiceProject {
+    project: String,
+    billable_seconds: i64,
+}
+
+#[derive(Serialize)]
+struct InvoiceOutput {
+    projects: Vec<InvoiceProject>,
+    total_billable_seconds: i64,
+}
+
+fn billable_duration_seconds(entry: &TimeEntry) -> Option<i64> {
+    if !entry.billable || entry.is_running() {
+        return None;
+    }
+
+    let rounded = ((entry.duration + BILLING_INCREMENT_SECONDS - 1) / BILLING_INCREMENT_SECONDS)
+        * BILLING_INCREMENT_SECONDS;
+    Some(rounded.max(MINIMUM_BILLING_SECONDS))
+}
+
+fn invoice_totals(entries: &[TimeEntry]) -> Vec<(String, i64)> {
+    let mut totals = HashMap::<String, i64>::new();
+    for entry in entries {
+        if let Some(duration) = billable_duration_seconds(entry) {
+            let project = entry
+                .project
+                .as_ref()
+                .map(|project| project.name.clone())
+                .unwrap_or_else(|| "No Project".to_string());
+            *totals.entry(project).or_default() += duration;
+        }
+    }
+
+    let mut totals = totals.into_iter().collect::<Vec<_>>();
+    totals.sort_by(|(name_a, seconds_a), (name_b, seconds_b)| {
+        seconds_b.cmp(seconds_a).then_with(|| name_a.cmp(name_b))
+    });
+    totals
+}
+
+impl InvoiceCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        since: Option<String>,
+        until: Option<String>,
+        json: bool,
+    ) -> ResultWithDefaultError<()> {
+        let (since, until) = utilities::normalize_time_entry_list_filters(since, until)?;
+        let entries = api_client.get_time_entries_filtered(since, until).await?;
+        let totals = invoice_totals(&entries);
+
+        if json {
+            let total_billable_seconds = totals.iter().map(|(_, seconds)| seconds).sum();
+            let output = InvoiceOutput {
+                projects: totals
+                    .into_iter()
+                    .map(|(project, billable_seconds)| InvoiceProject {
+                        project,
+                        billable_seconds,
+                    })
+                    .collect(),
+                total_billable_seconds,
+            };
+            println!(
+                "{}",
+                serde_json::to_string(&output).expect("failed to serialize invoice")
+            );
+            return Ok(());
+        }
+
+        if totals.is_empty() {
+            println!("(no data)");
+            return Ok(());
+        }
+
+        let total = totals.iter().map(|(_, seconds)| seconds).sum::<i64>();
+        for (project, seconds) in totals {
+            println!("{seconds}s  {project}");
+        }
+        println!("{total}s  Total");
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::Project;
+    use chrono::{TimeZone, Utc};
+
+    fn entry(duration: i64, billable: bool, project: Option<&str>, running: bool) -> TimeEntry {
+        let start = Utc.timestamp_opt(1_700_000_000, 0).single().unwrap();
+        TimeEntry {
+            id: 1,
+            description: String::new(),
+            start,
+            stop: (!running).then_some(start),
+            duration: if running {
+                -start.timestamp()
+            } else {
+                duration
+            },
+            billable,
+            workspace_id: 1,
+            tags: Vec::new(),
+            project: project.map(|name| Project {
+                id: 1,
+                name: name.to_string(),
+                workspace_id: 1,
+                client: None,
+                is_private: false,
+                active: true,
+                at: start,
+                created_at: start,
+                color: String::new(),
+                billable: None,
+            }),
+            task: None,
+            created_with: None,
+        }
+    }
+
+    #[test]
+    fn rounds_and_applies_minimum_per_entry_before_grouping() {
+        let entries = vec![
+            entry(1, true, Some("Work"), false),
+            entry(901, true, Some("Work"), false),
+            entry(1800, true, Some("Work"), false),
+        ];
+        assert_eq!(invoice_totals(&entries), vec![("Work".to_string(), 5400)]);
+    }
+
+    #[test]
+    fn excludes_non_billable_and_running_entries_and_sorts_ties() {
+        let entries = vec![
+            entry(1800, true, Some("Zed"), false),
+            entry(1800, true, Some("Alpha"), false),
+            entry(1800, true, None, false),
+            entry(1800, false, Some("Ignored"), false),
+            entry(1800, true, Some("Running"), true),
+        ];
+        assert_eq!(
+            invoice_totals(&entries),
+            vec![
+                ("Alpha".to_string(), 1800),
+                ("No Project".to_string(), 1800),
+                ("Zed".to_string(), 1800),
+            ]
+        );
+    }
+
+    #[test]
+    fn serializes_populated_invoice_with_integer_seconds() {
+        let output = InvoiceOutput {
+            projects: vec![InvoiceProject {
+                project: "Alpha".to_string(),
+                billable_seconds: 4500,
+            }],
+            total_billable_seconds: 4500,
+        };
+        assert_eq!(
+            serde_json::to_string(&output).unwrap(),
+            r#"{"projects":[{"project":"Alpha","billable_seconds":4500}],"total_billable_seconds":4500}"#
+        );
+    }
+
+    #[test]
+    fn serializes_empty_invoice_with_zero_total() {
+        let output = InvoiceOutput {
+            projects: Vec::new(),
+            total_billable_seconds: 0,
+        };
+        assert_eq!(
+            serde_json::to_string(&output).unwrap(),
+            r#"{"projects":[],"total_billable_seconds":0}"#
+        );
+    }
+}

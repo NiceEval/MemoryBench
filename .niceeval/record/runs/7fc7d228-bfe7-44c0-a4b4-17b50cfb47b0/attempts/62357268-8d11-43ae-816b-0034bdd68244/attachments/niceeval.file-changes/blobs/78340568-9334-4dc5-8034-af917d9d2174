@@ -1,0 +1,67 @@
+import * as React from "react";
+import { act, cleanup, render, screen } from "@testing-library/react";
+
+import { lightbox, expectLightboxToBeOpen } from "../test-utils.js";
+import { Zoom } from "../../../src/plugins/index.js";
+
+describe("Zoom", () => {
+  afterEach(cleanup);
+
+  it("renders without crashing", async () => {
+    render(
+      lightbox({
+        slides: Array.from({ length: 3 }).map((_, i) => ({
+          src: `image${i + 1}`,
+          width: 3000,
+          height: 2000,
+        })),
+        plugins: [Zoom],
+      }),
+    );
+
+    act(() => {
+      screen.getByLabelText("Zoom in").click();
+    });
+
+    act(() => {
+      screen.getByLabelText("Zoom out").click();
+    });
+
+    expectLightboxToBeOpen();
+  });
+
+  it("supports custom slide types", () => {
+    render(
+      lightbox({
+        slides: [{ type: "custom" } as never],
+        plugins: [Zoom],
+        zoom: { supports: ["custom"], maxZoom: () => 3 },
+        render: { slide: () => React.createElement("div", { "data-testid": "custom-slide" }) },
+      }),
+    );
+
+    const currentSlide = screen.getAllByTestId("custom-slide")[1];
+    expect(currentSlide.parentElement).toHaveClass("yarl__slide_wrapper");
+
+    act(() => {
+      screen.getByLabelText("Zoom in").click();
+    });
+    act(() => {
+      screen.getByLabelText("Zoom in").click();
+    });
+
+    expect(currentSlide.parentElement?.getAttribute("style")).toContain("scale(3)");
+  });
+
+  it("does not wrap unsupported custom slide types", () => {
+    render(
+      lightbox({
+        slides: [{ type: "custom" } as never],
+        plugins: [Zoom],
+        render: { slide: () => React.createElement("div", { "data-testid": "custom-slide" }) },
+      }),
+    );
+
+    expect(screen.getAllByTestId("custom-slide")[1].parentElement).not.toHaveClass("yarl__slide_wrapper");
+  });
+});

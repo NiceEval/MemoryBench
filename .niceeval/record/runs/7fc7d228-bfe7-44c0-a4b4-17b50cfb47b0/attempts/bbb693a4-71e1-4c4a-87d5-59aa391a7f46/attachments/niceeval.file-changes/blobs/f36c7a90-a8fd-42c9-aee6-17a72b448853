@@ -1,0 +1,98 @@
+use crate::api::client::ApiClient;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities;
+use std::collections::HashMap;
+
+pub struct EntryStatsCommand;
+
+fn aggregate_by_project(entries: &[TimeEntry]) -> (Vec<(String, i64)>, i64) {
+    let mut totals = HashMap::<String, i64>::new();
+
+    for entry in entries.iter().filter(|entry| entry.duration >= 0) {
+        let project_name = entry
+            .project
+            .as_ref()
+            .map(|project| project.name.clone())
+            .unwrap_or_else(|| "No Project".to_string());
+        *totals.entry(project_name).or_default() += entry.duration;
+    }
+
+    let total = totals.values().sum();
+    let mut rows: Vec<_> = totals.into_iter().collect();
+    rows.sort_by(|(name_a, seconds_a), (name_b, seconds_b)| {
+        seconds_b.cmp(seconds_a).then_with(|| name_a.cmp(name_b))
+    });
+    (rows, total)
+}
+
+impl EntryStatsCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        since: Option<String>,
+        until: Option<String>,
+    ) -> ResultWithDefaultError<()> {
+        let (since, until) = utilities::normalize_time_entry_list_filters(since, until)?;
+        let entries = api_client.get_time_entries_filtered(since, until).await?;
+        let (rows, total) = aggregate_by_project(&entries);
+
+        for (name, seconds) in rows {
+            println!("{}  {name}", utilities::format_duration_compact(seconds));
+        }
+        println!("{}  Total", utilities::format_duration_compact(total));
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::aggregate_by_project;
+    use crate::models::{Project, TimeEntry};
+    use chrono::{TimeZone, Utc};
+
+    fn entry(id: i64, duration: i64, project: Option<&str>) -> TimeEntry {
+        TimeEntry {
+            id,
+            description: String::new(),
+            start: Utc.timestamp_opt(id, 0).single().unwrap(),
+            stop: None,
+            duration,
+            billable: false,
+            workspace_id: 1,
+            tags: vec![],
+            project: project.map(|name| Project {
+                id,
+                name: name.to_string(),
+                workspace_id: 1,
+                client: None,
+                is_private: false,
+                active: true,
+                at: Utc.timestamp_opt(0, 0).single().unwrap(),
+                created_at: Utc.timestamp_opt(0, 0).single().unwrap(),
+                color: String::new(),
+                billable: None,
+            }),
+            task: None,
+            created_with: None,
+        }
+    }
+
+    #[test]
+    fn aggregate_skips_running_entries_and_sorts_by_duration_then_name() {
+        let (rows, total) = aggregate_by_project(&[
+            entry(1, 1800, Some("Beta")),
+            entry(2, 1800, Some("Alpha")),
+            entry(3, 3600, None),
+            entry(4, -60, Some("Ignored")),
+        ]);
+
+        assert_eq!(
+            rows,
+            vec![
+                ("No Project".to_string(), 3600),
+                ("Alpha".to_string(), 1800),
+                ("Beta".to_string(), 1800)
+            ]
+        );
+        assert_eq!(total, 7200);
+    }
+}

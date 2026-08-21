@@ -1,0 +1,104 @@
+use std::collections::BTreeMap;
+
+use crate::api::client::ApiClient;
+use crate::models::{ResultWithDefaultError, TimeEntry};
+use crate::utilities::normalize_time_entry_list_filters;
+
+const BILLING_INCREMENT_SECONDS: i64 = 15 * 60;
+const MINIMUM_BILLABLE_SECONDS: i64 = 30 * 60;
+
+pub struct InvoiceMonthlyCommand;
+
+impl InvoiceMonthlyCommand {
+    pub async fn execute(
+        api_client: impl ApiClient,
+        since: Option<String>,
+        until: Option<String>,
+    ) -> ResultWithDefaultError<()> {
+        let (since, until) = normalize_time_entry_list_filters(since, until)?;
+        let entries = api_client.get_time_entries_filtered(since, until).await?;
+        let monthly = aggregate_monthly_invoice(&entries);
+
+        if monthly.is_empty() {
+            println!("(no data)");
+            return Ok(());
+        }
+
+        let total: i64 = monthly.values().sum();
+        for (month, seconds) in monthly {
+            println!("{month}  {seconds}s");
+        }
+        println!("Total  {total}s");
+        Ok(())
+    }
+}
+
+/// Apply the invoice rule to each eligible entry before grouping by its UTC start month.
+pub fn aggregate_monthly_invoice(entries: &[TimeEntry]) -> BTreeMap<String, i64> {
+    let mut monthly = BTreeMap::new();
+
+    for entry in entries {
+        if !entry.billable || entry.stop.is_none() || entry.is_running() {
+            continue;
+        }
+
+        let rounded = ((entry.duration + BILLING_INCREMENT_SECONDS - 1)
+            / BILLING_INCREMENT_SECONDS)
+            * BILLING_INCREMENT_SECONDS;
+        let billable_seconds = rounded.max(MINIMUM_BILLABLE_SECONDS);
+        let month = entry.start.format("%Y-%m").to_string();
+        *monthly.entry(month).or_insert(0) += billable_seconds;
+    }
+
+    monthly
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{TimeZone, Utc};
+
+    fn entry(id: i64, start: &str, duration: i64, billable: bool, stop: bool) -> TimeEntry {
+        TimeEntry {
+            id,
+            description: format!("Entry {id}"),
+            start: Utc.datetime_from_str(start, "%Y-%m-%dT%H:%M:%SZ").unwrap(),
+            stop: stop.then_some(Utc.timestamp_opt(1, 0).single().unwrap()),
+            duration,
+            billable,
+            workspace_id: 1,
+            tags: vec![],
+            project: None,
+            task: None,
+            created_with: None,
+        }
+    }
+
+    #[test]
+    fn aggregates_eligible_entries_in_utc_month_order() {
+        let entries = vec![
+            entry(1, "2026-02-01T00:00:00Z", 901, true, true),
+            entry(2, "2026-01-31T23:30:00Z", 1800, true, true),
+            entry(3, "2026-02-15T00:00:00Z", 3600, false, true),
+            entry(4, "2026-02-20T00:00:00Z", -1, true, false),
+        ];
+
+        let monthly = aggregate_monthly_invoice(&entries);
+        assert_eq!(monthly.get("2026-01"), Some(&1800));
+        assert_eq!(monthly.get("2026-02"), Some(&1800));
+        assert_eq!(
+            monthly.keys().collect::<Vec<_>>(),
+            vec!["2026-01", "2026-02"]
+        );
+    }
+
+    #[test]
+    fn empty_or_ineligible_entries_produce_no_months() {
+        let entries = vec![
+            entry(1, "2026-02-01T00:00:00Z", -1, true, false),
+            entry(2, "2026-02-01T00:00:00Z", 60, false, true),
+            entry(3, "2026-02-01T00:00:00Z", -1, true, false),
+        ];
+        assert!(aggregate_monthly_invoice(&entries).is_empty());
+    }
+}
