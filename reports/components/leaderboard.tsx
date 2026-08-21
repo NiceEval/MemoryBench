@@ -10,6 +10,7 @@ import {
 import type {
   AggregationSubject,
   GroupFunction,
+  Sample,
 } from "niceeval/report";
 
 const condition: GroupFunction = (subject) => {
@@ -22,8 +23,8 @@ const condition: GroupFunction = (subject) => {
 const memory: GroupFunction = (subject: AggregationSubject) =>
   String(subject.run.experiment?.flags?.memory ?? "unknown");
 
-export const Leaderboard = defineComponent(async (_props, ctx) => {
-  const rows = await aggregate(ctx.scope, {
+export const Leaderboard = defineComponent<{ readonly input?: Sample }>(async (props, ctx) => {
+  const rows = await aggregate(props.input ?? ctx.scope, {
     by: { condition, memory },
     values: { passRate },
   });
