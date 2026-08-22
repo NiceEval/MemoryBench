@@ -60,11 +60,7 @@ const singletonGroupParams: PageParams<SingletonGroupParams> = {
 
 function loadGroupPage(sample: Sample, group: ExperimentGroupIdentity): GroupPageInput {
   const comparison = experimentComparisonScope(sample, group);
-  const members = new Set(
-    comparison.comparison.state === "comparable"
-      ? comparison.comparison.members.map(String)
-      : comparison.comparison.issues.flatMap((issue) => issue.members.map(String)),
-  );
+  const members = new Set(comparison.comparison.members.map(String));
   const runIds = sample.snapshot.runs
     .filter((run) => members.has(String(run.experimentId)))
     .map((run) => run.runId);
