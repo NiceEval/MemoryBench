@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  niceeval: link:../../NiceEval/polish-extend
+  niceeval: link:../../NiceEval/match-polish
 
 importers:
 
@@ -27,8 +27,8 @@ importers:
         specifier: ^3.22.1
         version: 3.22.1
       niceeval:
-        specifier: link:../../NiceEval/polish-extend
-        version: link:../../NiceEval/polish-extend
+        specifier: link:../../NiceEval/match-polish
+        version: link:../../NiceEval/match-polish
       react:
         specifier: ^19.2.7
         version: 19.2.7

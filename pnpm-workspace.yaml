@@ -3,7 +3,7 @@
 # 这个 override，并把 package.json 的最低版本抬到该 release；Vercel 不读取此 link。
 # 快照目录由 NiceEval polish-extend 的已提交 cf37e1e4 构建，避免联调时读到该 worktree 的未提交改动。
 overrides:
-  niceeval: link:../../NiceEval/polish-extend
+  niceeval: link:../../NiceEval/match-polish
 
 allowBuilds:
   cpu-features: false
