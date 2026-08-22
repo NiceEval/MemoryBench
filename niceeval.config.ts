@@ -1,10 +1,6 @@
 import { defineConfig } from "niceeval";
-import memory from "./reports/memory.tsx";
 
 export default defineConfig({
-  // 项目默认报告:不带 --report 时 show / view 装载它(见 niceeval defineConfig · report)。
-  report: memory,
-
   // LLM-as-judge:**本文件不配 judge,一律配在用到它的那条 eval 上**(`defineEval({ judge })`,
   // 目前只有 evals/toggl-cli/04-billing-doc.eval.ts)。
   //
