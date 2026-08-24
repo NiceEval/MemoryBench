@@ -8,9 +8,9 @@ This repo is a benchmark suite for coding-agent memory conditions. The core rule
 
 **工作方式 / 流程偏好一律记录在本文件（AGENTS.md，CLAUDE.md 是它的符号链接），不散落在个人 memory。** 个人 memory 只放调试 know-how、项目状态、上游候选等（见下方「记录问题与 Know-How 的规范」）；「我该怎么协作」这类约定放这里，保证换 agent / 换会话都能读到。
 
-### Git 工作流：直接在 main 上开发
+### Git 工作流：直接在当前长期分支上开发
 
-本仓库**直接在 `main` 分支上提交**，不开 feature 分支、不走 PR review 流程。需要提交时直接 commit 到 `main`（这覆盖「在默认分支上先建分支」的通用默认行为）。push 仍只在用户明确要求时进行。
+本仓库**直接在当前 checkout 的长期分支上提交**（本工作树当前是 `2-0`），不开临时 feature 分支、不走 PR review 流程。需要提交时直接 commit 到当前分支；push 仍只在用户明确要求时进行。
 
 ### 成本纪律：全量重跑必须用户批准
 
@@ -20,9 +20,9 @@ This repo is a benchmark suite for coding-agent memory conditions. The core rule
 
 本仓库的另一个目的是测试 niceeval 本身。niceeval 是 beta 软件，DX 可以随便改——反馈时可以打破一切惯性：不必顾虑向后兼容、已有用户习惯、行业惯例或「大家都这么设计」，从第一性原理出发想最理想的形态。API / CLI 直接 break 着改：不需要 v1 / v2 版本并存、不需要 deprecation 过渡期、不需要兼容层，旧形态直接删掉，一步到位改成理想形态。因此：
 
-- **遇到 DX 不舒服、CLI 行为不理解、或感觉不是最佳实践的地方，直接停止工作并指出来**，不要尝试自己解决或绕过。绕过会掩盖 niceeval 应该修的问题。
+- **遇到 DX 不舒服、CLI 行为不理解、或感觉不是最佳实践的地方，先保留原始观察并判断 owner。** NiceEval 公开 Library / CLI / Report、随包文档、官方 Adapter 或官方仓库工具违反其承诺，且需要 NiceEval maintainer 处理时，才上报 NiceEval；本仓库自己的指南、评估用例、实验配置、脚本和 workaround 在本仓库修；第三方服务或依赖的问题交给对应上游。
 - 「不舒服」包括但不限于：命令语义不直观、报错信息看不懂、需要手写 boilerplate、配置项互相打架、文档与实际行为不符、必须靠 workaround 才能跑通。
-- 停下来指出的价值高于把当前任务硬推完成——上游修一次，所有下游受益（参见 memory 中 niceeval/fastevals 的上下游关系）。
+- NiceEval-owned 问题在绕过前先取得可复现证据和上游 owner；已经有 Issue owner 且继续工作不会掩盖证据时，可以 fix-forward。下游问题直接修正，不为它创建 NiceEval Issue。
 
 ## 每次工作结束后的 DX 反思
 
@@ -31,15 +31,15 @@ This repo is a benchmark suite for coding-agent memory conditions. The core rule
 1. 这次工作中哪些环节用起来不舒服、别扭、低效？
 2. 其中哪些应该由 niceeval 官方提供（新 API、新 CLI 子命令、更好的默认值、更清晰的报错），而不是留在本仓库当 workaround？
 
-把结论写在任务总结里。NiceEval 产品问题的长期 owner 是公开脱敏的上游 Issue；只有调查后确认的根因、裁决和可复用 know-how 才进入 memory，不能用 memory 代替 Issue 跟进。
+把结论写在任务总结里。NiceEval-owned 产品问题的长期 owner 是公开脱敏的上游 Issue；MemoryBench-owned 问题由本仓库的代码、指南或文档承担 owner。只有调查后确认的根因、裁决和可复用 know-how 才进入 memory，不能用 memory 代替 Issue 跟进。
 
-## NiceEval 摩擦直接上报 GitHub Issues
+## NiceEval-owned 摩擦上报 GitHub Issues
 
-NiceEval 产品、API、CLI、文档、repository 或 dependency 的可复现问题直接由 [NiceEval/NiceEval Issues](https://github.com/NiceEval/NiceEval/issues) 跟进，不在本仓库保留第二份 friction log。执行入口见 `.agents/skills/niceeval-issue/SKILL.md`。
+从 NiceEval 公开入口或 NiceEval 自己维护、生成、随包分发的文档与工具观察到的可复现问题，只有在 NiceEval maintainer 仍负有后续动作时，才由 [NiceEval/NiceEval Issues](https://github.com/NiceEval/NiceEval/issues) 跟进，不在本仓库保留第二份 friction log。执行入口见 `.agents/skills/niceeval-issue/SKILL.md`。
 
 - **遇到问题先保留原始 Observation**：记录实际看到的行为、复现、影响和必要证据；推测、根因候选与建议必须明确标成尚未证实。不得因为准备上报而弱化上文“停止工作并指出”的要求，也不得先用 workaround 掩盖问题。
 - **先查 open + closed Issue**：在 `NiceEval/NiceEval` 同时搜索标题和正文；已有 owner 时交接现有 Issue URL，不重复创建。提交或对不确定结果重试前，还要按技能中的 machine marker 枚举核对。
-- **分类并脱敏**：类型只选 `bug`、`enhancement`、`documentation` 之一；area 只选 `area:library`、`area:cli`、`area:runner`、`area:record`、`area:report`、`area:adapter`、`area:repository`、`area:dependency` 之一；新 Issue 加 `needs-triage`。删除 secrets、token、私有 endpoint、个人信息、绝对本机路径和不必要的私有运行数据，保留足以复现的公开 provenance。
+- **先判 owner，再分类并脱敏**：本仓库自己的 `AGENTS.md`、README、评估用例、实验配置、脚本和 workaround 在本仓库修；第三方服务或依赖的问题交给其 canonical upstream。NiceEval 仍对公开行为负责、但外部依赖参与或阻塞时才使用 `area:dependency`，不能把它当通用转运标签。NiceEval Issue 的类型只选 `bug`、`enhancement`、`documentation` 之一；area 恰好选一个；新 Issue 加 `needs-triage`。删除 secrets、token、私有 endpoint、个人信息、绝对本机路径和不必要的私有运行数据，保留足以复现的公开 provenance。
 - **安全问题不公开**：漏洞或可能泄露秘密的内容走 NiceEval 的 Private Vulnerability Reporting；不得先建公开 Issue、评论或用公开搜索泄露细节。
 - **远端 mutation 每次单独授权**：agent 创建 Issue、评论、改 label 或提交 private report 前，都必须取得用户在当前任务中的明确授权；历史授权、仓库规则和本地草稿都不能代替。本轮未授权时只准备脱敏草稿并向用户请求授权。
 - **Issue URL 是唯一跟进 owner**：成功后在交接中给出 URL；不要把正文、状态或链接再同步成本仓库日志。调查后形成的根因/裁决/know-how 仍按下方 memory 规范记录。
@@ -60,8 +60,8 @@ NiceEval 产品、API、CLI、文档、repository 或 dependency 的可复现问
 - `experiments/`: comparable run matrices for agents and models.
 - `experiments/shared/`: 记忆条件的跨实验封装（`mempal.ts`、`nowledge.ts`）；agent adapters come from `niceeval/adapter`, not this repo.
 - `docs/benchmarks.md`: benchmark survey and candidate task notes.
-- `niceeval.config.ts`: global judge and timeout defaults (agent/sandbox/concurrency are per-experiment).
-- Report publishing: `.niceeval/` 原样提交，是站点唯一数据源。`vercel.json` 的 buildCommand 指向 `scripts/vercel-build.sh`，**不是裸的 `niceeval view`**——脚本做三件不能省的事：① 跳过仓库 install（评测依赖很重且与报告无关），改在 `/tmp` 装 `niceeval@latest` + react 再把 node_modules 符号链接回仓库根，让站点始终跟随最新 niceeval 而非仓库锁定的版本；② `--exp compare` 收窄出站范围，只有 compare 可比组进站点（2026-07-30 起所有实验都开在 `compare/` 下，这层收窄已不再挡任何东西——往 `compare/` 里放临时接线位，它会直接进站点）；③ `--report reports/memory.tsx` 指定报告定义（显式声明 `report` 概览页并组合官方 Attempt / Experiment 参数页，正文组件与详情页都跟随内建视图演进）。坑：Vercel 的 build cache 会把上次部署的 node_modules 恢复到仓库根，而 `ln -sfn` 对已存在的目录会把链接建进目录内部而不是替换它——脚本必须先 `rm -rf`，改这段时别把它删了。发布机制：`vercel.json` 已设 `git.deploymentEnabled: false`，平时 push 到 `main` 不触发部署；**禁止本地 `vercel deploy` 当生产路径**。发布 = 打 `vX.Y.Z` tag 并 push tag，`.github/workflows/deploy-report.yml` 在 tag push 时用 Vercel CLI（`vercel pull` → `vercel deploy --prod --archive=tgz`）把**该 tag 的仓库内容**（含 `.niceeval/`）交给 Vercel 云端跑 `scripts/vercel-build.sh` 再挂生产域。不用 Actions 侧 `--prebuilt`（site/ 含 attempt+artifact 过大，上传易中断）。依赖仓库 secrets `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`。
+- `niceeval.config.ts`: global attempt timeout and concurrency safety limits; agent, sandbox, judge and experiment-specific concurrency stay with the owning experiment or eval.
+- Report publishing: `.niceeval/` 原样提交，是站点唯一数据源。`vercel.json` 的 buildCommand 指向 `scripts/vercel-build.sh`，**不是裸的 `niceeval view`**——脚本做三件不能省的事：① 跳过仓库 install（评测依赖很重且与报告无关），改在 `/tmp` 装 `niceeval@latest` + react 再把 node_modules 符号链接回仓库根，让站点始终跟随最新 niceeval 而非仓库锁定的版本；② `--experiment compare` 收窄出站范围，只有 compare 可比组进站点（2026-07-30 起所有实验都开在 `compare/` 下，这层收窄已不再挡任何东西——往 `compare/` 里放临时接线位，它会直接进站点）；③ `--report reports/memory.tsx` 指定报告定义（显式声明 `report` 概览页并组合官方 Attempt / Experiment 参数页，正文组件与详情页都跟随内建视图演进）。坑：Vercel 的 build cache 会把上次部署的 node_modules 恢复到仓库根，而 `ln -sfn` 对已存在的目录会把链接建进目录内部而不是替换它——脚本必须先 `rm -rf`，改这段时别把它删了。发布机制：`vercel.json` 已设 `git.deploymentEnabled: false`，平时 push 到长期分支不触发部署；**禁止本地 `vercel deploy` 当生产路径**。发布 = 打 `vX.Y.Z` tag 并 push tag，`.github/workflows/deploy-report.yml` 在 tag push 时用 Vercel CLI（`vercel pull` → `vercel deploy --prod --archive=tgz`）把**该 tag 的仓库内容**（含 `.niceeval/`）交给 Vercel 云端跑 `scripts/vercel-build.sh` 再挂生产域。不用 Actions 侧 `--prebuilt`（site/ 含 attempt+artifact 过大，上传易中断）。依赖仓库 secrets `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`。
 - `scripts/hooks/pre-commit`: 体积闸。niceeval 原样落盘工具输出，agent 一句 `grep -R` 扫进 node_modules 就能让单个 trace.json 破 100MB，撞死 GitHub 单文件硬上限。hook 会把 >50MB 的文件自动移出本次提交（不拦 commit，文件留在磁盘上）。**新 clone 后需手动启用一次**：`git config core.hooksPath scripts/hooks`。
 
 ## Adding Evals
@@ -108,13 +108,13 @@ Additional source assertions are fine when they are part of the task's functiona
 
 顺带一提，跑 GREEN 时如果上游官方修复自己都过不了某条断言（lightbox 那道就是：官方 fix 解决不了「祖先 dir 属性被改」的场景），说明 prompt 描述的症状和测试考的场景根本不是同一件事，要改的是 prompt。
 
-**三向验证靠 transfer manifest 兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** 各题 `tests/`（以及题组 `_support/`）下的隐藏测试与判据脚本，在 agent 最后一轮之后用 `t.sandbox.uploadFile(new URL(...), target)` / `uploadDirectory(...)` 直接上传。Runner 在真实读取 source 时记录内容摘要：改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定按当前判据得出。
+**三向验证靠判据 fingerprint 兜底：改完 fixtures 直接重跑，不需要 `--rerun all`。** 各题 `tests/`（以及题组 `_support/`）下的隐藏测试与判据脚本，在模块顶层用 `loadText()` / `loadJson()` / `loadYaml()` 读取，让内容进入该 eval 的 fingerprint；agent 最后一轮之后再用 `t.sandbox.writeText()` / `writeBytes()` 写进沙箱。改一个字节，引用它的那条 eval 自动作废、下次跑到它就重跑，其余 eval 照常携带。所以 RED / GREEN / ALT 三轮跑常规命令即可，看到的结论一定按当前判据得出。
 
-**不要在模块顶层登记 loader，也不要先读成字符串再走 `writeFiles`。** 每条 Eval 在需要判据的位置直接传本地 `URL`；共享 harness 也直接上传自己的 `_support/` URL。这样同一 helper 被多条 Eval 调用时，每次真实传输都归当前 Attempt，既不依赖模块求值顺序，也没有第二套 fixture 声明面。动态 plan 这类内存内容用 `writeText` / `writeBytes`。
+**判据 loader 必须在模块顶层调用。** 运行期才读取会错过 fingerprint 规划；普通 `fs.readFile` 也不会登记依赖。动态 plan 等每次运行产生的内容不属于静态判据，继续在 `test(t)` 中用 `writeText` / `writeBytes`。
 
 ## 记录问题与 Know-How 的规范
 
-调试基础设施问题（sandbox 报错、agent 安装失败、eval 超时等）时，发现的具体问题和修法**记入 memory**，不写进本文件。
+调试基础设施问题（sandbox 报错、agent 安装失败、eval 超时等）时，先判断 owner。MemoryBench 自己的根因和修法写进最近的仓库文档、源码注释或本节索引；NiceEval-owned 问题先由公开 Issue 跟进，调查后形成的根因、裁决和可复用 know-how 才进入 NiceEval memory。个人目录里的 memory 不能作为仓库唯一事实源。
 
 ### 记什么
 
@@ -126,9 +126,9 @@ Additional source assertions are fine when they are part of the task's functiona
 
 ### 记在哪里
 
-- `~/.claude/projects/.../memory/` 目录下，每个问题一个 `.md` 文件
-- 类型用 `feedback`（行为规范）或 `project`（具体项目状态）
-- 更新 `MEMORY.md` 索引，保证下次对话能被加载
+- 工作方式和协作约定写本文件。
+- 评估设计、实验约束和报告口径写进最近的 README / `docs/` 或拥有它的源码注释，并随 Git 提交。
+- NiceEval 自身的根因、裁决和 know-how 由 NiceEval 仓库的 memory 维护；下游不直接改写上游 memory，也不用个人 `~/.claude` 目录替代仓库记录。
 
 ### 什么时候记
 
@@ -170,79 +170,29 @@ When summarizing results, report both:
 
 The benchmark claim is comparative: same task, same model, different memory condition.
 
-### 看结果、查问题只许走 CLI：`pnpm niceeval show`
+### 看结果、查问题只许走 CLI：`pnpm --silent exec niceeval show`
 
-**禁止直接读 `.niceeval/` 下的任何文件**（`result.json` / `run.json` / `sources/*.json` 一律不许 cat、grep、Read、写脚本解析）。
-要看跑得怎么样，只能用 `pnpm niceeval show` 的各个切片。这条覆盖下面自动生成块里「per-attempt `result.json`
-是 structured source of truth」的说法——那句话对 niceeval 的普通用户成立，对本仓库不成立。
+**禁止直接读 `.niceeval/` 下的任何文件**（`result.json` / `run.json` / `sources/*.json` 一律不许 cat、grep、Read、写脚本解析）。要看跑得怎么样，只能用 `pnpm --silent exec niceeval show` 的公开切片。
 
-两个理由：① 直接读文件会绕过 CLI，于是 CLI 呈现不了的东西永远暴露不出来，而暴露它正是本仓库 dogfooding 的价值；
-② `result.json` 是内部结构、跟着 `schemaVersion` 变，照着它写的分析脚本下次升级就烂掉。
+两个理由：① 直接读文件会绕过 CLI，于是 CLI 呈现不了的东西永远暴露不出来，而暴露它正是本仓库 dogfooding 的价值；② raw Record 是私有结构，照着它写的分析脚本会跟随 schema 变化失效。
 
-**同一条规则覆盖 debug，不只覆盖「看结果」。** 诊断一次运行为什么失败时，同样**禁止去读 niceeval 的实现**
-（`node_modules/niceeval/{src,dist}/**` 一律不许 grep / Read 来找答案，例：「哪来的 600s 超时」不许靠翻
-sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应该告诉我这件事」，问不出来就是**呈现缺口**——
-把它记进下面的清单并直接对用户说「CLI 看不到」，不要靠读实现绕过去。绕过去一次，这个缺口就永远不会被上游修。
+**同一条规则覆盖 debug，不只覆盖「看结果」。** 诊断历史运行时不得读 `node_modules/niceeval/{src,dist}/**`，也不得拿当前 eval / experiment 源码反推历史执行。先问「CLI 的哪个切片应该告诉我这件事」；缺少必要证据就是 NiceEval 呈现缺口，不靠实现或私有落盘绕过。
 
-唯一允许读 niceeval 仓库内容的场景是**写**东西之前读文档（`node_modules/niceeval/docs-site/zh/**`，见下方自动生成块），
-那是查 API 契约；debug 期读 `src/` / `dist/` 是查实现，两者不要混为一谈。
-
-需要结构化数据时用 `--json`，**但要走 `pnpm --silent`**：`pnpm niceeval` 会先往 stdout 打两行
-`Already up to date` / `Done in …`，JSON 解析必挂。
+读 API、CLI 或排查手册时先读 `node_modules/niceeval/INDEX.md`，再进入它指向的随包文档；这是查当前安装版本的公开契约。需要结构化数据时用 `--json`，并通过 `pnpm --silent exec niceeval` 调用，保持 stdout 只有 NiceEval 的机器输出。
 
 常用切片：
 
 | 想知道 | 命令 |
 | --- | --- |
-| 某实验整体通过率 / 成本 / 当前 Record 中匹配的 attempt locator | `pnpm --silent niceeval show --experiment <experimentId>` |
-| 审计一个已知的完整历史 run | `pnpm --silent niceeval show --run <runId>`（可重复传入 `--run`） |
-| 单条 attempt 的阶段耗时树（clone / install / agent 各花多久） | `pnpm niceeval show @<locator> --timing` |
-| agent 到底干了什么 | `pnpm niceeval show @<locator> --execution`（配 `--grep` / `--expand`） |
-| agent 改了哪些文件 | `pnpm niceeval show @<locator> --diff` |
+| 某实验整体通过率 / 成本 / 当前 Record 中匹配的 attempt locator | `pnpm --silent exec niceeval show --experiment <experimentId>` |
+| 审计一个已知的完整历史 run | `pnpm --silent exec niceeval show --run <runId>`（可重复传入 `--run`） |
+| 单条 attempt 的概览与诊断 | `pnpm --silent exec niceeval show @<locator>` |
+| 单条 attempt 的阶段耗时树 | `pnpm --silent exec niceeval show @<locator> --timing` |
+| agent 到底干了什么 | `pnpm --silent exec niceeval show @<locator> --execution`（需要时配 `--grep`） |
+| agent 改了哪些文件 | `pnpm --silent exec niceeval show @<locator> --diff` |
+| 该 attempt 固定的 source snapshot | `pnpm --silent exec niceeval show @<locator> --source` |
 
-**当前 CLI 参数（2026-08-18 实测）：**`show` 使用 `--experiment`，不再接受旧的 `--exp`；也不再接受
-`--history`、`--usage`、`--stats`。不要凭旧指南继续尝试这些参数。默认/实验概览会显示总成本，但 token 明细与
-跨历史稳定性矩阵目前没有等价 CLI 切片；需要它们时按呈现缺口处理，不得退回读取 `.niceeval/` 内部文件。
-
-已知呈现缺口（遇到时直接说「CLI 看不到」，不要退回去读文件，并按上面的 NiceEval Issue 流程取得跟进 owner）：
-
-- **旧版快照曾丢沿用结果，但旧排查入口已经移除**：2026-08-04 曾观察到 `show`/`view` 默认概览没有完整组合
-  carried/accepted 结果；当时依赖的 `show --exp <id> --history` 与 `show --stats` 在当前 CLI 均已不存在。
-  现在先用 `show --experiment <id>` 检查当前 Record 选择，用 `show --run <runId>` 审计已知完整历史 run；若两者仍
-  无法解释 carried/accepted 结果，就直接报告 CLI 呈现缺口，不得沿用旧命令，也不得读取内部文件自行拼快照。
-- **Eval Group 的复用身份看不到**：`sandboxId` / 第几条 lane / lane 内第几条 attempt 只落在 `result.json`，
-  `show` 的任何切片（含 `--timing --json`）都不含这些字段。做 Group 提速测量时只能靠 `--timing` 里
-  install 耗时的阶梯反推是不是同一条 lane，很别扭。
-- ~~裸 `show @<locator>` 在本仓库根本用不了~~ **已修复，且它是排查 errored 的首选切片**（2026-08-04 复测）：
-  此前报 "the built-in report has no attempt-input page"，现在直接给出**阶段名 + 完整错误正文**
-  （例：`! agent.ensure` / `! unexpected-error: Cannot verify Sandbox platform … fetch failed`），
-  `ctx.facts()` 与 `ctx.diagnostic` 也只在这个概览里可读。
-  **排查 errored 一定先用它**：`--timing` 只在失败命令后打个 ✗ 不给正文，`--execution` 在 agent 起来之前就挂掉的
-  attempt 上只会说 "no events recorded"，概览行里的错误又被截断成 `unexpected-error:…`——
-  2026-08-04 就是照着这条过时记录先试了 `--timing`/`--execution`，绕了一圈才拿到错误正文。
-- **历史 locator 的发现与下钻仍不完整**：旧版 `--history` 已移除；当前 `show --run <runId>` 只能审计已知的
-  完整历史 run。若概览没有提供目标 run id 或历史 locator，CLI 就没有足够入口继续下钻；直接报告这个呈现缺口。
-  对已经拿到但 `show @<locator>` 报 `outside the selected record scope` 的历史 locator，也不要读取内部文件绕过。
-- **attempt 被超时杀掉时，看不出是哪一层的 timeoutMs 生效**：`--timing` 只在被杀的那条命令后面打一个 ✗，
-  不显示这条命令拿到的 deadline 是多少、来自哪一层（flag / experiment / eval / config / provider SDK 默认）。
-  2026-07-30 靠它暴露出一个**真 bug**（已修，见 memory: agent-command-killed-at-600s）：`sandboxReuse` 的建实例
-  路径从不把 attempt deadline 递给沙箱，于是复用泳道上每条命令都吃历史 E2B SDK 默认的 60 秒，实验声明的
-  `timeoutMs: 1200000` 形同虚设。**当时能确诊全靠人肉发现「✗ 的命令停在整 1m 0s」这个整数关口**——
-  CLI 一个字都没提这条线是谁给的。呈现缺口本身仍在：期望 `--timing` 每条命令标出 `deadline=…(来源层)`，
-  超时错误里写明是沙箱 per-command 超时。教训：看到 `deadline_exceeded` 先看被 ✗ 的命令时长**是不是卡在
-  60s / 600s 这种整数关口**，是就去查 deadline 传导，不要因为「重跑能过」就判成 flaky
-  （60s 只砍超过 60s 的命令，轻量题碰不到，所以它天生长得像偶发）。
-- ~~`--dry` 的 plan 不说明每条为什么要重跑~~ **已具备**（2026-07-30 实测）：逐条标 `carried` / `locked` /
-  `stale: config:agentInstall.revision` / `new`，原因是给全的。注意 `stale: config:agentInstall.revision`
-  这一档很容易撞上——agent 的安装版本一变，此前跑的结果全作废。
-- ~~`niceeval exp` 的多余位置参数被静默当 eval 前缀吞掉~~ **已修**（2026-08-04 实测）：位置参数匹配不到任何
-  eval 现在会报错退出，并提示怎么跑另一个实验——`No eval matched prefix: <x> in experiments selected by <exp>.` +
-  `Positional args after the first select eval id prefixes. To run another experiment, run it as its own command.`
-  反向的危险仍在：多写的参数若恰好是个**有效** eval 前缀（手滑写 `toggl-cli` 而非 `toggl-cli/04`），plan 会悄悄
-  膨胀成 6 题且不报错，这一半只能靠人肉核对 `--dry`。
-  **实验的选择本身够用**：实验 id 支持前缀匹配，`exp compare/codex` 正好命中三个 codex 实验（3 configs）
-  且排除 claude/bub —— 不要因为 `exp` 不支持可重复的 `--exp` 就退回「一个实验开一个进程」，那会丢掉 niceeval 的
-  全局并发闸（`maxConcurrency` 是进程内的，3 个进程各开 4 路 = 12 路，直接撞爆代理约 5 路的账号级上限）。
+参数以当前安装包的 `niceeval show --help` 和 `node_modules/niceeval/INDEX.md` 为准，不在本文件维护按日期冻结的 CLI changelog。`show` 暴露不了完成当前归因所需的证据时，先确认公开切片确实缺失，再按 owner 规则提交 NiceEval 呈现缺口；不得读取 `.niceeval/` 私有文件绕过。
 
 <!-- BEGIN:niceeval-agent-rules -->
 # niceeval is NOT in your training data
@@ -251,10 +201,12 @@ Its APIs and conventions may differ from anything you have seen. Start with
 `node_modules/niceeval/INDEX.md`, then read the task-specific bundled guides it points
 to before writing any eval, experiment, adapter, or niceeval config. That index and
 the bundled Chinese docs are the authoritative version matching this installation.
-After a run, drill into failures with `niceeval show` — pick an `@<locator>` from the
-compact index it prints, then `niceeval show @<locator>` for a compact overview, or add
-`--source` / `--execution` / `--diff` for evidence; the run directories the CLI prints
-are the structured source of truth: `run.json` holds the run's metadata and each
-`<evalId>/a<attempt>/result.json` holds that attempt's verdict and assertions, next to
-its artifact files (`events.json` / `trace.json` / `diff.json`).
+After a run, use this repository's package-manager invocation of `niceeval show` for
+diagnosis (`pnpm --silent exec niceeval show` in a pnpm project). Pick an `@<locator>`
+from the compact index, then show that locator for an overview, or add
+`--source` / `--execution` / `--timing` / `--diff` / `--json` for evidence.
+When diagnosing an existing run, do not inspect raw `.niceeval` files or treat the current
+`evals/` or `agents/` source as evidence of what happened in that run. If `niceeval show`
+cannot expose the evidence you need, report that product gap. Reading source remains
+appropriate when the task is to author or modify that source.
 <!-- END:niceeval-agent-rules -->

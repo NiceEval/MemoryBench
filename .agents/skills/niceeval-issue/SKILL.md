@@ -1,15 +1,16 @@
 ---
 name: niceeval-issue
-description: 将 NiceEval 产品、API、CLI、文档、仓库或依赖摩擦脱敏、查重并在获当次授权后提交到 NiceEval/NiceEval；也用于安全重试和 Issue URL 交接。
+description: 将从 NiceEval 公开入口或 NiceEval-owned 文档、工具与官方集成观察到、且仍需 NiceEval maintainer 处理的摩擦脱敏、查重并在获当次授权后提交到 NiceEval/NiceEval；也用于安全重试和 Issue URL 交接。
 ---
 
 # NiceEval Issue
 
-把可复现的 NiceEval 摩擦交给 `NiceEval/NiceEval` 的公开 Issue；安全问题改走该仓库的 Private Vulnerability Reporting。公开 Issue URL 是长期 owner，本仓库不保留镜像日志。
+把可复现且仍由 NiceEval 负责的摩擦交给 `NiceEval/NiceEval` 的公开 Issue；安全问题改走该仓库的 Private Vulnerability Reporting。公开 Issue URL 是长期 owner，本仓库不保留镜像日志。
 
 ## 边界
 
-- 先停止当前受阻工作并向用户指出问题，不要用 workaround 掩盖 NiceEval DX。
+- 先判定 owner：MemoryBench 自己的指南、评估用例、实验配置、脚本和 workaround 在本仓库修；第三方服务或依赖的问题交给其 canonical upstream。只有 NiceEval 公开行为、随包文档、官方 Adapter 或官方工具仍需 NiceEval maintainer 处理时，才进入本流程。
+- NiceEval-owned 问题先停止当前受阻工作并向用户指出，不要在保留 Observation 和取得 Issue owner 前用 workaround 掩盖 NiceEval DX；已取得 owner 且继续工作不掩盖证据时可以 fix-forward。
 - 保留原始 Observation：只陈述实际行为、命令/输入、结果与影响。根因、责任归属和修复方向未经验证时写成“可能”或“建议”，不能冒充事实。
 - 远端 mutation（创建/评论 Issue、修改 label、提交 private report）前，必须取得用户对本次操作的明确授权。历史授权、项目规则和本地草稿不算授权；只读查询不需要 mutation 授权。
 - 不公开 token、secret、凭据、私有 endpoint、个人信息、绝对本机路径、未公开源码或不必要的私有运行数据。疑似漏洞或无法安全脱敏时停止公开流程，只向用户说明应使用 `https://github.com/NiceEval/NiceEval/security/advisories/new`。
@@ -18,7 +19,7 @@ description: 将 NiceEval 产品、API、CLI、文档、仓库或依赖摩擦脱
 
 1. 用 GitHub API 分页枚举 `NiceEval/NiceEval` 的 open + closed Issues（排除 Pull Requests），在本地搜索相关标题和正文。语义相同的已有 Issue 即为 owner；返回其 URL，不创建新 Issue。不要只搜 open，也不要只依赖 GitHub 搜索索引。
 2. 恰好选择一个 type：`bug`、`enhancement`、`documentation`。
-3. 恰好选择一个 area：`area:library`、`area:cli`、`area:runner`、`area:record`、`area:report`、`area:adapter`、`area:repository`、`area:dependency`。第三方或下游集成问题先投 NiceEval 并用 `area:dependency`，由 maintainer 再 route。
+3. 确认 NiceEval 仍保有责任后，恰好选择一个 area：`area:library`、`area:cli`、`area:runner`、`area:record`、`area:report`、`area:adapter`、`area:repository`、`area:dependency`。只有 NiceEval 对公开行为仍负责、但外部依赖参与或阻塞时才用 `area:dependency`；纯下游或纯第三方问题不得先投 NiceEval 再 route。
 4. 新 Issue 还要加 `needs-triage`。
 
 可用下面的只读基线取得完整候选集：
