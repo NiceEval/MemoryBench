@@ -31,17 +31,19 @@ This repo is a benchmark suite for coding-agent memory conditions. The core rule
 1. 这次工作中哪些环节用起来不舒服、别扭、低效？
 2. 其中哪些应该由 niceeval 官方提供（新 API、新 CLI 子命令、更好的默认值、更清晰的报错），而不是留在本仓库当 workaround？
 
-把结论写在任务总结里；值得跟进的记入 memory，并标注「候选上游 feature request」。
+把结论写在任务总结里。NiceEval 产品问题的长期 owner 是公开脱敏的上游 Issue；只有调查后确认的根因、裁决和可复用 know-how 才进入 memory，不能用 memory 代替 Issue 跟进。
 
-## 摩擦随手记（frog）
+## NiceEval 摩擦直接上报 GitHub Issues
 
-本仓库用 [frog](https://github.com/wevm/frog) 记录工作摩擦，条目落在 `.agents/friction-log/` 下、随代码提交。
+NiceEval 产品、API、CLI、文档、repository 或 dependency 的可复现问题直接由 [NiceEval/NiceEval Issues](https://github.com/NiceEval/NiceEval/issues) 跟进，不在本仓库保留第二份 friction log。执行入口见 `.agents/skills/niceeval-issue/SKILL.md`。
 
-- **遇到摩擦当场记**：`pnpx frog log`（工具、文档、API、测试、约定等 papercut）。只记「可复现、该修」的摩擦，不加全局、系统或内部摩擦（那是 memory 的活）。
-- **先查重**：`pnpx frog list` 看是否已知，别堆重复条目。
-- 可复现素材放进该条目的 `artifacts/` 并在写记里引用；下一任跑复现，不重新搭现场。
-- **收尾的 DX 反思环节必须对账**：跑一遍 `pnpx frog list`，把过程中「绕过去了但没记」的摩擦补 `pnpx frog log`。这条是兜底——即时记录会漏，收尾对账不漏。
-- 条目上报成 GitHub issue 靠 `frog publish`；issue 关闭后 `frog sync` 删条目，日志只留未解决的。未配 workflow 时手动跑即可。
+- **遇到问题先保留原始 Observation**：记录实际看到的行为、复现、影响和必要证据；推测、根因候选与建议必须明确标成尚未证实。不得因为准备上报而弱化上文“停止工作并指出”的要求，也不得先用 workaround 掩盖问题。
+- **先查 open + closed Issue**：在 `NiceEval/NiceEval` 同时搜索标题和正文；已有 owner 时交接现有 Issue URL，不重复创建。提交或对不确定结果重试前，还要按技能中的 machine marker 枚举核对。
+- **分类并脱敏**：类型只选 `bug`、`enhancement`、`documentation` 之一；area 只选 `area:library`、`area:cli`、`area:runner`、`area:record`、`area:report`、`area:adapter`、`area:repository`、`area:dependency` 之一；新 Issue 加 `needs-triage`。删除 secrets、token、私有 endpoint、个人信息、绝对本机路径和不必要的私有运行数据，保留足以复现的公开 provenance。
+- **安全问题不公开**：漏洞或可能泄露秘密的内容走 NiceEval 的 Private Vulnerability Reporting；不得先建公开 Issue、评论或用公开搜索泄露细节。
+- **远端 mutation 每次单独授权**：agent 创建 Issue、评论、改 label 或提交 private report 前，都必须取得用户在当前任务中的明确授权；历史授权、仓库规则和本地草稿都不能代替。本轮未授权时只准备脱敏草稿并向用户请求授权。
+- **Issue URL 是唯一跟进 owner**：成功后在交接中给出 URL；不要把正文、状态或链接再同步成本仓库日志。调查后形成的根因/裁决/know-how 仍按下方 memory 规范记录。
+- **收尾必须对账**：DX 反思时检查本轮是否出现尚无 owner 的 NiceEval 问题；按上述流程查重，并在获得当次授权后提交，否则明确列出待授权草稿。未来不再使用 Frog。
 
 ## What To Optimize For
 
@@ -202,7 +204,7 @@ sandbox 源码解决）。判定顺序固定：先问「CLI 的哪个切片应�
 `--history`、`--usage`、`--stats`。不要凭旧指南继续尝试这些参数。默认/实验概览会显示总成本，但 token 明细与
 跨历史稳定性矩阵目前没有等价 CLI 切片；需要它们时按呈现缺口处理，不得退回读取 `.niceeval/` 内部文件。
 
-已知呈现缺口（**候选上游 feature request**，遇到时直接说「CLI 看不到」，不要退回去读文件）：
+已知呈现缺口（遇到时直接说「CLI 看不到」，不要退回去读文件，并按上面的 NiceEval Issue 流程取得跟进 owner）：
 
 - **旧版快照曾丢沿用结果，但旧排查入口已经移除**：2026-08-04 曾观察到 `show`/`view` 默认概览没有完整组合
   carried/accepted 结果；当时依赖的 `show --exp <id> --history` 与 `show --stats` 在当前 CLI 均已不存在。
