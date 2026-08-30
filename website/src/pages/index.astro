@@ -8,108 +8,117 @@ const experiments = data.overview.experiments
 const totals = data.overview.totals;
 const maxCost = Math.max(...experiments.map((item) => metric(item.costUSD)), 0.000001);
 const maxDuration = Math.max(...experiments.map((item) => metric(item.durationMs)), 1);
+const maxPassRate = Math.max(...experiments.map((item) => metric(item.verdict.passRate)), 0);
 
 function metric(input: { readonly state: string; readonly value: number | null }): number {
   return input.state === "available" || input.state === "partial" ? input.value ?? 0 : 0;
 }
-
 function percent(input: { readonly state: string; readonly value: number | null }): string {
-  return input.state === "available" || input.state === "partial"
-    ? `${Math.round((input.value ?? 0) * 100)}%`
-    : "—";
+  return input.state === "available" || input.state === "partial" ? `${(Math.round((input.value ?? 0) * 1000) / 10).toFixed(1).replace(".0", "")}%` : "—";
 }
-
 function compact(input: { readonly state: string; readonly value: number | null }, unit = ""): string {
   if (input.state !== "available" && input.state !== "partial") return "—";
   return `${new Intl.NumberFormat("en", { maximumFractionDigits: 2, notation: "compact" }).format(input.value ?? 0)}${unit}`;
 }
-
 function duration(input: { readonly state: string; readonly value: number | null }): string {
   if (input.state !== "available" && input.state !== "partial") return "—";
-  return `${new Intl.NumberFormat("en", { maximumFractionDigits: 1, notation: "compact" }).format((input.value ?? 0) / 1000)} s`;
+  const hours = (input.value ?? 0) / 3_600_000;
+  return hours >= 1 ? `${hours.toFixed(1).replace(".0", "")} h` : `${Math.round((input.value ?? 0) / 60_000)} min`;
 }
-
 function label(input: { readonly state: string; readonly value?: string } | undefined): string {
-  if (!input || input.state === "unavailable") return "未记录";
-  if (input.state === "mixed") return "混合";
-  return input.value ?? "未记录";
+  if (!input || input.state === "unavailable") return "unknown";
+  if (input.state === "mixed") return "mixed";
+  return input.value ?? "unknown";
+}
+function experimentName(item: (typeof experiments)[number]): string {
+  const memory = label(item.labels?.memory);
+  return memory === "baseline" || memory === "unknown" ? label(item.agent) : `${label(item.agent)}+${memory}`;
+}
+function series(item: (typeof experiments)[number]): string {
+  return `series-${label(item.labels?.memory).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
 ---
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="MemoryBench：评估记忆是否帮助 coding agent 完成真实开发任务。" />
-    <title>MemoryBench</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <main>
-      <header class="hero">
-        <p class="eyebrow">Coding agent memory benchmark</p>
-        <h1>记忆真的让 agent<br /><em>做得更好吗？</em></h1>
-        <p class="lede">同一批真实开发任务、同一个模型，只切换 memory 条件。我们同时比较完成率、成本、耗时和失败路径。</p>
-        <div class="hero-meta">
-          <span>{experiments.length} 个实验</span><span>{totals.denominator.expected} 个任务槽位</span><span>sealed snapshot</span>
-        </div>
-      </header>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="MemoryBench：用同一模型和真实开发任务，评估记忆是否让 coding agent 做得更好。" />
+  <title>MemoryBench 2.0</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="https://niceeval.com" aria-label="NiceEval"><span class="mark" aria-hidden="true"></span><span>NiceEval</span></a>
+    <span class="page-name">MemoryBench 2.0</span>
+    <nav class="top-links" aria-label="项目链接"><a href="https://github.com/NiceEval/MemoryBench" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.02c-3.22.7-3.9-1.37-3.9-1.37-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.57-.29-5.27-1.28-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.93 10.93 0 0 1 5.75 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z" /></svg><span>GitHub</span>
+    </a></nav>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <p class="kicker">Coding agent memory benchmark</p>
+      <h1 id="page-title">MemoryBench 2.0</h1>
+      <p class="lede">记忆真的让 Agent 做得更好吗？</p>
+      <p class="description">同一模型、同一批真实开发任务，只切换 memory 条件。比较完成率、成本、耗时与失败路径。</p>
+      <div class="hero-actions">
+        <a class="button" href="https://github.com/NiceEval/MemoryBench" target="_blank" rel="noopener">Star on GitHub</a>
+        <a class="text-link" href="https://niceeval.com/zh/blog/introducing-memorybench" target="_blank" rel="noopener">了解评测方法 ↗</a>
+      </div>
+      <p class="snapshot">封存快照 · {experiments.length} 个实验 · {totals.denominator.expected} 个任务槽位</p>
+      <p class="powered"><a href="https://niceeval.com" target="_blank" rel="noopener">Powered by NiceEval</a></p>
+    </section>
 
-      <section aria-labelledby="summary-title">
-        <div class="section-heading"><p>01 / Overview</p><h2 id="summary-title">当前结果</h2></div>
-        <div class="stats">
-          <article><span>整体完成率</span><strong>{percent(totals.verdict.passRate)}</strong><small>{totals.verdict.tally.passed} passed / {totals.denominator.classified} classified</small></article>
-          <article><span>总成本</span><strong>{compact(totals.costUSD, " USD")}</strong><small>{totals.costUSD.state}</small></article>
-          <article><span>累计耗时</span><strong>{duration(totals.durationMs)}</strong><small>{totals.durationMs.samples} samples</small></article>
-          <article><span>覆盖缺口</span><strong>{totals.denominator.missing}</strong><small>{totals.issues.length} reported issues</small></article>
-        </div>
-      </section>
+    <section class="summary" aria-label="汇总结果">
+      <article><span>Pass rate</span><strong>{percent(totals.verdict.passRate)}</strong></article>
+      <article><span>Experiments</span><strong>{experiments.length}</strong></article>
+      <article><span>Attempts</span><strong>{totals.denominator.observed}</strong></article>
+      <article><span>Eval results</span><strong class="result-copy"><b>{totals.verdict.tally.passed} passed</b> <i>{totals.verdict.tally.failed} failed</i></strong></article>
+      <article><span>Total cost</span><strong>{compact(totals.costUSD, " USD")}</strong></article>
+      <article><span>Total time</span><strong>{duration(totals.durationMs)}</strong></article>
+    </section>
+    <p class="section-note">当前封存结果 · 最佳完成率 {Math.round(maxPassRate * 1000) / 10}%</p>
 
-      <section aria-labelledby="leaderboard-title">
-        <div class="section-heading"><p>02 / Comparison</p><h2 id="leaderboard-title">实验排行榜</h2></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>实验</th><th>Memory</th><th>Agent / Model</th><th>完成率</th><th>成本</th><th>耗时</th><th>覆盖</th></tr></thead>
-            <tbody>
-              {experiments.map((item, index) => <tr>
-                <td class="rank">{String(index + 1).padStart(2, "0")}</td>
-                <td><strong>{item.experimentId.replace(/^compare\//, "")}</strong><small>{item.evaluationKind}</small></td>
-                <td><span class:list={["pill", { missing: label(item.labels?.memory) === "未记录" }]}>{label(item.labels?.memory)}</span></td>
-                <td>{label(item.agent)}<small>{label(item.model)}</small></td>
-                <td><strong>{percent(item.verdict.passRate)}</strong><small>{item.verdict.tally.passed}/{item.denominator.classified}</small></td>
-                <td>{compact(item.costUSD, " USD")}</td>
-                <td>{compact(item.durationMs, " ms")}</td>
-                <td>{item.denominator.observed}/{item.denominator.expected}</td>
-              </tr>)}
-            </tbody>
-          </table>
-        </div>
-      </section>
+    <section class="chart-card" aria-labelledby="pass-rate-title">
+      <h2 id="pass-rate-title">Pass rate (%)</h2>
+      <div class="bars">{experiments.map((item) => <div class="bar-row">
+        <div class="bar-name"><strong>{experimentName(item)}</strong><span>{label(item.model)}</span></div>
+        <div class="bar-track"><span class:list={["bar-fill", series(item)]} style={`width:${Math.max(metric(item.verdict.passRate) * 100, 1)}%`}></span></div>
+        <div class="bar-value"><strong>{percent(item.verdict.passRate)}</strong><span>{item.verdict.tally.passed}/{item.denominator.classified}</span></div>
+      </div>)}</div>
+      <div class="legend">{[...new Set(experiments.map((item) => label(item.labels?.memory)))].map((memory) => <span><i class={`series-${memory.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}></i>{memory}</span>)}</div>
+    </section>
 
-      <section aria-labelledby="scatter-title">
-        <div class="section-heading"><p>03 / Efficiency</p><h2 id="scatter-title">质量、成本与耗时</h2></div>
-        <div class="scatter-card">
-          <svg viewBox="0 0 1000 480" role="img" aria-labelledby="scatter-title scatter-description">
-            <desc id="scatter-description">横轴为成本，纵轴为任务完成率，圆点大小表示耗时。</desc>
-            {[0, .25, .5, .75, 1].map((tick) => <g><line x1="90" x2="950" y1={410 - tick * 340} y2={410 - tick * 340}/><text x="70" y={416 - tick * 340}>{tick * 100}%</text></g>)}
-            {experiments.map((item) => {
-              const x = 90 + metric(item.costUSD) / maxCost * 860;
-              const y = 410 - metric(item.verdict.passRate) * 340;
-              const r = 8 + Math.sqrt(metric(item.durationMs) / maxDuration) * 22;
-              return <g class="point"><circle cx={x} cy={y} r={r}/><text x={x} y={y - r - 10}>{item.experimentId.replace(/^compare\//, "")}</text></g>;
-            })}
-            <text class="axis" x="520" y="465">成本 →</text>
-          </svg>
-        </div>
-      </section>
+    <section class="chart-card scatter-card" aria-labelledby="scatter-title">
+      <div class="chart-heading"><h2 id="scatter-title">Quality × cost</h2><span>better → upper left</span></div>
+      <svg viewBox="0 0 1000 500" role="img" aria-labelledby="scatter-title scatter-description">
+        <desc id="scatter-description">横轴为成本，纵轴为任务完成率，圆点大小表示耗时。</desc>
+        {[0, .25, .5, .75, 1].map((tick) => <g class="gridline"><line x1="90" x2="950" y1={420 - tick * 340} y2={420 - tick * 340}/><text x="72" y={425 - tick * 340}>{tick * 100}%</text></g>)}
+        {[0, .25, .5, .75, 1].map((tick) => <g class="gridline"><line x1={90 + tick * 860} x2={90 + tick * 860} y1="80" y2="420"/><text x={90 + tick * 860} y="448">${(tick * maxCost).toFixed(2)}</text></g>)}
+        {experiments.map((item, index) => {
+          const x = 90 + metric(item.costUSD) / maxCost * 860;
+          const y = 420 - metric(item.verdict.passRate) * 340;
+          const r = 7 + Math.sqrt(metric(item.durationMs) / maxDuration) * 10;
+          return <g class:list={["point", series(item)]}><circle cx={x} cy={y} r={r}/><text x={x + (index % 2 ? -14 : 14)} y={y - r - 10}>{experimentName(item)}</text></g>;
+        })}
+        <text class="axis-label" x="520" y="485">Cost (USD)</text><text class="axis-label y-axis" x="18" y="250">Pass rate (%)</text>
+      </svg>
+    </section>
 
-      <footer>
-        <p>数据由 NiceEval Query CLI 在构建期读取；浏览器产物不包含 Record 或 SQLite。</p>
-        <p>Snapshot <code>{data.cutoffIdentity.slice(0, 18)}…</code> · {data.generatedAt}</p>
-      </footer>
-    </main>
-  </body>
+    <section class="table-card" aria-labelledby="details-title">
+      <div class="chart-heading"><h2 id="details-title">Experiment details</h2><span>封存数据</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Experiment</th><th>Memory</th><th>Agent / Model</th><th>Pass rate</th><th>Cost</th><th>Time</th><th>Coverage</th></tr></thead>
+        <tbody>{experiments.map((item) => <tr>
+          <td><strong>{item.experimentId.replace(/^compare\//, "")}</strong><small>{item.evaluationKind}</small></td>
+          <td><span class="condition"><i class={series(item)}></i>{label(item.labels?.memory)}</span></td>
+          <td>{label(item.agent)}<small>{label(item.model)}</small></td>
+          <td><strong>{percent(item.verdict.passRate)}</strong><small>{item.verdict.tally.passed}/{item.denominator.classified}</small></td>
+          <td>{compact(item.costUSD, " USD")}</td><td>{duration(item.durationMs)}</td><td>{item.denominator.observed}/{item.denominator.expected}</td>
+        </tr>)}</tbody>
+      </table></div>
+    </section>
+    <footer><p>数据在构建期通过 NiceEval Inspection API 读取；浏览器产物不包含 Record 或 SQLite。</p><p><a href="https://github.com/NiceEval/MemoryBench" target="_blank" rel="noopener">GitHub</a> · Snapshot <code>{data.cutoffIdentity.slice(0, 18)}…</code> · {data.generatedAt}</p></footer>
+  </main>
+</body>
 </html>
