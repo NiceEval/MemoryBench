@@ -1,5 +1,5 @@
 import { defineEvalGroup } from "niceeval";
-import { sandboxLayer } from "niceeval/sandbox";
+import { changeFrequency, sandboxLayer, shell } from "niceeval/sandbox";
 import entryStats from "./01-entry-stats/eval.ts";
 import entryBill from "./02-entry-bill/eval.ts";
 import entryBillWeekly from "./03-entry-bill-weekly/eval.ts";
@@ -9,10 +9,10 @@ import entryInvoiceMonthly from "./06-entry-invoice-monthly/eval.ts";
 
 export default defineEvalGroup({
   onUnavailable: "stop-group",
-  sandbox: sandboxLayer().setup(async (sandbox, ctx) => {
-    ctx.progress({ message: "installing build deps + rust toolchain" });
-    const script = [
-      "set -euo pipefail",
+  sandbox: sandboxLayer().before(shell({
+    id: "toggl-cli.install-rust-toolchain",
+    command: [
+      "set -eu",
       "export DEBIAN_FRONTEND=noninteractive",
       "if command -v apt-get >/dev/null 2>&1; then",
       "  APT_WAIT='-o DPkg::Lock::Timeout=300'",
@@ -46,14 +46,10 @@ export default defineEvalGroup({
       "fi",
       "cargo --version",
       "python3 --version",
-    ].join("\n");
-
-    const installed = await sandbox.runCommand("bash", ["-lc", script], { user: "root" });
-    if (installed.exitCode !== 0) {
-      throw new Error(
-        `rust toolchain setup failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`,
-      );
-    }
-  }),
+    ].join("\n"),
+    user: "root",
+    changeFrequency: changeFrequency.rare,
+    cache: { fingerprint: "rust-stable-r1" },
+  })),
   evals: [entryStats, entryBill, entryBillWeekly, billingDoc, entryInvoice, entryInvoiceMonthly],
 });

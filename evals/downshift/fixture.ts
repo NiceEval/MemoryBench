@@ -13,7 +13,7 @@ const installDependencies = dependencyInstall({
   commands: [
     shell(
       [
-        "set -euo pipefail",
+        "set -eu",
         "CYPRESS_INSTALL_BINARY=0 npm install --legacy-peer-deps --ignore-scripts",
         "npm install --no-save --save-exact --legacy-peer-deps --ignore-scripts " +
           "@babel/plugin-proposal-private-property-in-object@7.21.11 " +
@@ -25,5 +25,5 @@ const installDependencies = dependencyInstall({
 
 export const prepareRepo = (baseCommit: string) =>
   sandboxLayer()
-    .prepare(repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }))
-    .prepare(installDependencies);
+    .before(repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }))
+    .before(installDependencies);

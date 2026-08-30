@@ -1,7 +1,7 @@
 import { defineExperiment } from "niceeval";
 import { dockerSandbox } from "niceeval/sandbox";
 import { bubAgent } from "niceeval/adapter";
-import { BUB_DOCKER_IMAGE } from "../shared/bub.ts";
+import { BUB_BASE_IMAGE, memorybenchBaseSetup } from "../shared/sandbox-base.ts";
 
 // 文件夹 compare = 唯一一组【可对比】的实验:同一批记忆 eval、同一个模型(gpt-5.6-luna)。
 // 实验名不携带模型名。`niceeval exp compare` 跑整组。
@@ -20,7 +20,7 @@ import { BUB_DOCKER_IMAGE } from "../shared/bub.ts";
 // bub 到底有没有跨 session 检索历史 tape 的能力**——文档没有任何一处说它会。
 export default defineExperiment({
   description: "bub · gpt-5.6-luna",
-  labels: { line: "bub" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
+  labels: { line: "bub", memory: "baseline" },  // 报告坐标必须随 sealed Run 保存，网页不读取私有 flags
   // 显式共用 CODEX_* 代理，保证两条 baseline 的模型与上游服务一致。
   agent: bubAgent({
     apiBase: process.env.CODEX_BASE_URL,
@@ -31,13 +31,15 @@ export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   // 官方 Bub r2 虽声明 USER node，但 /usr/local 仍归 root，lightbox 的 Group setup 无法用
   // `n` 切 Node 版本。派生镜像只补齐非 root Node 工具安装面；上游修复后改回官方常量。
-  sandbox: dockerSandbox({ source: { type: "image", image: BUB_DOCKER_IMAGE }, lifetimeMs: 60 * 60_000 }),
+  sandbox: dockerSandbox({ source: { type: "image", image: BUB_BASE_IMAGE }, lifetimeMs: 60 * 60_000 })
+    .before(memorybenchBaseSetup("bub")),
   // 注:workspace(starter repo)上传 + 装依赖不在这儿 —— 那属于「eval 在什么上面干活」,
   // 写在各 eval 的 test(t) 里(t.sandbox.uploadDirectory + runCommand)。experiment 只管怎么跑。
   earlyExit: false, // 要完整通过率分布,以便报 pass^k
   // 六个 Eval Group 各占一条可复用 lane；Group 内串行，Group 间全部并行。
-  // 全局 30 只是多实验共同运行时的安全阀，不替代本实验的复用边界。
-  maxConcurrency: 6,
+  // 全局 10 是多实验共同运行时的资源安全阀，不替代本实验的复用边界。
+  // One long-lived Sandbox per compare maximizes physical reuse; the repo cap is 10.
+  maxConcurrency: 1,
   // 与 codex 各条对齐(重型题 mvn build / pytest 可能超 10 分钟),消除条件间超时偏置。
   // toggl-cli 五条链式题自己声明 timeoutMs: 1_800_000,实验级上限比它紧会把单题超时截短,
   // 所以这里必须 ≥ 它 —— 原来的 1_200_000 就是在截断它们。

@@ -161,6 +161,16 @@ lifecycle、Agent extension 与 Sandbox prepare 收进有版本 identity 的 Plu
 不得把数组位置解释成完整记忆轨迹；需要前缀顺序的实验等显式排序契约落地后再正式采集。沿用旧 cohort 继续跑只用于
 调试，不与完整批次混作同一比较样本。真正无法固定的 Provider 环境身份仍会以 `carry-disabled` 阻断沿用。
 
+### Active compare 的 Sandbox 只引用 NiceEval 官方 Agent 镜像
+
+`experiments/compare/` 当前五条实验统一从 NiceEval 导出的 Bub/Codex 官方镜像常量起步；仓库不再
+要求操作者预构建 `memorybench-*` 镜像。权限修正、公共系统工具、Mempal/Obelisk/Remem 安装、
+预热和探针必须用带稳定 `id`、输入内容、配方 revision/fingerprint 与 `changeFrequency` 的
+`SandboxAction` 声明，让 Docker SetupPrefix cache 自动构建、发现、管理和复用最长匹配前缀。
+只有 checkpoint 恢复/回存、队列 drain 等依赖运行期状态的步骤才保留 callback；callback 应排在
+所有稳定工具层之后，避免过早形成 cache barrier。跨 Attempt 的记忆生命周期仍由 Eval Group
+物理复用及各条件自己的 checkpoint/hook 契约负责，不能把 setup cache 当成记忆状态持久层。
+
 ## Reporting
 
 When summarizing results, report both:

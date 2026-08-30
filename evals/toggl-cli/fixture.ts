@@ -23,7 +23,7 @@ export const SANDBOX_DISK_LOW_THRESHOLD_KB = 4 * 1024 * 1024;
 
 /** 只查一次根文件系统；/opt/cargo-target 是刻意保留的 Cargo 加速缓存。 */
 export const SANDBOX_DISK_CHECK_COMMAND = [
-  "set -euo pipefail",
+  "set -eu",
   "df -Pk / 2>/dev/null",
   "du -sk /opt/cargo-target 2>/dev/null",
 ].join("\n");
@@ -175,5 +175,5 @@ const installDependencies = dependencyInstall({
 
 /** Check out the common base, then warm Cargo per Attempt. */
 export const prepareRepo = sandboxLayer()
-  .prepare(repository.checkout({ commit: BASE_COMMIT, acceptCohortObjectVisibility: true }))
-  .prepare(installDependencies);
+  .before(repository.checkout({ commit: BASE_COMMIT, acceptCohortObjectVisibility: true }))
+  .before(installDependencies);

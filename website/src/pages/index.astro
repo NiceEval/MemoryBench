@@ -77,7 +77,7 @@ function label(input: { readonly state: string; readonly value?: string } | unde
               {experiments.map((item, index) => <tr>
                 <td class="rank">{String(index + 1).padStart(2, "0")}</td>
                 <td><strong>{item.experimentId.replace(/^compare\//, "")}</strong><small>{item.evaluationKind}</small></td>
-                <td><span class:list={["pill", { missing: label(item.labels.memory) === "未记录" }]}>{label(item.labels.memory)}</span></td>
+                <td><span class:list={["pill", { missing: label(item.labels?.memory) === "未记录" }]}>{label(item.labels?.memory)}</span></td>
                 <td>{label(item.agent)}<small>{label(item.model)}</small></td>
                 <td><strong>{percent(item.verdict.passRate)}</strong><small>{item.verdict.tally.passed}/{item.denominator.classified}</small></td>
                 <td>{compact(item.costUSD, " USD")}</td>
@@ -107,7 +107,7 @@ function label(input: { readonly state: string; readonly value?: string } | unde
       </section>
 
       <footer>
-        <p>数据由 NiceEval Inspection Host 在构建期读取；浏览器产物不包含 Record 或 SQLite。</p>
+        <p>数据由 NiceEval Query CLI 在构建期读取；浏览器产物不包含 Record 或 SQLite。</p>
         <p>Snapshot <code>{data.cutoffIdentity.slice(0, 18)}…</code> · {data.generatedAt}</p>
       </footer>
     </main>

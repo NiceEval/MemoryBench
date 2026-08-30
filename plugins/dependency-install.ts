@@ -1,7 +1,4 @@
-import {
-  defineSandboxCommand,
-  type SandboxCommand,
-} from "niceeval/sandbox";
+import type { SandboxCommand } from "niceeval/sandbox";
 
 export interface DependencyInstallOptions {
   readonly name: string;
@@ -12,7 +9,8 @@ export interface DependencyInstallOptions {
 /**
  * 依赖安装是每条 Attempt 的 Sandbox 准备工作，不是 Plugin。
  *
- * Plugin 当前只组合生命周期；命令的稳定身份由 `id`、`revision` 与 `inputs` 提供。
+ * 保留传入 action 的原始表示，避免把声明式 shell action 包进 callback 后变成 cache barrier。
+ * `name` / `revision` 仍作为调用点的显式审阅信息；action 内容本身由 NiceEval 自动 fingerprint。
  */
 export function dependencyInstall({ name, revision, commands }: DependencyInstallOptions): SandboxCommand {
   if (!/^[a-z0-9][a-z0-9._-]*$/.test(name)) {
@@ -22,17 +20,8 @@ export function dependencyInstall({ name, revision, commands }: DependencyInstal
     throw new TypeError("dependency install revision must be non-empty");
   }
 
-  return defineSandboxCommand(
-    {
-      id: "memorybench.dependency-install",
-      revision,
-      inputs: { name },
-    },
-    async (sandbox, ctx) => {
-      ctx.progress({ message: `installing ${name} dependencies` });
-      for (const command of commands) {
-        await command(sandbox, ctx);
-      }
-    },
-  );
+  if (commands.length !== 1) {
+    throw new TypeError("dependency install expects one composed declarative command");
+  }
+  return commands[0];
 }

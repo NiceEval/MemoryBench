@@ -1,7 +1,8 @@
 import { setTimeout as delay } from "node:timers/promises";
 import type { CodexConfig } from "niceeval/adapter";
-import { command, NICEEVAL_CODEX_DOCKER_IMAGE, shell } from "niceeval/sandbox";
+import { changeFrequency, command, shell } from "niceeval/sandbox";
 import type {
+  SandboxAction,
   SandboxCommand,
   SandboxCommandTarget,
 } from "niceeval/sandbox";
@@ -131,10 +132,6 @@ import type {
  * 重建镜像:`bash scripts/build-codex-remem-docker-image.sh`。
  */
 
-/** NiceEval 公开、版本钉死的当前 Codex Docker 基底；构建脚本与此常量同步读取。 */
-const CODEX_REMEM_BASE_IMAGE = NICEEVAL_CODEX_DOCKER_IMAGE;
-const CODEX_REMEM_BASE_TAG = CODEX_REMEM_BASE_IMAGE.slice(CODEX_REMEM_BASE_IMAGE.lastIndexOf(":") + 1);
-
 /**
  * remem crates.io 版本,构建镜像与结果 flags 共用这一处。2026-08-04 GitHub Releases 最新版。
  * 每次升级同时改三处并保持一致(镜像 tag 不是从这个常量自动计算的哈希,是手动同步,
@@ -143,6 +140,9 @@ const CODEX_REMEM_BASE_TAG = CODEX_REMEM_BASE_IMAGE.slice(CODEX_REMEM_BASE_IMAGE
  * experiments/shared/docker/codex-remem.Dockerfile 的 REMEM_VERSION 默认值。
  */
 export const REMEM_VERSION = "0.6.47";
+
+// 2026-08-30 起 active compare 不再依赖历史派生镜像；原 ABI/构建记录保留作 provenance，
+// 当前由 rememPrepare() 在 NiceEval 官方 Codex 基底上声明式源码安装并进入 SetupPrefix cache。
 
 /**
  * Dockerfile 本身的配方版本(与 remem 版本、base 镜像版本正交):派生镜像里"多做了什么"
@@ -156,14 +156,12 @@ export const REMEM_VERSION = "0.6.47";
  * r7 = 基底改为从 NiceEval 公开 Codex Docker 镜像常量读取，当前解析为 r5，避免本仓库手写
  * 过时的 Agent 基底 tag。
  */
-const CODEX_REMEM_DOCKERFILE_REVISION = "r7";
-
-/** 派生镜像 tag——base 镜像版本、remem 版本、Dockerfile 配方版本都编进去,任一个变了 tag 自然不同。 */
-export const REMEM_DOCKER_IMAGE = `memorybench-codex-remem:${CODEX_REMEM_BASE_TAG}-${REMEM_VERSION}-${CODEX_REMEM_DOCKERFILE_REVISION}`;
+export const REMEM_SETUP_REVISION = "r8";
 
 const REMEM_TEARDOWN_DRAIN_TIMEOUT_MS = 25_000;
 const REMEM_SETUP_RECOVERY_TIMEOUT_MS = 5 * 60_000;
 const REMEM_DRAIN_POLL_MS = 1_000;
+const REMEM_BIN = "/usr/local/bin/remem";
 const REMEM_CODEX_WRAPPER = "$HOME/.local/bin/remem-codex";
 
 /** 报告分组与 provenance 共用的实验事实。 */
@@ -201,21 +199,23 @@ function assertMemoryModel(memoryModel: string): void {
 }
 
 /**
- * Sandbox `.prepare()`:每条 Attempt 重放的薄探测,只验证派生镜像里已经烘好的 remem 二进制
- * 版本对不对——与 mempalPrepare 同一个思路：二者都验证预制 Docker 镜像里的二进制。
- * 不在这里装任何东西：装的活全在构建镜像阶段做完。
+ * 声明式安装层由 SetupPrefix cache 自动构建、发现和复用；只有后面的 extraction drain
+ * 因为依赖运行期队列状态而继续保留 callback。
  */
-export function rememPrepare(): SandboxCommand {
-  const missing =
-    `[remem] image does not contain remem ${REMEM_VERSION}. Build ${REMEM_DOCKER_IMAGE} with ` +
-    "`bash scripts/build-codex-remem-docker-image.sh`, then use that image.";
-  return shell(
-    [
+export function rememPrepare(): SandboxAction {
+  return shell({
+    id: "memorybench.remem.install",
+    command: [
       "set -eu",
-      `command -v remem >/dev/null 2>&1 || { printf '%s\\n' ${JSON.stringify(missing)} >&2; exit 1; }`,
-      `remem --version | grep -F -- ${JSON.stringify(REMEM_VERSION)} >/dev/null || { printf '%s\\n' ${JSON.stringify(missing)} >&2; exit 1; }`,
+      'export PATH="/usr/local/bin:$HOME/.cargo/bin:$PATH"',
+      'command -v cargo >/dev/null 2>&1 || { curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal; }',
+      `${REMEM_BIN} --version 2>/dev/null | grep -F -- ${JSON.stringify(REMEM_VERSION)} >/dev/null || cargo install remem-ai --version ${JSON.stringify(REMEM_VERSION)} --bin remem --no-default-features --locked --root /usr/local`,
+      `${REMEM_BIN} --version | grep -F -- ${JSON.stringify(REMEM_VERSION)} >/dev/null`,
     ].join("\n"),
-  );
+    user: "node",
+    changeFrequency: changeFrequency.rare,
+    cache: { fingerprint: `${REMEM_VERSION}-${REMEM_SETUP_REVISION}` },
+  });
 }
 
 const INSTALL_REMEM_CODEX_WRAPPER = [
@@ -245,17 +245,17 @@ export function rememPostSetup(
   const wrapperPath = REMEM_CODEX_WRAPPER.replace("$HOME", "${HOME}");
   return [
     shell(INSTALL_REMEM_CODEX_WRAPPER, { env: { CODEX_BASE_URL: codexBaseUrl } }),
-    command("remem", ["install", "--target", "codex"]),
-    shell(`remem config set memory_ai.profiles.codex.path "${wrapperPath}"`),
-    command("remem", ["model", "use", memoryModel, "--profile", "codex"]),
+    command(REMEM_BIN, ["install", "--target", "codex"]),
+    shell(`${REMEM_BIN} config set memory_ai.profiles.codex.path "${wrapperPath}"`),
+    command(REMEM_BIN, ["model", "use", memoryModel, "--profile", "codex"]),
     shell(
       [
         "set -eu",
         'grep -q \'"SessionStart"\' "${CODEX_HOME:-$HOME/.codex}/hooks.json"',
         'grep -q \'"Stop"\' "${CODEX_HOME:-$HOME/.codex}/hooks.json"',
         'grep -q "mcp_servers.remem" "${CODEX_HOME:-$HOME/.codex}/config.toml"',
-        `remem config show | grep -Fq -- "${wrapperPath}"`,
-        `remem model current --profile codex | grep -Fq -- ${JSON.stringify(memoryModel)}`,
+        `${REMEM_BIN} config show | grep -Fq -- "${wrapperPath}"`,
+        `${REMEM_BIN} model current --profile codex | grep -Fq -- ${JSON.stringify(memoryModel)}`,
         `"${REMEM_CODEX_WRAPPER}" --help >/dev/null`,
       ].join("\n"),
       { env: { CODEX_BASE_URL: codexBaseUrl } },
@@ -299,7 +299,7 @@ function statusCount(value: unknown, label: string): number {
 }
 
 async function readRememStatus(sb: SandboxCommandTarget, signal: AbortSignal): Promise<RememStatus> {
-  const result = await sb.runCommand("remem", ["status", "--json"], { signal });
+  const result = await sb.runCommand(REMEM_BIN, ["status", "--json"], { signal });
   if (result.exitCode !== 0) throw commandFailure("remem status --json", result);
   try {
     return JSON.parse(result.stdout) as RememStatus;
@@ -387,7 +387,7 @@ function rememDrainExtraction(
       }
 
       if (running === 0) {
-        const worker = await sb.runCommand("remem", ["worker", "--once"], {
+        const worker = await sb.runCommand(REMEM_BIN, ["worker", "--once"], {
           env: {
             CODEX_API_KEY: credentials.apiKey,
             CODEX_BASE_URL: credentials.baseUrl,

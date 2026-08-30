@@ -41,14 +41,15 @@ export default defineConfig({
   // 看到 `judge precheck failed` 先分清 404(模型下架,换名字)与 timed out(并发占满,见下面 maxConcurrency 那段),
   // 两者报错都指向 baseUrl,极易误诊。探活一条 curl 就够,别靠改配置试。
 
-  timeoutMs: 600_000,
+  // compare 的重型仓库题与链式记忆题按 30 分钟设计；全局值不能把实验级上限截回 10 分钟。
+  timeoutMs: 1_800_000,
 
-  // 全局上限只作为多实验共同运行时的安全阀；各实验按自己的 Eval Group 数量设置并发，
-  // 让每条可复用 lane 同时推进，又不会在同一 Group 内并行。
+  // 全局硬上限同时约束多实验首次 SetupPrefix miss，避免多个 Attempt 并发编译
+  // mempal/remem 形成 cache stampede 并触发 OOM；各实验仍按 Eval Group 设置 lane 并发。
   // 另见 memory: niceeval-budget-probe-starves-global-semaphore。
   //
   // 注意这是**全局**上限;实验自己声明的 maxConcurrency 是独立的实验级闸,只串行化本实验,
   // 不钳全局（共享状态条件由各自 Eval Group 的串行队列保证）。
   //
-  maxConcurrency: 30,
+  maxConcurrency: 10,
 });

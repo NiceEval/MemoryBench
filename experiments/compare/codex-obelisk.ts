@@ -2,11 +2,11 @@ import { defineExperiment } from "niceeval";
 import { dockerSandbox } from "niceeval/sandbox";
 import { codexAgent } from "niceeval/adapter";
 import {
-  OBELISK_DOCKER_IMAGE,
   obeliskCodexConfig,
   obeliskFlags,
   obeliskProbe,
 } from "../shared/obelisk.ts";
+import { CODEX_BASE_IMAGE, memorybenchBaseSetup } from "../shared/sandbox-base.ts";
 
 // Obelisk 的 session archive 也只存在于当前物理容器；与 Remem 一样，TTL 必须覆盖
 // 最长 8-member Group 的整条 lane，不能在正常寿命轮换时丢掉前题会话。
@@ -35,18 +35,20 @@ const STATEFUL_GROUP_LIFETIME_MS = 5 * 60 * 60_000;
 export default defineExperiment({
   evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
   description: "codex · gpt-5.6-luna · obelisk",
-  labels: { line: "codex" },  // 报告归类:同 line 值连成一条线(baseline → 变体),见 niceeval docs「labels」
+  labels: { line: "codex", memory: "obelisk" },  // 报告坐标必须随 sealed Run 保存，网页不读取私有 flags
   // Agent factory 提供 Skill 与每条 Attempt 的归档/还原，物理镜像探针仍由 Sandbox 明确拥有。
   agent: codexAgent(obeliskCodexConfig()),
   flags: obeliskFlags(),
   model: "gpt-5.6-luna",
   // Docker TTL 不可续期；5 小时覆盖 8 × 30 分钟的最长 Group 和收尾余量。
-  sandbox: dockerSandbox({ source: { type: "image", image: OBELISK_DOCKER_IMAGE }, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS })
-    .setup(obeliskProbe()),
+  sandbox: dockerSandbox({ source: { type: "image", image: CODEX_BASE_IMAGE }, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS, pathPrepend: ["/usr/local/bin"] })
+    .before(memorybenchBaseSetup("codex"))
+    .before(obeliskProbe()),
   earlyExit: false,
   // Group 内沿实际执行历史积累 session；不同仓库家族使用独立 Sandbox 并行推进。
   // 当前 Eval Group 不把数组位置解释成业务顺序。
-  maxConcurrency: 6,
+  // One long-lived Sandbox per compare maximizes physical reuse; the repo cap is 10.
+  maxConcurrency: 1,
   // 与 codex baseline/mempal/nowledge 对齐,消除条件间超时偏置;toggl-cli 链式题需要
   // 30 分钟的 agent 超时,实验级上限不能比它更紧。
   timeoutMs: 1_800_000,

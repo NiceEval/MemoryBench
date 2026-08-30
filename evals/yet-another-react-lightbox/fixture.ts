@@ -15,5 +15,5 @@ const installDependencies = dependencyInstall({
 
 export const prepareRepo = (baseCommit: string) =>
   sandboxLayer()
-    .prepare(repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }))
-    .prepare(installDependencies);
+    .before(repository.checkout({ commit: baseCommit, acceptCohortObjectVisibility: true }))
+    .before(installDependencies);

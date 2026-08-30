@@ -1,6 +1,6 @@
 import type { CodexConfig, SkillSpec } from "niceeval/adapter";
-import { NICEEVAL_CODEX_DOCKER_IMAGE } from "niceeval/sandbox";
-import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
+import { changeFrequency, shell } from "niceeval/sandbox";
+import type { SandboxAction, SandboxCommand } from "niceeval/sandbox";
 
 /**
  * Obelisk 记忆条件:官方 Node CLI(`@obelisk-apps/cli`)把 `~/.codex/sessions`(以及
@@ -123,6 +123,9 @@ import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "n
 export const OBELISK_VERSION = "0.2.2";
 const OBELISK_SKILL_REVISION = "f618952b1e366a2cc7b86525347fafd654091854";
 
+// 2026-08-30 起 active compare 直接引用 NiceEval 官方 Codex 镜像；下方派生镜像段落仅保留
+// 历史诊断 provenance。当前安装、权限修正与探针由 SandboxAction + SetupPrefix cache 承担。
+
 /**
  * 本地派生镜像：`scripts/obelisk-docker/Dockerfile` 从官方 `niceeval/codex:0.144.1-r4`
  * 删掉预装 Yarn、把 obelisk CLI 烘进镜像、恢复基底声明的 `USER node`，`pnpm docker:obelisk`
@@ -140,18 +143,8 @@ const OBELISK_SKILL_REVISION = "f618952b1e366a2cc7b86525347fafd654091854";
  */
 // r5 = 补 python3（2026-08-05；官方 codex Docker 镜像缺、toggl-cli probe 需要）。
 // r6 = 基底从 NiceEval 公开 Codex Docker 镜像常量读取，避免本仓库复制 Agent 镜像 tag。
-const OBELISK_DOCKERFILE_REVISION = "r6";
-const OBELISK_BASE_IMAGE = NICEEVAL_CODEX_DOCKER_IMAGE;
-const OBELISK_BASE_TAG = OBELISK_BASE_IMAGE.slice(OBELISK_BASE_IMAGE.lastIndexOf(":") + 1);
-
-/**
- * 派生镜像 tag——base 镜像版本、obelisk 版本、Dockerfile 配方版本都编进去，任一个变了 tag
- * 自然不同（与 remem.ts 的 `REMEM_DOCKER_IMAGE` 同一命名方案）。2026-08-04 从
- * `memorybench-codex-noyarn:0.144.1-r3` 改名为 `memorybench-codex-obelisk`：配方已经从
- * 「只删 Yarn」变成「删 Yarn + 装 obelisk CLI + 非 root」，旧名字不再准确，也不该被新构建
- * 静默覆盖。同日晚些时候基底从 r3 迁到 r4（见上方常量注释），tag 前缀同步更新。
- */
-export const OBELISK_DOCKER_IMAGE = `memorybench-codex-obelisk:${OBELISK_BASE_TAG}-${OBELISK_VERSION}-${OBELISK_DOCKERFILE_REVISION}`;
+export const OBELISK_SETUP_REVISION = "r7";
+const OBELISK_BIN = "/usr/local/bin/obelisk";
 
 /**
  * 教 agent 用 `obelisk --search` / `--query` 检索历史会话的官方 Skill。内容从
@@ -172,18 +165,6 @@ export function obeliskFlags(): Record<string, string> {
   };
 }
 
-function commandLog(ctx: SandboxHookContext, message: string): void {
-  ctx.progress({ message });
-}
-
-async function requireCommand(sb: Sandbox, label: string, script: string): Promise<void> {
-  const result = await sb.runShell(script);
-  if (result.exitCode !== 0) {
-    const tail = (result.stderr || result.stdout).trim().slice(-500) || "no output";
-    throw new Error(`[obelisk] ${label} failed (exit ${result.exitCode}): ${tail}`);
-  }
-}
-
 /**
  * 归档目录挪到 `$HOME` 之外的 `/opt`：跨 Attempt 记忆本来就是记忆条件自己的职责（与 mempal
  * 的 host 侧 checkpoint 同构）。选 `/opt` 而不是 `$HOME` 下的子目录不是因为 `/opt` 有什么
@@ -195,7 +176,7 @@ async function requireCommand(sb: Sandbox, label: string, script: string): Promi
  * 镜像构建期 `chown` 给了 `node`（见 `scripts/obelisk-docker/Dockerfile`），运行时以 node
  * 身份写入不受权限阻挡。
  */
-const SESSION_ARCHIVE_DIR = "/opt/obelisk-session-archive";
+const SESSION_ARCHIVE_DIR = "$HOME/.obelisk-session-archive";
 
 /**
  * `preTeardown`:agent 回合结束、`$HOME` 被重置之前，把这条 Attempt 写下的 rollout jsonl
@@ -250,23 +231,18 @@ export function obeliskRestoreSessions(): SandboxCommand {
  * 不在这里代 agent 建索引或跑 `obelisk --build`——首次索引和后续查询都是被测 Skill 该教会
  * agent 自己做的事，属于记忆条件本身，不是环境准备。
  */
-export function obeliskProbe(): SandboxHook {
-  return async (sb, ctx) => {
-    const probe = await sb.runShell("command -v obelisk");
-    if (probe.exitCode !== 0) {
-      throw new Error(
-        `[obelisk] image does not contain obelisk. Build ${OBELISK_DOCKER_IMAGE} with ` +
-          "`bash scripts/build-obelisk-docker-image.sh`, then use that image.",
-      );
-    }
-    await requireCommand(sb, "obelisk on PATH", `obelisk --version 2>/dev/null | grep -Fx "${OBELISK_VERSION}"`);
-    await requireCommand(
-      sb,
-      "obelisk on agent PATH",
-      `/usr/bin/obelisk --version 2>/dev/null | grep -Fx "${OBELISK_VERSION}"`,
-    );
-    commandLog(ctx, `[obelisk] image probe passed: obelisk-cli ${OBELISK_VERSION}`);
-  };
+export function obeliskProbe(): SandboxAction {
+  return shell({
+    id: "memorybench.obelisk.install",
+    command: [
+      "set -eux",
+      `${OBELISK_BIN} --version 2>/dev/null | grep -Fx ${JSON.stringify(OBELISK_VERSION)} || npm install -g --prefix /usr/local ${JSON.stringify(`@obelisk-apps/cli@${OBELISK_VERSION}`)}`,
+      `${OBELISK_BIN} --version 2>/dev/null | grep -Fx ${JSON.stringify(OBELISK_VERSION)}`,
+    ].join("\n"),
+    user: "node",
+    changeFrequency: changeFrequency.rare,
+    cache: { fingerprint: `${OBELISK_VERSION}-${OBELISK_SETUP_REVISION}` },
+  });
 }
 
 /** Obelisk 的 Skill 与 session hooks 直接属于官方 Codex Agent factory。 */
