@@ -61,7 +61,7 @@ memorybench/
 │     ├─ bub-gpt-5.4.ts
 │     └─ codex-gpt-5.4.ts
 ├─ workspaces/             # per-eval starter repos
-├─ reports/                # custom NiceEval reports
+├─ website/                # Astro 静态站；构建期读取 NiceEval Inspection documents
 ├─ docs/benchmarks.md      # SWE benchmark survey and candidate evals
 └─ niceeval.config.ts      # agents, judge, sandbox defaults
 ```

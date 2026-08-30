@@ -1,0 +1,115 @@
+---
+import { loadMemoryBenchReport } from "../lib/inspection.ts";
+
+const data = await loadMemoryBenchReport(process.cwd());
+const experiments = data.overview.experiments
+  .filter(({ experimentId }) => experimentId.startsWith("compare/"))
+  .sort((a, b) => metric(b.verdict.passRate) - metric(a.verdict.passRate));
+const totals = data.overview.totals;
+const maxCost = Math.max(...experiments.map((item) => metric(item.costUSD)), 0.000001);
+const maxDuration = Math.max(...experiments.map((item) => metric(item.durationMs)), 1);
+
+function metric(input: { readonly state: string; readonly value: number | null }): number {
+  return input.state === "available" || input.state === "partial" ? input.value ?? 0 : 0;
+}
+
+function percent(input: { readonly state: string; readonly value: number | null }): string {
+  return input.state === "available" || input.state === "partial"
+    ? `${Math.round((input.value ?? 0) * 100)}%`
+    : "—";
+}
+
+function compact(input: { readonly state: string; readonly value: number | null }, unit = ""): string {
+  if (input.state !== "available" && input.state !== "partial") return "—";
+  return `${new Intl.NumberFormat("en", { maximumFractionDigits: 2, notation: "compact" }).format(input.value ?? 0)}${unit}`;
+}
+
+function duration(input: { readonly state: string; readonly value: number | null }): string {
+  if (input.state !== "available" && input.state !== "partial") return "—";
+  return `${new Intl.NumberFormat("en", { maximumFractionDigits: 1, notation: "compact" }).format((input.value ?? 0) / 1000)} s`;
+}
+
+function label(input: { readonly state: string; readonly value?: string } | undefined): string {
+  if (!input || input.state === "unavailable") return "未记录";
+  if (input.state === "mixed") return "混合";
+  return input.value ?? "未记录";
+}
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="MemoryBench：评估记忆是否帮助 coding agent 完成真实开发任务。" />
+    <title>MemoryBench</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">Coding agent memory benchmark</p>
+        <h1>记忆真的让 agent<br /><em>做得更好吗？</em></h1>
+        <p class="lede">同一批真实开发任务、同一个模型，只切换 memory 条件。我们同时比较完成率、成本、耗时和失败路径。</p>
+        <div class="hero-meta">
+          <span>{experiments.length} 个实验</span><span>{totals.denominator.expected} 个任务槽位</span><span>sealed snapshot</span>
+        </div>
+      </header>
+
+      <section aria-labelledby="summary-title">
+        <div class="section-heading"><p>01 / Overview</p><h2 id="summary-title">当前结果</h2></div>
+        <div class="stats">
+          <article><span>整体完成率</span><strong>{percent(totals.verdict.passRate)}</strong><small>{totals.verdict.tally.passed} passed / {totals.denominator.classified} classified</small></article>
+          <article><span>总成本</span><strong>{compact(totals.costUSD, " USD")}</strong><small>{totals.costUSD.state}</small></article>
+          <article><span>累计耗时</span><strong>{duration(totals.durationMs)}</strong><small>{totals.durationMs.samples} samples</small></article>
+          <article><span>覆盖缺口</span><strong>{totals.denominator.missing}</strong><small>{totals.issues.length} reported issues</small></article>
+        </div>
+      </section>
+
+      <section aria-labelledby="leaderboard-title">
+        <div class="section-heading"><p>02 / Comparison</p><h2 id="leaderboard-title">实验排行榜</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>实验</th><th>Memory</th><th>Agent / Model</th><th>完成率</th><th>成本</th><th>耗时</th><th>覆盖</th></tr></thead>
+            <tbody>
+              {experiments.map((item, index) => <tr>
+                <td class="rank">{String(index + 1).padStart(2, "0")}</td>
+                <td><strong>{item.experimentId.replace(/^compare\//, "")}</strong><small>{item.evaluationKind}</small></td>
+                <td><span class:list={["pill", { missing: label(item.labels.memory) === "未记录" }]}>{label(item.labels.memory)}</span></td>
+                <td>{label(item.agent)}<small>{label(item.model)}</small></td>
+                <td><strong>{percent(item.verdict.passRate)}</strong><small>{item.verdict.tally.passed}/{item.denominator.classified}</small></td>
+                <td>{compact(item.costUSD, " USD")}</td>
+                <td>{compact(item.durationMs, " ms")}</td>
+                <td>{item.denominator.observed}/{item.denominator.expected}</td>
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="scatter-title">
+        <div class="section-heading"><p>03 / Efficiency</p><h2 id="scatter-title">质量、成本与耗时</h2></div>
+        <div class="scatter-card">
+          <svg viewBox="0 0 1000 480" role="img" aria-labelledby="scatter-title scatter-description">
+            <desc id="scatter-description">横轴为成本，纵轴为任务完成率，圆点大小表示耗时。</desc>
+            {[0, .25, .5, .75, 1].map((tick) => <g><line x1="90" x2="950" y1={410 - tick * 340} y2={410 - tick * 340}/><text x="70" y={416 - tick * 340}>{tick * 100}%</text></g>)}
+            {experiments.map((item) => {
+              const x = 90 + metric(item.costUSD) / maxCost * 860;
+              const y = 410 - metric(item.verdict.passRate) * 340;
+              const r = 8 + Math.sqrt(metric(item.durationMs) / maxDuration) * 22;
+              return <g class="point"><circle cx={x} cy={y} r={r}/><text x={x} y={y - r - 10}>{item.experimentId.replace(/^compare\//, "")}</text></g>;
+            })}
+            <text class="axis" x="520" y="465">成本 →</text>
+          </svg>
+        </div>
+      </section>
+
+      <footer>
+        <p>数据由 NiceEval Inspection Host 在构建期读取；浏览器产物不包含 Record 或 SQLite。</p>
+        <p>Snapshot <code>{data.cutoffIdentity.slice(0, 18)}…</code> · {data.generatedAt}</p>
+      </footer>
+    </main>
+  </body>
+</html>
