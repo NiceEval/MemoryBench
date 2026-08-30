@@ -15,8 +15,8 @@ npm i --no-audit --no-fund effect@4.0.0-rc.112 astro@7.2.9
 
 rm -rf "$NICEEVAL_DIR"
 git clone --depth 1 --branch polish-docker-cache https://github.com/NiceEval/NiceEval.git "$NICEEVAL_DIR"
-corepack pnpm --dir "$NICEEVAL_DIR" install --frozen-lockfile
-corepack pnpm --dir "$NICEEVAL_DIR" run build:package
+pnpm --dir "$NICEEVAL_DIR" install --frozen-lockfile
+pnpm --dir "$NICEEVAL_DIR" run build:package
 ln -s "$NICEEVAL_DIR/packages/niceeval" "$BUILD_DIR/node_modules/niceeval"
 ln -s "$NICEEVAL_DIR/packages/niceeval/bin/niceeval.js" "$BUILD_DIR/node_modules/.bin/niceeval"
 
