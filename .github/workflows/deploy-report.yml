@@ -1,19 +1,82 @@
 name: Deploy Report
 
-# 只在打 tag 时发布：vercel.json 已设 git.deploymentEnabled=false，
-# 普通 push 到 main 不触发部署；发布靠打 vX.Y.Z tag 并 push tag。
-# 禁止本地 vercel deploy 当生产路径——线上以本 workflow + 仓库 secrets 为准。
+# Vercel Git integration 保持关闭。内部 PR 由本 workflow 建 Preview deployment；
+# production 仍只由 vX.Y.Z tag 触发。fork PR 不取得 secrets，也不执行可信部署路径。
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   push:
     tags:
       - "v*"
 
+permissions:
+  contents: read
+  deployments: write
+
 concurrency:
-  group: deploy-report
-  cancel-in-progress: false
+  group: deploy-report-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  deploy:
+  preview:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_CLI_VERSION: 58.9.0
+      VERCEL_CLI_SHA512: 9ea905854ff39a7bc27d6e73b40fa3dd228050d226d29cae57d038bd123965789e8148e36513d253e62e07f5eb93af95d996b90ca7a61dbabbb00147ef3d90bc
+    steps:
+      - name: Configure Git default branch
+        run: git config --global init.defaultBranch main
+
+      - uses: actions/checkout@v5
+
+      - name: Install native Vercel CLI
+        run: |
+          archive="$RUNNER_TEMP/vercel-native.tgz"
+          extract_dir="$RUNNER_TEMP/vercel-native"
+          bin_dir="$RUNNER_TEMP/vercel-bin"
+          curl --fail --silent --show-error --location \
+            "https://registry.npmjs.org/@vercel/vc-native-linux-x64/-/vc-native-linux-x64-${VERCEL_CLI_VERSION}.tgz" \
+            --output "$archive"
+          printf '%s  %s\n' "$VERCEL_CLI_SHA512" "$archive" | sha512sum --check
+          mkdir -p "$extract_dir" "$bin_dir"
+          tar -xzf "$archive" -C "$extract_dir"
+          install -m 0755 "$extract_dir/package/bin/vercel" "$bin_dir/vercel"
+          echo "$bin_dir" >> "$GITHUB_PATH"
+          "$bin_dir/vercel" --version
+
+      - name: Pull Vercel Preview environment
+        run: >
+          vercel pull
+          --yes
+          --environment=preview
+          --git-branch="${{ github.head_ref }}"
+          --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy PR Preview from head commit
+        id: deploy
+        run: |
+          url="$(vercel deploy \
+            --yes \
+            --archive=tgz \
+            --meta githubCommitSha="${{ github.event.pull_request.head.sha }}" \
+            --meta githubPrId="${{ github.event.pull_request.number }}" \
+            --token="${{ secrets.VERCEL_TOKEN }}")"
+          case "$url" in
+            https://*) ;;
+            *) echo "Vercel did not return a Preview URL: $url" >&2; exit 1 ;;
+          esac
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### Vercel Preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+
+  production:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
