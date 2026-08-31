@@ -29,7 +29,7 @@ const prepareStarter = defineSandboxCommand(
 
 export default defineEvalGroup({
   onUnavailable: "stop-group",
-  sandbox: sandboxLayer().prepare(prepareStarter),
+  sandbox: sandboxLayer().before(prepareStarter),
   evals: [
     orionDeadline,
     orionOverdue,

@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  niceeval: link:../../NiceEval/polish-docker-cache/packages/niceeval
+  niceeval: link:../../NiceEval/export/packages/niceeval
 
 importers:
 
@@ -30,8 +30,8 @@ importers:
         specifier: 4.0.0-rc.112
         version: 4.0.0-rc.112
       niceeval:
-        specifier: link:../../NiceEval/polish-docker-cache/packages/niceeval
-        version: link:../../NiceEval/polish-docker-cache/packages/niceeval
+        specifier: link:../../NiceEval/export/packages/niceeval
+        version: link:../../NiceEval/export/packages/niceeval
       react:
         specifier: ^19.2.7
         version: 19.2.7
