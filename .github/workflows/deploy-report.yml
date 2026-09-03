@@ -26,6 +26,8 @@ jobs:
 
       # tag push 事件默认检出 tag 指向的 commit，不需要额外指定 ref。
       - uses: actions/checkout@v5
+        with:
+          lfs: true
 
       - name: Install native Vercel CLI
         run: |
