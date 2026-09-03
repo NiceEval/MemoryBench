@@ -14,6 +14,6 @@
     "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx"
   },
-  "include": ["evals", "experiments", "scripts", "reports", "niceeval.config.ts"],
+  "include": ["evals", "experiments", "scripts", "website", "niceeval.config.ts"],
   "exclude": ["node_modules", "workspaces", "evals/**/tests"]
 }

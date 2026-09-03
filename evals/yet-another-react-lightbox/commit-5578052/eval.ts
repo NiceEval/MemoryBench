@@ -1,5 +1,6 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: direct commit 557805264799d436f8dae40414faf3318b468954 to
 // igordanchenko/yet-another-react-lightbox main (no associated PR — confirmed via
@@ -8,7 +9,6 @@ import { commandSucceeded } from "niceeval/expect";
 // via a ref callback that ran at initial mount (`getComputedStyle(node).direction`).
 // If the page's `dir` (or whatever controls computed direction) changed after mount,
 // the lightbox kept using the direction it detected at mount and never re-checked.
-const REPO_URL = "https://github.com/igordanchenko/yet-another-react-lightbox.git";
 const BASE_COMMIT = "3ae28d1fca631f7dc31fc9d56a9c43551f9afd21";
 
 // base commit sits right after this repo's dev-deps were bumped (jsdom 29 / vite 7 /
@@ -22,9 +22,6 @@ const BASE_COMMIT = "3ae28d1fca631f7dc31fc9d56a9c43551f9afd21";
 // surprise in the real sandbox (untested there — only verified locally on darwin-arm64)
 // fails loudly here instead of silently leaving the agent-under-test on 20.9.0, unable
 // to run its own tests.
-const MIN_NODE_MAJOR = 22;
-const MIN_NODE_MINOR = 13;
-
 export default defineEval({
   description:
     "yet-another-react-lightbox commit-5578052: re-detect RTL direction on every render instead of only at mount (real yet-another-react-lightbox issue)",
@@ -33,74 +30,8 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
-    t.progress({ message: "cloning yet-another-react-lightbox @ base commit" });
-    const cloned = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(
-        `yet-another-react-lightbox checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
-      );
-    }
-
-    // this base commit's dependency tree needs Node >= 20.19 / >= 22.12 (see comment
-    // above) — the sandbox default doesn't satisfy that, so swap the global Node via
-    // `n` (a plain npm package, no corepack involved) before installing dependencies.
-    t.progress({ message: "installing Node 22.13 runtime (test tooling needs it, sandbox default is older)" });
-    const nodeSwapped = await t.sandbox.runShell(
-      ["set -euo pipefail", "npm install -g --prefix /usr/local n@10.2.0", "n 22.13.0"].join("\n"),
-    );
-    if (nodeSwapped.exitCode !== 0) {
-      throw new Error(`Node runtime swap failed: ${(nodeSwapped.stderr || nodeSwapped.stdout).trim().slice(-500)}`);
-    }
-
-    // fail fast in a *separate* shell so a PATH-precedence surprise (old Node still
-    // resolving first) is caught here with a clear message instead of silently leaving
-    // the agent-under-test unable to run its own tests.
-    const nodeChecked = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        `MAJOR=$(node -p "process.versions.node.split('.')[0]")`,
-        `MINOR=$(node -p "process.versions.node.split('.')[1]")`,
-        `if [ "$MAJOR" -lt ${MIN_NODE_MAJOR} ] || { [ "$MAJOR" -eq ${MIN_NODE_MAJOR} ] && [ "$MINOR" -lt ${MIN_NODE_MINOR} ]; }; then`,
-        `  echo "expected Node >= ${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}, got $(node -p process.version)" >&2`,
-        "  exit 1",
-        "fi",
-      ].join("\n"),
-    );
-    if (nodeChecked.exitCode !== 0) {
-      throw new Error(
-        `Node version check failed after swap: ${(nodeChecked.stderr || nodeChecked.stdout).trim().slice(-500)}`,
-      );
-    }
-
-    t.progress({ message: "npm install" });
-    const installed = await t.sandbox.runShell("npm install");
-    if (installed.exitCode !== 0) {
-      throw new Error(`npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-
     await t
       .send(
         "Your working directory is a checkout of the real yet-another-react-lightbox repository at the commit " +
@@ -121,7 +52,7 @@ export default defineEval({
           "suite to whatever file you're iterating on with `npx vitest run <path-to-file>`. Fix the library " +
           "source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

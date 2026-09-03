@@ -1,5 +1,6 @@
 import { defineEval } from "niceeval";
 import { commandSucceeded } from "niceeval/expect";
+import { prepareRepo } from "../fixture.ts";
 
 // real fix: direct commit f63f6af90a2e0d70fe04a126001076151178eb78 to
 // igordanchenko/yet-another-react-lightbox main (no associated PR — confirmed via
@@ -8,7 +9,6 @@ import { commandSucceeded } from "niceeval/expect";
 // window the same way regardless of carousel.finite, so in finite (non-looping) mode
 // the thumbnail strip showed the wrong number of thumbnails and misplaced them near
 // the start/end edges compared to the default infinite/looping mode.
-const REPO_URL = "https://github.com/igordanchenko/yet-another-react-lightbox.git";
 const BASE_COMMIT = "c0ec3709403a357b7c9e8a95f2645cf6bd808262";
 
 export default defineEval({
@@ -19,43 +19,8 @@ export default defineEval({
   diff: {
     ignore: ["coverage", "node_modules", ".niceeval-clone"],
   },
+  sandbox: prepareRepo(BASE_COMMIT),
   async test(t) {
-    // 没有单独的 workspace 起始目录——fixture 就是这个 base commit 本身:clone 真实 repo、
-    // 退到 base commit、抹掉未来历史(remote/tags/reflog),agent 拿到带真实(截断)git 历史
-    // 的 checkout。checkout 必须在 workdir 根——嵌套子目录会被 diff 分类账记成 gitlink,
-    // agent 的改动就从证据里消失了。任务说明只通过下面的 t.send() 传给 agent。
-    t.progress({ message: "cloning yet-another-react-lightbox @ base commit" });
-    const cloned = await t.sandbox.runShell(
-      [
-        "set -euo pipefail",
-        // 幂等:上一题留下的 .git 活得过题间 git clean(分类账在任意深度排除 .git),先删再 clone。
-        "rm -rf .git .niceeval-clone",
-        `git clone -q -o origin --single-branch ${REPO_URL} .niceeval-clone`,
-        "mv .niceeval-clone/.git .git",
-        "rm -rf .niceeval-clone",
-        `git reset -q --hard ${BASE_COMMIT}`,
-        "git remote remove origin",
-        "git tag -l | xargs -r git tag -d >/dev/null",
-        "git reflog expire --expire=now --all",
-        "git gc -q --prune=now",
-        // 上游同款自检:base commit 之后不应再有任何 commit 可见
-        `TS=$(git show -s --format=%ci ${BASE_COMMIT})`,
-        'COUNT=$(git log --oneline --since="$TS" | wc -l)',
-        '[ "$COUNT" -eq 1 ]',
-      ].join("\n"),
-    );
-    if (cloned.exitCode !== 0) {
-      throw new Error(
-        `yet-another-react-lightbox checkout failed: ${(cloned.stderr || cloned.stdout).trim().slice(-500)}`,
-      );
-    }
-
-    t.progress({ message: "npm install" });
-    const installed = await t.sandbox.runShell("npm install");
-    if (installed.exitCode !== 0) {
-      throw new Error(`npm install failed: ${(installed.stderr || installed.stdout).trim().slice(-500)}`);
-    }
-
     await t
       .send(
         "Your working directory is a checkout of the real yet-another-react-lightbox repository at the commit " +
@@ -79,7 +44,7 @@ export default defineEval({
           "suite to whatever file you're iterating on with `npx vitest run <path-to-file>`. Fix the library " +
           "source; do not just add workarounds in test files.",
       )
-      .then((turn) => turn.succeeded().stopOnFailure());
+      .then((turn) => turn.succeeded().orStop());
 
     await t.sandbox.uploadFile(
 

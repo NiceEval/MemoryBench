@@ -1,0 +1,125 @@
+---
+import { loadMemoryBenchReport } from "../lib/inspection.ts";
+
+const data = await loadMemoryBenchReport(process.cwd());
+const experiments = data.overview.experiments
+  .filter(({ experimentId }) => experimentId.startsWith("compare/"))
+  .sort((a, b) => metric(b.verdict.passRate) - metric(a.verdict.passRate));
+const totals = data.overview.totals;
+const maxPassRate = Math.max(...experiments.map((item) => metric(item.verdict.passRate)), 0);
+const maxCost = Math.max(...experiments.map((item) => metric(item.costUSD)), 0.000001);
+const maxDuration = Math.max(...experiments.map((item) => metric(item.durationMs)), 1);
+const conditions = [
+  { id: "compare/codex", name: "Codex", memory: "baseline", model: "gpt-5.6-luna", kind: "No memory", note: "Codex 无记忆基线" },
+  { id: "compare/bub", name: "Bub", memory: "baseline", model: "gpt-5.6-luna", kind: "Agent control", note: "同模型下的 Agent 对照" },
+  { id: "compare/codex-mempal", name: "Codex + Mempal", memory: "mempal", model: "gpt-5.6-luna", kind: "Durable memory", note: "跨 Run 的 host checkpoint" },
+  { id: "compare/codex-obelisk", name: "Codex + Obelisk", memory: "obelisk", model: "gpt-5.6-luna", kind: "Session memory", note: "本地会话索引与检索" },
+  { id: "compare/codex-remem", name: "Codex + Remem", memory: "remem", model: "gpt-5.6-luna", kind: "Local memory", note: "沙箱内累积的本地记忆" },
+] as const;
+const rows = conditions.map((condition) => ({
+  ...condition,
+  result: experiments.find(({ experimentId }) => experimentId === condition.id),
+})).sort((a, b) => a.result && b.result
+  ? metric(b.result.verdict.passRate) - metric(a.result.verdict.passRate)
+  : a.result ? -1 : b.result ? 1 : 0);
+
+function metric(input: { readonly state: string; readonly value: number | null }): number {
+  return input.state === "available" || input.state === "partial" ? input.value ?? 0 : 0;
+}
+function percent(input: { readonly state: string; readonly value: number | null }): string {
+  return input.state === "available" || input.state === "partial" ? `${(Math.round((input.value ?? 0) * 1000) / 10).toFixed(1).replace(".0", "")}%` : "—";
+}
+function compact(input: { readonly state: string; readonly value: number | null }, unit = ""): string {
+  if (input.state !== "available" && input.state !== "partial") return "—";
+  return `${new Intl.NumberFormat("en", { maximumFractionDigits: 2, notation: "compact" }).format(input.value ?? 0)}${unit}`;
+}
+function duration(input: { readonly state: string; readonly value: number | null }): string {
+  if (input.state !== "available" && input.state !== "partial") return "—";
+  const hours = (input.value ?? 0) / 3_600_000;
+  return hours >= 1 ? `${hours.toFixed(1).replace(".0", "")} h` : `${Math.round((input.value ?? 0) / 60_000)} min`;
+}
+function series(memory: string): string {
+  return `series-${memory.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="MemoryBench：用同一模型和真实开发任务，评估记忆是否让 coding agent 做得更好。" />
+  <title>MemoryBench 2.0</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="https://niceeval.com" aria-label="NiceEval"><span class="mark" aria-hidden="true"></span><span>NiceEval</span></a>
+    <span class="page-name">Report</span>
+    <nav class="top-links" aria-label="项目链接"><a href="https://github.com/NiceEval/MemoryBench" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.02c-3.22.7-3.9-1.37-3.9-1.37-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.57-.29-5.27-1.28-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.93 10.93 0 0 1 5.75 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z" /></svg><span>GitHub</span>
+    </a></nav>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <h1 id="page-title">MemoryBench 2.0</h1>
+      <p class="lede">AI Agent 记忆的基准测试</p>
+      <div class="hero-actions">
+        <a class="button" href="https://github.com/NiceEval/MemoryBench" target="_blank" rel="noopener">Star on GitHub</a>
+      </div>
+      <p class="snapshot">最后构建 {new Date(data.generatedAt).toLocaleString("zh-CN", { hour12: false })} · {experiments.length} / {conditions.length} 条件已有结果</p>
+      <p class="powered"><a href="https://niceeval.com" target="_blank" rel="noopener">Powered by NiceEval</a></p>
+    </section>
+
+    <section class="summary" aria-label="汇总结果">
+      <article><span>Pass rate</span><strong>{percent(totals.verdict.passRate)}</strong></article>
+      <article><span>Conditions</span><strong>{conditions.length}</strong></article>
+      <article><span>Reporting</span><strong>{experiments.length} / {conditions.length}</strong></article>
+      <article><span>Attempts</span><strong>{totals.denominator.observed}</strong></article>
+      <article><span>Eval results</span><strong class="result-copy"><b>{totals.verdict.tally.passed} passed</b> <i>{totals.verdict.tally.failed} failed</i></strong></article>
+      <article><span>Total cost</span><strong>{compact(totals.costUSD, " USD")}</strong></article>
+    </section>
+    <p class="section-note">当前封存结果 · 最佳完成率 {Math.round(maxPassRate * 1000) / 10}% · 未运行条件不参与汇总</p>
+
+    <section class="chart-card" aria-labelledby="pass-rate-title">
+      <h2 id="pass-rate-title">Pass rate (%)</h2>
+      <div class="bars">{rows.map((row) => <div class:list={["bar-row", { pending: !row.result }]}>
+        <div class="bar-name"><strong>{row.name}</strong><span>{row.memory} · {row.model}</span></div>
+        <div class="bar-track">{row.result ? <span class:list={["bar-fill", series(row.memory)]} style={`width:${Math.max(metric(row.result.verdict.passRate) * 100, 1)}%`}></span> : <span class="bar-pending">pending</span>}</div>
+        <div class="bar-value">{row.result ? <><strong>{percent(row.result.verdict.passRate)}</strong><span>{row.result.verdict.tally.passed}/{row.result.denominator.classified}</span></> : <strong>—</strong>}</div>
+      </div>)}</div>
+      <div class="legend">{[...new Map(conditions.map((condition) => [condition.memory, condition])).values()].map((condition) => <span><i class={series(condition.memory)}></i>{condition.memory}</span>)}</div>
+    </section>
+
+    <section class="chart-card scatter-card" aria-labelledby="scatter-title">
+      <div class="chart-heading"><h2 id="scatter-title">Quality × cost</h2><span>better → upper left</span></div>
+      <svg viewBox="0 0 1000 440" role="img" aria-labelledby="scatter-title scatter-description">
+        <desc id="scatter-description">横轴为成本，纵轴为任务完成率，圆点大小表示耗时。</desc>
+        {[0, .25, .5, .75, 1].map((tick) => <g class="gridline"><line x1="92" x2="950" y1={370 - tick * 300} y2={370 - tick * 300}/><text x="74" y={375 - tick * 300}>{tick * 100}%</text></g>)}
+        {[0, .25, .5, .75, 1].map((tick) => <g class="gridline"><line x1={92 + tick * 858} x2={92 + tick * 858} y1="70" y2="370"/><text x={92 + tick * 858} y="397">${(tick * maxCost).toFixed(2)}</text></g>)}
+        {rows.filter((row) => row.result).map((row, index) => {
+          const item = row.result!;
+          const x = 92 + metric(item.costUSD) / maxCost * 858;
+          const y = 370 - metric(item.verdict.passRate) * 300;
+          const r = 6 + Math.sqrt(metric(item.durationMs) / maxDuration) * 9;
+          return <g class:list={["point", series(row.memory)]}><circle cx={x} cy={y} r={r}/><text x={x + (index % 2 ? -12 : 12)} y={y - r - 9}>{row.name}</text></g>;
+        })}
+        <text class="axis-label" x="520" y="430">Cost (USD)</text><text class="axis-label y-axis" x="20" y="220">Pass rate (%)</text>
+      </svg>
+    </section>
+
+    <section class="table-card" aria-labelledby="details-title">
+      <div class="chart-heading"><h2 id="details-title">Experiment details</h2><span>sealed SQLite Record</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Experiment</th><th>Memory</th><th>Pass rate</th><th>Cost</th><th>Time</th><th>Coverage</th></tr></thead>
+        <tbody>{rows.map((row) => <tr class:list={{ pending: !row.result }}>
+          <td><strong>{row.name}</strong><small>{row.id}</small></td>
+          <td><span class="condition"><i class={series(row.memory)}></i>{row.memory}</span></td>
+          <td>{row.result ? <><strong>{percent(row.result.verdict.passRate)}</strong><small>{row.result.verdict.tally.passed}/{row.result.denominator.classified}</small></> : "pending"}</td>
+          <td>{row.result ? compact(row.result.costUSD, " USD") : "—"}</td><td>{row.result ? duration(row.result.durationMs) : "—"}</td><td>{row.result ? `${row.result.denominator.observed}/${row.result.denominator.expected}` : "—"}</td>
+        </tr>)}</tbody>
+      </table></div>
+    </section>
+    <footer><p>数据在构建期通过 NiceEval Inspection API 读取；浏览器产物不包含 Record 或 SQLite。</p><p><a href="https://github.com/NiceEval/MemoryBench" target="_blank" rel="noopener">GitHub</a> · Snapshot <code>{data.cutoffIdentity.slice(0, 18)}…</code> · {data.generatedAt}</p></footer>
+  </main>
+</body>
+</html>

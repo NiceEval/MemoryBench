@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { ExperimentFatalError } from "niceeval";
 import { shared } from "niceeval/adapter";
 import type { CodexConfig, CodexPluginSpec, McpServer, SkillSpec } from "niceeval/adapter";
-import type { Sandbox, SandboxCommand, SandboxHook, SandboxHookContext } from "niceeval/sandbox";
+import type { SandboxCommand, SandboxCommandContext, SandboxCommandTarget } from "niceeval/sandbox";
 
 /**
  * Mem0 记忆条件:固定远程 Mem0 Platform(mcp.mem0.ai)。
@@ -93,12 +93,12 @@ export const mem0Skill: SkillSpec = {
   name: "mem0-memory",
 };
 
-function hookLog(ctx: Pick<SandboxHookContext, "progress">, message: string): void {
+function hookLog(ctx: Pick<SandboxCommandContext, "progress">, message: string): void {
   ctx.progress({ message });
 }
 
 async function requireCommand(
-  sb: Pick<Sandbox, "runShell">,
+  sb: Pick<SandboxCommandTarget, "runShell">,
   label: string,
   script: string,
   opts: { shared?: boolean } = {},
@@ -112,7 +112,7 @@ async function requireCommand(
 }
 
 /** setup 当时这条 attempt 实际用的 key 指纹(不落明文),teardown 探活用同一把。 */
-const attemptKeys = new WeakMap<Sandbox, string>();
+const attemptKeys = new WeakMap<SandboxCommandTarget, string>();
 
 function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
@@ -122,7 +122,7 @@ function shellQuote(value: string): string {
  * 沙箱级接线(每沙箱一次):把 API key 落到 hooks 能读到的位置,并端到端探活 MCP。
  * 跑在 agent.setup 之前。
  */
-export function mem0AttachRemote(endpoint: () => Mem0Env = mem0Endpoint): SandboxHook {
+export function mem0AttachRemote(endpoint: () => Mem0Env = mem0Endpoint): SandboxCommand {
   return async (sb, ctx) => {
     const conn = endpoint();
     attemptKeys.set(sb, conn.apiKey);
@@ -179,7 +179,7 @@ export function mem0AttachRemote(endpoint: () => Mem0Env = mem0Endpoint): Sandbo
  * 收尾探针:attempt 跑完、沙箱销毁前,再探一次 Mem0 MCP。
  * 中途 Platform 故障会让 add_memory / search_memories 静默全挂,本条记忆条件不成立。
  */
-export function mem0VerifyRemoteAlive(): SandboxHook {
+export function mem0VerifyRemoteAlive(): SandboxCommand {
   return async (sb, ctx) => {
     const apiKey = attemptKeys.get(sb);
     if (!apiKey) return;

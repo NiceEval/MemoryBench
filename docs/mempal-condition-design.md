@@ -1,100 +1,84 @@
-# mempal 记忆条件
+# Mempal 记忆条件
 
-## 当前结论
+## 当前设计
 
-mempal 条件由四个独立部分组成：
+Mempal 条件由四部分组成：
 
-1. 两个 Agent 专属 E2B template：分别从 NiceEval 的 release-pinned Claude/Codex 公共模板派生，预置 mempal 二进制与约 507 MB embedding cache（构建期从官方源现取，见下）。
-2. agent 行为提示：Claude Code / Codex 共用本仓库的 `mempal-memory` Skill；Claude Code 另通过 adapter 的 `settingsFile` 安装 Stop hook。
-3. sandbox setup/teardown：做二进制/cache 薄探针，并用 NiceEval 的 `restoreCheckpoint` / `createCheckpoint` 按 cohort 恢复和回存 `$HOME/.mempal`。
+1. 两个 Agent 专属、版本化的 Docker 镜像：分别从 NiceEval 导出的公开、版本钉死 Claude Code / Codex 镜像继续构建，预置 mempal 二进制与约 507 MB embedding cache。
+2. agent 行为提示：Claude Code / Codex 共用仓库的 `mempal-memory` Skill；Claude Code 另通过 adapter 的 `settingsFile` 安装 Stop hook。
+3. Sandbox 生命周期：`prepare` 只探测二进制和模型 cache；每个 Eval Group 的 Docker Sandbox 在 `setup` 恢复 checkpoint、在 `teardown` 回存 checkpoint。
+4. 显式 cohort：`MEMPAL_COHORT` 同时进入实验 flags 和 checkpoint 路径，避免不同研究批次混读状态。
 
-旧方案“普通模板 + 每 attempt 上传 14 MB 二进制 + 每 attempt 下载模型”已废弃。实测 E2B 上传曾在 `sb.uploadFile` 报 `TypeError: fetch failed`，而模型预热把 setup 放大到数分钟。稳定、体积大且每次相同的依赖应在模板构建时付一次成本；运行时 hook 只处理按实验变化的状态和验证。
+稳定、体积大且每次相同的依赖都只在 Docker build 时付一次成本。运行期不编译 Rust、不下载 embedding 模型，也不把重依赖藏进不透明的 setup；它只处理随实验与 Group 变化的状态和 fail-fast 验证。
 
-E2B 当前官方 SDK 支持从公共 namespaced template 派生 (`Template().fromTemplate(...)`) 并复制文件、执行构建命令；本仓库从 NiceEval 导出的 release-pinned 公共 Agent 模板常量派生，保证 Claude Code/Codex CLI 版本与其它 provider 的官方基线一致，同时不在业务仓库复制 NiceEval 的 namespace 或 release。参考 [E2B Template 定义](https://e2b.dev/docs/template/defining-template) 与 [构建](https://e2b.dev/docs/template/build)。
-
-## 构建模板
+## 构建镜像
 
 ```bash
-# 从 NiceEval 的 release-pinned Claude / Codex 公共模板派生。两样输入都在构建期从官方源
-# 现取,无 host 前置步骤:
-pnpm template:mempal claude   # → memorybench-claude-mempal-<base-sha12>-0-9-0
-pnpm template:mempal codex    # → memorybench-codex-mempal-<base-sha12>-0-9-0
+pnpm docker:mempal claude
+pnpm docker:mempal codex
 ```
 
-**两样输入都在模板构建期从官方源现取,不再 host 预取:**
+构建脚本从 `niceeval/sandbox` 的 `NICEEVAL_CLAUDE_CODE_DOCKER_IMAGE` 或 `NICEEVAL_CODEX_DOCKER_IMAGE` 常量读取基底，而非在本仓库复制 tag。每个产物 tag 都包含：
 
-- **二进制**:构建期 `cargo install mempal --version <pin> --locked`（crates.io 官方源）。在 base
-  模板里编译,glibc ABI 与运行时天然一致,不再需要 host 侧 docker 交叉编译去对 ABI。装完把二进制
-  挪到 `/usr/local/bin`,删掉 rustup toolchain 和 cargo registry。
-- **模型 cache**:构建期跑一次 warmup ingest,让 mempal 自己从 HuggingFace 官方拉 model2vec
-  模型（`minishlab/potion-multilingual-128M` ≈507 MB）灌进 `~/.cache/huggingface`,烘焙进镜像;
-  运行时命中 cache、零下载。
+- 基底镜像完整引用的短 hash；
+- `MEMPAL_VERSION`；
+- `MEMPAL_DOCKERFILE_REVISION`。
 
-> **历史注记(2026-07-15 修正)**:旧方案坚持「模型必须 host 预取」,理由是 mempal 首次 ingest
-> 会从 HF xet CDN 拉模型而 E2B 里恒 403（预签名 URL 带 `ByteRange` policy,客户端不发匹配 Range
-> 头就被拒）。**这个前提已被实测推翻**:那是旧 mempal/hf-hub 下载器的客户端 bug。当前 mempal 0.9.0
-> （model2vec-rs 0.1.4 → 新 hf-hub）在真实 E2B 沙箱里 ingest 直接成功、cache 落到
-> `~/.cache/huggingface`;裸 `curl -L` 该 `model.safetensors` 在 E2B 也返回 200(512 MB 全下)。
-> 于是整套 host docker 交叉编译 + 预取 + 64 MB 分片 + `.copy` 重组的 workaround 全部删除,输入
-> 改为构建期从 crates.io / HuggingFace 官方源现取。
+所以任一输入变化都会得到新 tag，不会把内容不同的镜像静默覆盖到旧实验身份上。构建脚本会拉取基底、构建镜像，并实际验证默认 `node` 身份、Agent CLI、mempal CLI 与 HuggingFace cache。它只构建本机 Docker image，不发布 registry 资源。
 
-模板构建脚本在 `scripts/build-mempal-e2b-template.ts`。模板名由 `mempalTemplate()`
-（`experiments/shared/mempal.ts`）唯一决定：它把实际使用的完整 base template ref 做短 hash，
-再附上 mempal 版本（`0-9-0`）。任一输入 bump，模板名都会变化，不会静默复用内容不同的可变别名；
-业务代码不需要另读或同步 NiceEval release。mempal 版本由
-`MEMPAL_VERSION` 常量 pin 死。构建和运行读同一处,没有环境变量覆盖,
-免得构建的模板和实验引用的模板悄悄错位。它不会在 `pnpm install`、typecheck 或普通 eval 中隐式
-发布远端资源。
+`experiments/shared/docker/mempal.Dockerfile` 在构建期完成两项工作：
 
-## 物理 Sandbox 生命周期与 fail-fast
+- 用 `cargo install mempal --version <pin> --locked` 从 crates.io 编译 CLI；builder stage 不进入最终镜像。
+- 以运行身份执行一次 `mempal init → ingest → search`，让 mempal 从 HuggingFace 官方源下载 `model2vec` cache，并在构建时确认 cache 真正落盘。
 
-Mempal checkpoint 属于 sandbox lifecycle，而不是顶层 `state`。fresh 模式下一条 Attempt 对应一台
-物理 Sandbox；Codex 的 `sandboxReuse: true` 且 `maxConcurrency: 1` 时，一个被复用的物理 Sandbox 会连续承接多个
-Attempt，因此 restore/save 各只在该物理实例创建/退休时执行一次，`prepare` 和 agent 生命周期仍每条 Attempt 重放：
+warmup 的数据库随后删除，因此每条 Attempt 仍从它自己的恢复 checkpoint 或空库开始。镜像只留下不可变工具与模型 cache。
+
+## 生命周期、复用与并发
+
+Eval Group 拥有物理 Sandbox 的复用边界；Mempal Experiment 不声明第二层复用开关。每个 Group 的真实 Attempt 串行使用自己的 Docker Sandbox，不同 Group 则继续由 Experiment 的 `maxConcurrency` 并行调度。普通 compare 条件按六个 Eval Group 使用六条 Docker lane；Signalbox 保持单 Group、`maxConcurrency: 1`，但当前 Group 不提供业务顺序契约，因此还不能把它解释成正式纵向轨迹。
 
 ```text
-E2B 从专用 template provision
-  → sandbox lifecycle setup
-      → 恢复 cohort/experiment 对应状态，或严格初始化空库
-  → 每条 Attempt 的 sandbox.prepare
-      → command -v mempal + embedding cache 薄探针（缺失立即报模板配置错）
-  → agent.setup
-      → adapter 安装 mempal-memory Skill
-      → Claude: adapter 按 settingsFile 安装原生 Stop hook 配置
-  → agent run
-  → 物理 Sandbox 退休时 sandbox lifecycle teardown
+NiceEval Docker Agent 基底
+  → Mempal 派生镜像（CLI + embedding cache）
+  → 每个 Eval Group 创建一台物理 Docker Sandbox
+      → sandbox.setup：恢复 cohort / experiment / Group 对应 checkpoint，或初始化空库
+      → 每条真实 Attempt 的 sandbox.prepare：二进制与 cache 薄探测
+      → agent.setup：安装 mempal-memory Skill；Claude 同时安装 Stop hook
+      → agent run
+  → Group 的物理 Sandbox 退休时 sandbox.teardown
       → 打包状态、原子回存、写 provenance metadata
 ```
 
-完整的 init → ingest → search 自检在模板构建阶段只跑一次；Attempt 不重复做业务无关的向量化工作。恢复/回存复用 NiceEval checkpoint 原语，provider 的二进制 I/O 重试留在 provider 层。只有 lifecycle teardown 回存是 best-effort：它不能把已经完成的模型任务改判，但失败会通过 `diagnostic` 持久化到结果。
+`lifetimeMs` 是每台可复用 Docker Sandbox 的显式寿命预算，必须足以容纳单条长 Attempt；它不是云端账号配额，也不改变 Experiment 的并发语义。Docker 运行身份固定为非 root `node`，以满足可复用容器的安全前提。
 
-运行后应从 trace 中核对 agent 是否执行 `mempal search`，以及在确有可复用决策时是否执行 `mempal ingest`。
+完整的 init → ingest → search 只在镜像构建期做一次。Attempt 不重复做业务无关的向量化工作。恢复/回存复用 NiceEval checkpoint 原语；teardown 回存是 best-effort，失败会通过 diagnostic 留在结果中，但不能反改已经完成的任务 verdict。
 
 ## 状态身份与可回顾性
 
 状态路径：
 
 ```text
-.cache/mempal/state/<MEMPAL_COHORT>/<experimentId>.tgz
-.cache/mempal/state/<MEMPAL_COHORT>/<experimentId>.tgz.meta.json
+.cache/mempal/state/<MEMPAL_COHORT>/<experimentId>/<evalGroupId>.tgz
+.cache/mempal/state/<MEMPAL_COHORT>/<experimentId>/<evalGroupId>.tgz.meta.json
 ```
 
-`MEMPAL_COHORT` 省略时为 `local`。它必须是单个、最长 64 字符的路径安全名称，只能包含字母、数字、点、下划线和连字符，不能使用 `.` / `..` 或路径分隔符。正式对比必须显式指定一个新的 cohort，并在报告中记录它：
+`MEMPAL_COHORT` 省略时为 `local`。它必须是单个、最长 64 字符的路径安全名称，只能包含字母、数字、点、下划线和连字符，不能使用 `.` / `..` 或路径分隔符。正式比较必须显式指定新的 cohort，并在报告中记录它：
 
 ```bash
-MEMPAL_COHORT=2026-07-13-clean-a niceeval exp compare
+MEMPAL_COHORT=2026-08-clean-a pnpm --silent exec niceeval exp compare --dry
 ```
 
-metadata 记录 `experimentId`、cohort、字节数、SHA-256 和保存时间，可以确认结果使用了哪份状态；checkpoint 与 metadata 都先写同目录临时文件再原子替换，metadata 中的 digest 还能发现进程在两次替换之间被强杀造成的不一致。`maxConcurrency: 1` 是必要条件：一个被复用的物理 Sandbox 的 restore 到 save 是共享状态临界区。
+metadata 记录 `experimentId`、`evalGroupId`、cohort、mempal 版本、字节数、SHA-256 和保存时间。checkpoint 与 metadata 都先写同目录临时文件再原子替换；digest 可以帮助发现进程在两次替换之间被强杀造成的不一致。
 
 不要把同一道固定答案题跨 run 反复喂给同一 cohort。Skill 和 Stop hook 都明确禁止存储 proposal 编号、hidden-test 猜测、任务最终答案或原始 transcript；更严格的研究设计应使用 train/apply 配对任务，或为每轮评测创建新 cohort。
 
 ## 结果有效性
 
-2026-07-10/11 的旧 mempal 对比不能作为效果结论：
+一批可用于比较的 Mempal 结果至少要同时满足：
 
-- Codex 只有 `mempal_status`，没有 search/ingest，条件实质为 no-op。
-- Claude 的跨 run 状态可能包含同题答案，形成污染。
-- Codex 的二进制上传失败属于基建错误，不是模型能力。
+- 对应 Docker 镜像的 prepare 探针通过；
+- trace 中能看到与任务相关的 `mempal search` / `mempal ingest` 行为；
+- checkpoint metadata 可定位，并且 cohort 起点明确；
+- 任务没有从同 cohort 的同题答案获益。
 
-新结果至少要同时满足：专用模板探针通过、trace 中能看到 CLI search/ingest 行为、状态 metadata 可定位、任务没有从同 cohort 的同题答案获益。任务通过率仍是主要指标；memory 的价值看耗时、token、成本、重复失败命令和 pass rate，不加“为了证明记住了”的额外 gate。
+任务通过率仍是主要指标；memory 的价值看耗时、token、成本、重复失败命令和 pass rate，不增加只为了证明“记住了”的额外 gate。

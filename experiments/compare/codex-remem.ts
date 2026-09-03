@@ -1,0 +1,54 @@
+import { defineExperiment } from "niceeval";
+import { codexAgent } from "niceeval/adapter";
+import { dockerSandbox } from "niceeval/sandbox";
+import {
+  rememCodexConfig,
+  rememFlags,
+  rememPrepare,
+} from "../shared/remem.ts";
+import { CODEX_BASE_IMAGE, memorybenchBaseSetup } from "../shared/sandbox-base.ts";
+
+const MODEL = "gpt-5.6-luna";
+// Remem 没有跨物理容器 checkpoint。最大 Group 有 8 个 member，每条最多 30 分钟；
+// Docker TTL 又不能续期，所以要覆盖整条 lane，而不只是单条 Attempt。
+const STATEFUL_GROUP_LIFETIME_MS = 5 * 60 * 60_000;
+
+// codex-remem 变体:同模型,只多一层 remem 记忆条件——官方 codex 集成
+// (SessionStart/Stop hook 读写 + `remem mcp` server)。二进制从源码以
+// `--no-default-features` 安装到官方 Codex 基底的声明式 SetupPrefix；feature-hash
+// embedding 降级不影响捕获/蒸馏路径，完整背景见 experiments/shared/remem.ts 文件头。
+// 对照 codex.ts 看 pass 率与效率(时间/token/重复失败命令)的差异。
+//
+// 记忆态语义:remem 状态是纯本地 `$HOME/.remem/`,只在本次 run 的物理沙箱内积累,不做
+// 跨 run 的 checkpoint 回存(与 mempal/nowledge 都不同,见 shared/remem.ts)。要看"从空库
+// 开始"的干净对照,直接开一次新 run 即可,不需要像 mempal 那样手动清理 host 侧状态目录。
+//
+// 2026-08-09 已用 Docker events 和跨题 captured_events 双重验证 Group 容器复用与
+// `$HOME` 持久化。Remem 后台 Codex 的 provider 隔离、显式 memory model 与 extraction
+// drain 契约由 shared/remem.ts 统一实现；管线未实际产生 memory-AI call 时实验会明确报错。
+// 单独六段链通过 5/6：03、04 首次通过，06 因最低计费规则被错误概括而失败；两路全量
+// 随后又暴露 60 分钟 TTL 会在后段正常换容器，故下方寿命现按整条 stateful Group 预算。
+export default defineExperiment({
+  evals: ["react-hook-form/", "react-datepicker/", "downshift/", "react-tooltip/", "yet-another-react-lightbox/", "toggl-cli/"],
+  description: "codex · gpt-5.6-luna · remem",
+  labels: { line: "codex", memory: "remem" }, // 报告坐标必须随 sealed Run 保存，网页不读取私有 flags
+  agent: codexAgent(rememCodexConfig(MODEL)),
+  flags: rememFlags(MODEL),
+  model: MODEL,
+  // 每次借出前，NiceEval 要求剩余 TTL 足以覆盖本条 Attempt 的 30 分钟上限和 cleanup；
+  // Docker TTL 不可续期。1 小时配置在两路全量跑的 05→06 之间触发了正常轮换，导致
+  // raw_messages 从 63 回到 14。5 小时覆盖 8 × 30 分钟的最长 Group 和收尾余量。
+  sandbox: dockerSandbox({ source: { type: "image", image: CODEX_BASE_IMAGE }, lifetimeMs: STATEFUL_GROUP_LIFETIME_MS, pathPrepend: ["/usr/local/bin"] })
+    .before(memorybenchBaseSetup("codex"))
+    .before(rememPrepare()),
+  // 复用:remem 安装层由 SetupPrefix cache 管理。postSetup 的 `remem install --target codex` 在残留 $HOME
+  // 上幂等重放(2026-08-04 手工验证过两遍:key/db 显示 existing、mcp_servers.remem 不重复写)。
+  earlyExit: false,
+  // Group 内沿实际执行历史积累本地状态；不同仓库家族使用独立 Sandbox 并行推进。
+  // 当前 Eval Group 不把数组位置解释成业务顺序。
+  // One long-lived Sandbox pays the Rust install once for all 36 Attempts.
+  maxConcurrency: 1,
+  // 与 codex baseline/mempal/nowledge 对齐;toggl-cli 链式题需要 30 分钟的 agent deadline,
+  // 实验上限保持一致不截断它的单题超时。
+  timeoutMs: 1_800_000,
+});
